@@ -1,0 +1,17 @@
+{
+  "name": "FKT — Factual Knowledge Tool",
+  "short_name": "FKT",
+  "description": "Ferramenta de gestão de processos e análise factual estruturada",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
