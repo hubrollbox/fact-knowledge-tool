@@ -103,3 +103,10 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  .print\:hidden { display: none !important; }
+  body { background: white; }
+  aside, header { display: none !important; }
+  main { overflow: visible !important; }
+}
