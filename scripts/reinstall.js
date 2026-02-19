@@ -1,6 +1,6 @@
-const { execSync } = require('child_process');
-const { rmSync, existsSync } = require('fs');
-const { resolve } = require('path');
+import { execSync } from 'child_process';
+import { rmSync, existsSync } from 'fs';
+import { resolve } from 'path';
 
 const projectDir = resolve('/vercel/share/v0-project');
 
