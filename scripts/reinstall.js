@@ -4,16 +4,28 @@ import { resolve } from 'path';
 
 const projectDir = resolve('/vercel/share/v0-project');
 
-console.log('Removing node_modules...');
-rmSync(resolve(projectDir, 'node_modules'), { recursive: true, force: true });
+// Remove all lockfiles and node_modules for a clean slate
+const filesToRemove = [
+  'node_modules',
+  'package-lock.json',
+  'bun.lockb',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+];
 
-const lockFile = resolve(projectDir, 'package-lock.json');
-if (existsSync(lockFile)) {
-  console.log('Removing package-lock.json...');
-  rmSync(lockFile);
+for (const file of filesToRemove) {
+  const fullPath = resolve(projectDir, file);
+  if (existsSync(fullPath)) {
+    console.log(`Removing ${file}...`);
+    rmSync(fullPath, { recursive: true, force: true });
+  }
 }
 
-console.log('Running npm install to generate a fresh lock file...');
-execSync('npm install', { cwd: projectDir, stdio: 'inherit' });
+console.log('Running npm install to generate a fresh package-lock.json...');
+execSync('npm install --no-audit --no-fund', {
+  cwd: projectDir,
+  stdio: 'inherit',
+  env: { ...process.env, npm_config_legacy_peer_deps: 'true' },
+});
 
 console.log('Done! package-lock.json is now in sync with package.json.');
