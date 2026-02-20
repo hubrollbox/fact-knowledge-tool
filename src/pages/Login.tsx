@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabaseReady } from '@/lib/supabase';
+import { supabaseConfigError, supabaseReady } from '@/lib/supabase';
 
 function formatAuthError(message: string) {
   const normalized = message.toLowerCase();
@@ -39,7 +39,7 @@ export default function Login() {
     setSuccess(null);
 
     if (!supabaseReady) {
-      setError('Autenticação indisponível: faltam VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (ou VITE_SUPABASE_PUBLISHABLE_KEY).');
+      setError(supabaseConfigError || 'Autenticação indisponível no momento.');
       return;
     }
 
@@ -81,7 +81,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!supabaseReady && (
                 <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                  Login desativado. Configure <strong>VITE_SUPABASE_URL</strong> e <strong>VITE_SUPABASE_ANON_KEY</strong> (ou <strong>VITE_SUPABASE_PUBLISHABLE_KEY</strong>).
+                  {supabaseConfigError || 'Login desativado temporariamente.'}
                 </p>
               )}
               <div className="space-y-2">
