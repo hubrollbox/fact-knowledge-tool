@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale
+  LogOut, Menu, X, Scale, Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -114,6 +114,24 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('fkt-theme') === 'dark' ||
+        (!localStorage.getItem('fkt-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add('dark');
+      localStorage.setItem('fkt-theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('fkt-theme', 'light');
+    }
+  }, [dark]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -148,7 +166,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* User */}
       <div className={cn(
         'border-t border-sidebar-border p-3',
-        collapsed && 'flex justify-center'
+        collapsed && 'flex flex-col items-center gap-2'
       )}>
         {!collapsed && (
           <p className="text-xs text-muted-foreground mb-2 truncate px-1">{user?.email}</p>
@@ -217,6 +235,16 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Button>
 
           <div className="flex-1" />
+
+          {/* Dark mode toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDark(d => !d)}
+            aria-label="Alternar modo escuro"
+          >
+            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
         </header>
 
         {/* Content */}
