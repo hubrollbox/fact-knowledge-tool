@@ -39,7 +39,7 @@ export default function Login() {
     setSuccess(null);
 
     if (!supabaseReady) {
-      setError('Autenticação indisponível: faltam VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.');
+      setError('Autenticação indisponível: faltam VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (ou VITE_SUPABASE_PUBLISHABLE_KEY).');
       return;
     }
 
@@ -81,7 +81,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!supabaseReady && (
                 <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                  Login desativado. Configure as variáveis <strong>VITE_SUPABASE_URL</strong> e <strong>VITE_SUPABASE_ANON_KEY</strong>.
+                  Login desativado. Configure <strong>VITE_SUPABASE_URL</strong> e <strong>VITE_SUPABASE_ANON_KEY</strong> (ou <strong>VITE_SUPABASE_PUBLISHABLE_KEY</strong>).
                 </p>
               )}
               <div className="space-y-2">

@@ -50,3 +50,17 @@ Em desenvolvimento contínuo.
 Propriedade Intelectual
 Não é concedida licença open source.
 Todos os direitos reservados.
+
+
+Configuração de autenticação (Supabase)
+Para o login funcionar em ambiente local, configure um ficheiro `.env.local` na raiz com:
+
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=SEU_ANON_OU_PUBLISHABLE_KEY
+
+Também é suportada a variável `VITE_SUPABASE_PUBLISHABLE_KEY` como alternativa ao `VITE_SUPABASE_ANON_KEY`.
+
+Erros comuns de login
+- `Auth session missing!`: utilizador não autenticado ao aceder rotas protegidas. Faça login primeiro.
+- `Invalid login credentials`: email ou palavra-passe inválidos.
+- `Email not confirmed`: confirme o registo no email antes de entrar.
