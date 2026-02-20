@@ -1,12 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
+// Warn in dev without crashing the app
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+  console.warn(
+    '[FKT] Supabase environment variables are not set. ' +
+    'Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the project secrets.'
+  );
 }
 
-// Using untyped client to avoid strict 'never' type errors with generic DB schema
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const supabase = createClient(supabaseUrl, supabaseAnonKey) as any;
+export const supabase = createClient(
+  supabaseUrl ?? 'https://placeholder.supabase.co',
+  supabaseAnonKey ?? 'placeholder-key'
+) as any;
+
+/** True only when both env vars are present and non-empty */
+export const supabaseReady = !!(supabaseUrl && supabaseAnonKey);
