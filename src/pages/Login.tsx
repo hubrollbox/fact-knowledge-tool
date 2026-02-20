@@ -6,6 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabaseReady } from '@/lib/supabase';
+
+function formatAuthError(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('invalid login credentials')) {
+    return 'Email ou palavra-passe inválidos.';
+  }
+
+  if (normalized.includes('email not confirmed')) {
+    return 'A conta ainda não foi confirmada. Verifique o seu email.';
+  }
+
+  return message;
+}
 
 export default function Login() {
   const { user, signIn, signUp, loading } = useAuth();
@@ -22,14 +37,20 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    if (!supabaseReady) {
+      setError('Autenticação indisponível: faltam VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.');
+      return;
+    }
+
     setSubmitting(true);
 
     if (mode === 'login') {
       const { error } = await signIn(email, password);
-      if (error) setError(error.message);
+      if (error) setError(formatAuthError(error.message));
     } else {
       const { error } = await signUp(email, password);
-      if (error) setError(error.message);
+      if (error) setError(formatAuthError(error.message));
       else setSuccess('Conta criada! Verifique o seu email para confirmar o registo.');
     }
     setSubmitting(false);
@@ -58,6 +79,11 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {!supabaseReady && (
+                <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                  Login desativado. Configure as variáveis <strong>VITE_SUPABASE_URL</strong> e <strong>VITE_SUPABASE_ANON_KEY</strong>.
+                </p>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -94,7 +120,7 @@ export default function Login() {
                 </p>
               )}
 
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button type="submit" className="w-full" disabled={submitting || !supabaseReady}>
                 {submitting ? 'A processar...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
               </Button>
             </form>
