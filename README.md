@@ -58,7 +58,7 @@ Para o login funcionar em ambiente local, copie `.env.example` para `.env.local`
 VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
 VITE_SUPABASE_ANON_KEY=SEU_ANON_OU_PUBLISHABLE_KEY
 
-Também são aceites `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL` e `SUPABASE_ANON_KEY` como alternativas.
+Também é aceite `VITE_SUPABASE_PUBLISHABLE_KEY` como alternativa ao `VITE_SUPABASE_ANON_KEY`.
 
 Erros comuns de login
 - `Auth session missing!`: utilizador não autenticado ao aceder rotas protegidas. Faça login primeiro.
