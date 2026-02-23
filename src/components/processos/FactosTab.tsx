@@ -22,13 +22,23 @@ export function FactosTab({ processoId }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetch = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('factos')
       .select('*')
       .eq('processo_id', processoId)
       .order('data_facto', { ascending: true, nullsFirst: false });
+
+    if (error) {
+      setLoadError(`Não foi possível sincronizar factos com o Supabase: ${error.message}`);
+      setFactos([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoadError(null);
     setFactos((data as Facto[]) || []);
     setLoading(false);
   };
@@ -50,20 +60,30 @@ export function FactosTab({ processoId }: Props) {
     setSaving(true);
 
     if (editing) {
-      await supabase.from('factos').update({
+      const { error } = await supabase.from('factos').update({
         descricao: form.descricao.trim(),
         data_facto: form.data_facto || null,
         grau_certeza: form.grau_certeza,
         observacoes: form.observacoes.trim() || null,
       }).eq('id', editing.id);
+      if (error) {
+        setFormError(`Erro ao atualizar facto: ${error.message}`);
+        setSaving(false);
+        return;
+      }
     } else {
-      await supabase.from('factos').insert({
+      const { error } = await supabase.from('factos').insert({
         processo_id: processoId,
         descricao: form.descricao.trim(),
         data_facto: form.data_facto || null,
         grau_certeza: form.grau_certeza,
         observacoes: form.observacoes.trim() || null,
       });
+      if (error) {
+        setFormError(`Erro ao criar facto: ${error.message}`);
+        setSaving(false);
+        return;
+      }
     }
 
     await fetch();
@@ -73,7 +93,11 @@ export function FactosTab({ processoId }: Props) {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar este facto?')) return;
-    await supabase.from('factos').delete().eq('id', id);
+    const { error } = await supabase.from('factos').delete().eq('id', id);
+    if (error) {
+      alert(`Erro ao eliminar facto: ${error.message}`);
+      return;
+    }
     setFactos(prev => prev.filter(f => f.id !== id));
   };
 
@@ -93,6 +117,12 @@ export function FactosTab({ processoId }: Props) {
         <p className="text-sm text-muted-foreground">{factos.length} facto{factos.length !== 1 ? 's' : ''} registado{factos.length !== 1 ? 's' : ''}</p>
         <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />Novo Facto</Button>
       </div>
+
+      {loadError && (
+        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+          {loadError}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded animate-pulse" />)}</div>
