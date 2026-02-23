@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon
+  LogOut, Menu, X, Scale, Sun, Moon, UserCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -19,8 +19,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: LayoutDashboard },
   {
-    label: 'Processos', icon: FolderOpen, children: [
-      { label: 'Lista', href: '/processos', icon: FolderOpen },
+    label: 'Projectos', href: '/processos', icon: FolderOpen, children: [
       { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
     ]
   },
@@ -50,22 +49,50 @@ function NavItemComponent({ item, collapsed }: { item: NavItem; collapsed: boole
   if (item.children) {
     return (
       <div>
-        <button
-          onClick={() => setOpen(!open)}
+        <div
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-            'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+            'w-full flex items-center gap-1 rounded-md transition-colors',
             open && 'bg-sidebar-accent'
           )}
         >
-          <item.icon className="h-4 w-4 shrink-0" />
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-left">{item.label}</span>
-              {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            </>
+          {item.href ? (
+            <Link
+              to={item.href}
+              className={cn(
+                'flex flex-1 items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                isActive(item.href)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              )}
+            >
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+            </Link>
+          ) : (
+            <button
+              onClick={() => setOpen(!open)}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              )}
+            >
+              <item.icon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span className="flex-1 text-left">{item.label}</span>}
+            </button>
           )}
-        </button>
+          {!collapsed && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setOpen(!open)}
+              className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+              aria-label={`Alternar submenu ${item.label}`}
+            >
+              {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            </Button>
+          )}
+        </div>
         {open && !collapsed && (
           <div className="ml-4 mt-1 space-y-1 border-l border-sidebar-border pl-3">
             {item.children.map(child => (
@@ -171,6 +198,17 @@ export function AppLayout({ children }: AppLayoutProps) {
         {!collapsed && (
           <p className="text-xs text-muted-foreground mb-2 truncate px-1">{user?.email}</p>
         )}
+        <Button
+          asChild
+          variant="ghost"
+          size={collapsed ? 'icon' : 'sm'}
+          className="w-full text-muted-foreground hover:text-foreground"
+        >
+          <Link to="/gestao/perfil">
+            <UserCircle className="h-4 w-4" />
+            {!collapsed && <span className="ml-2">Perfil</span>}
+          </Link>
+        </Button>
         <Button
           variant="ghost"
           size={collapsed ? 'icon' : 'sm'}
