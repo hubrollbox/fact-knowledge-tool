@@ -163,6 +163,7 @@ export default function DisciplinaDetalhe() {
   };
 
   const filteredTopicos = topicos.filter(t => t.nome.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredBibliografia = filteredTopicos.filter(t => t.referencias && t.referencias.trim());
   const completedCount = progressos.filter(p => p.completado).length;
   const progressPercent = topicos.length > 0 ? Math.round((completedCount / topicos.length) * 100) : 0;
 
@@ -211,6 +212,7 @@ export default function DisciplinaDetalhe() {
               { value: 'quizzes', label: 'Quizzes' },
               { value: 'discussoes', label: 'Discussões' },
               { value: 'processos', label: 'Processos' },
+              { value: 'bibliografia', label: 'Bibliografia' },
             ].map(tab => (
               <TabsTrigger key={tab.value} value={tab.value} className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground px-4 py-2 text-sm min-w-max">
                 {tab.label}
@@ -350,6 +352,22 @@ export default function DisciplinaDetalhe() {
             <Button onClick={() => setProcessDialog(true)}>
               <Plus className="h-4 w-4 mr-1" /> Associar Processo
             </Button>
+          </TabsContent>
+          {/* BIBLIOGRAFIA */}
+          <TabsContent value="bibliografia" className="mt-6 space-y-4">
+            {filteredBibliografia.length === 0 && (
+              <p className="text-muted-foreground text-sm">Sem referências bibliográficas cadastradas nesta disciplina.</p>
+            )}
+            {filteredBibliografia.map(t => (
+              <Card key={t.id}>
+                <CardContent className="p-4 space-y-2">
+                  <div>
+                    <h3 className="font-medium">{t.nome}</h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{t.referencias}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
         </Tabs>
       </div>
