@@ -494,6 +494,39 @@ export type Database = {
           },
         ]
       }
+      user_services: {
+        Row: {
+          connected: boolean
+          connected_at: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          service: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected?: boolean
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          service: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected?: boolean
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          service?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
