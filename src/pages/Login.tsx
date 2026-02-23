@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabaseConfigError, supabaseReady } from '@/lib/supabase';
-
 function formatAuthError(message: string) {
   const normalized = message.toLowerCase();
 
@@ -37,12 +35,6 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-
-    if (!supabaseReady) {
-      setError(supabaseConfigError || 'Autenticação indisponível no momento.');
-      return;
-    }
-
     setSubmitting(true);
 
     if (mode === 'login') {
@@ -79,11 +71,7 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!supabaseReady && (
-                <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                  {supabaseConfigError || 'Login desativado temporariamente.'}
-                </p>
-              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -120,7 +108,7 @@ export default function Login() {
                 </p>
               )}
 
-              <Button type="submit" className="w-full" disabled={submitting || !supabaseReady}>
+              <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting ? 'A processar...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
               </Button>
             </form>
