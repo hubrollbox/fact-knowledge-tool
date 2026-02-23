@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Users, Archive, FileText, ChevronRight } from 'lucide-react';
+import { Users, Archive, FileText, UserCircle, ChevronRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 
 const cards = [
+  { label: 'Perfil', desc: 'Dados da conta e serviços sincronizados', href: '/gestao/perfil', icon: UserCircle },
   { label: 'Clientes', desc: 'Gerir clientes e os seus processos', href: '/gestao/clientes', icon: Users },
   { label: 'Arquivo', desc: 'Processos arquivados e restauração', href: '/gestao/arquivo', icon: Archive },
   { label: 'Relatórios', desc: 'Gerar relatórios FIRAC e exportar', href: '/gestao/relatorios', icon: FileText },
@@ -17,7 +18,7 @@ export default function Gestao() {
           <h1 className="text-2xl font-bold">Gestão</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Hub de gestão e administração</p>
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {cards.map(({ label, desc, href, icon: Icon }) => (
             <Link key={label} to={href}>
               <Card className="border-border hover:border-foreground/20 transition-colors h-full cursor-pointer">
