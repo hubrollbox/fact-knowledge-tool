@@ -22,9 +22,23 @@ export function DocumentosTab({ processoId }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetch = async () => {
-    const { data } = await supabase.from('documentos').select('*').eq('processo_id', processoId).order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('documentos')
+      .select('*')
+      .eq('processo_id', processoId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setError(`Não foi possível sincronizar documentos com o Supabase: ${error.message}`);
+      setDocumentos([]);
+      setLoading(false);
+      return;
+    }
+
+    setError(null);
     setDocumentos((data as Documento[]) || []);
     setLoading(false);
   };
@@ -33,6 +47,7 @@ export function DocumentosTab({ processoId }: Props) {
 
   const handleSave = async () => {
     if (!form.titulo.trim() || !user) return;
+    setError(null);
     setSaving(true);
 
     let storagePath: string | null = null;
@@ -40,10 +55,15 @@ export function DocumentosTab({ processoId }: Props) {
       const ext = file.name.split('.').pop();
       const path = `${user.id}/${processoId}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('documentos').upload(path, file);
-      if (!error) storagePath = path;
+      if (error) {
+        setError(`Erro no upload do ficheiro: ${error.message}`);
+        setSaving(false);
+        return;
+      }
+      storagePath = path;
     }
 
-    await supabase.from('documentos').insert({
+    const { error: insertError } = await supabase.from('documentos').insert({
       processo_id: processoId,
       titulo: form.titulo.trim(),
       tipo: form.tipo.trim() || null,
@@ -54,6 +74,12 @@ export function DocumentosTab({ processoId }: Props) {
       storage_path: storagePath,
     });
 
+    if (insertError) {
+      setError(`Erro ao guardar documento: ${insertError.message}`);
+      setSaving(false);
+      return;
+    }
+
     await fetch();
     setSaving(false);
     setDialogOpen(false);
@@ -63,8 +89,20 @@ export function DocumentosTab({ processoId }: Props) {
 
   const handleDelete = async (doc: Documento) => {
     if (!confirm('Eliminar este documento?')) return;
-    if (doc.storage_path) await supabase.storage.from('documentos').remove([doc.storage_path]);
-    await supabase.from('documentos').delete().eq('id', doc.id);
+    if (doc.storage_path) {
+      const { error } = await supabase.storage.from('documentos').remove([doc.storage_path]);
+      if (error) {
+        setError(`Erro ao remover ficheiro do storage: ${error.message}`);
+        return;
+      }
+    }
+
+    const { error } = await supabase.from('documentos').delete().eq('id', doc.id);
+    if (error) {
+      setError(`Erro ao eliminar documento: ${error.message}`);
+      return;
+    }
+
     setDocumentos(prev => prev.filter(d => d.id !== doc.id));
   };
 
@@ -81,6 +119,12 @@ export function DocumentosTab({ processoId }: Props) {
           <Plus className="h-4 w-4 mr-1" />Novo Documento
         </Button>
       </div>
+
+      {error && (
+        <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 bg-muted rounded animate-pulse" />)}</div>
