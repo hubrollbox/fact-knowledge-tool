@@ -275,6 +275,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <div className="flex-1" />
 
+          <CountdownFab contentSide="bottom" />
+
           {/* Dark mode toggle */}
           <Button
             variant="ghost"
@@ -290,7 +292,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
-        <CountdownFab />
       </div>
     </div>
   );
