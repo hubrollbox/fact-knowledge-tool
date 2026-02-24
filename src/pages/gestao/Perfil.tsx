@@ -29,44 +29,75 @@ export default function Perfil() {
   useEffect(() => {
     if (!user) return;
     const fetchServices = async () => {
-      const { data } = await supabase
-        .from('user_services')
-        .select('service, connected')
-        .eq('user_id', user.id);
-      const map: ServiceState = {};
-      data?.forEach((s) => { map[s.service] = s.connected; });
-      setServices(map);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('user_services')
+          .select('service, connected')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        const map: ServiceState = {};
+        data?.forEach((s) => {
+          map[s.service] = s.connected;
+        });
+        setServices(map);
+      } catch (error) {
+        console.error('Erro ao carregar serviços:', error);
+        toast({
+          title: 'Erro ao carregar conexões',
+          description: 'Não foi possível obter o estado dos serviços externos.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     fetchServices();
-  }, [user]);
+  }, [user, toast]);
 
   const toggleService = async (serviceKey: string) => {
     if (!user) return;
     setToggling(serviceKey);
     const isConnected = !!services[serviceKey];
 
-    if (isConnected) {
-      // Disconnect
-      await supabase
-        .from('user_services')
-        .update({ connected: false, connected_at: null })
-        .eq('user_id', user.id)
-        .eq('service', serviceKey);
-      setServices((prev) => ({ ...prev, [serviceKey]: false }));
-      toast({ title: 'Serviço desconectado' });
-    } else {
-      // Connect (upsert)
-      await supabase
-        .from('user_services')
-        .upsert(
-          { user_id: user.id, service: serviceKey, connected: true, connected_at: new Date().toISOString() },
-          { onConflict: 'user_id,service' }
-        );
-      setServices((prev) => ({ ...prev, [serviceKey]: true }));
-      toast({ title: 'Serviço conectado' });
+    try {
+      if (isConnected) {
+        // Disconnect
+        const { error } = await supabase
+          .from('user_services')
+          .update({ connected: false, connected_at: null })
+          .eq('user_id', user.id)
+          .eq('service', serviceKey);
+
+        if (error) throw error;
+
+        setServices((prev) => ({ ...prev, [serviceKey]: false }));
+        toast({ title: 'Serviço desconectado' });
+      } else {
+        // Connect (upsert)
+        const { error } = await supabase
+          .from('user_services')
+          .upsert(
+            { user_id: user.id, service: serviceKey, connected: true, connected_at: new Date().toISOString() },
+            { onConflict: 'user_id,service' }
+          );
+
+        if (error) throw error;
+
+        setServices((prev) => ({ ...prev, [serviceKey]: true }));
+        toast({ title: 'Serviço conectado' });
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar serviço:', error);
+      toast({
+        title: 'Erro ao atualizar conexão',
+        description: 'Não foi possível alterar o estado do serviço. Tenta novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setToggling(null);
     }
-    setToggling(null);
   };
 
   const createdAt = user?.created_at
