@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FolderOpen, AlertCircle, FileText, Plus, ArrowRight, Mail, TimerReset, CalendarClock } from 'lucide-react';
+import { FolderOpen, AlertCircle, Plus, ArrowRight, Mail, TimerReset, CalendarClock } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,7 @@ import type { Processo } from '@/types';
 interface Stats {
   countdownAbertos: number;
   emailsNaoLidos: number;
-  totalProcessos: number;
   issuesAbertas: number;
-  totalFactos: number;
-  processosAtivos: number;
   proximoCompromisso: string;
 }
 
@@ -27,10 +24,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({
     countdownAbertos: 0,
     emailsNaoLidos: 0,
-    totalProcessos: 0,
     issuesAbertas: 0,
-    totalFactos: 0,
-    processosAtivos: 0,
     proximoCompromisso: 'Sem agenda',
   });
   const [processos, setProcessos] = useState<Processo[]>([]);
@@ -42,11 +36,9 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
       const nowIso = new Date().toISOString();
 
-      const [pRes, iRes, fRes, allPTotal, countdownRes, emailServiceRes, docAgendaRes, factoAgendaRes] = await Promise.all([
+      const [pRes, iRes, countdownRes, emailServiceRes, docAgendaRes, factoAgendaRes] = await Promise.all([
         supabase.from('processos').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5),
         supabase.from('issues').select('id, estado, processo_id, processos!inner(user_id)').eq('processos.user_id', user.id).eq('estado', 'aberta'),
-        supabase.from('factos').select('id, processos!inner(user_id)').eq('processos.user_id', user.id),
-        supabase.from('processos').select('id').eq('user_id', user.id),
         supabase.from('countdown_events').select('id').eq('user_id', user.id).gte('target_date', nowIso),
         supabase.from('user_services').select('connected, metadata').eq('user_id', user.id).eq('service', 'gmail').maybeSingle(),
         supabase
@@ -68,8 +60,6 @@ export default function Dashboard() {
       ]);
 
       setProcessos((pRes.data as Processo[]) || []);
-      const total = (pRes.data || []).length;
-      const ativos = (pRes.data || []).filter((p: Processo) => p.estado !== 'arquivado' && p.estado !== 'concluido').length;
       const docDate = docAgendaRes.data?.[0]?.data_documento;
       const factoDate = factoAgendaRes.data?.[0]?.data_facto;
       const nextDate = [docDate, factoDate].filter(Boolean).sort((a, b) => (a as string).localeCompare(b as string))[0] as string | undefined;
@@ -79,10 +69,7 @@ export default function Dashboard() {
       setStats({
         countdownAbertos: (countdownRes.data || []).length,
         emailsNaoLidos: Number.isFinite(unreadCount) ? unreadCount : 0,
-        totalProcessos: (allPTotal.data || []).length || total,
         issuesAbertas: (iRes.data || []).length,
-        totalFactos: (fRes.data || []).length,
-        processosAtivos: ativos,
         proximoCompromisso: nextDate ? new Date(`${nextDate}T00:00:00`).toLocaleDateString('pt-PT') : 'Sem agenda',
       });
 
@@ -128,9 +115,6 @@ export default function Dashboard() {
             { label: 'Emails Não Lidos', value: stats.emailsNaoLidos, icon: Mail },
             { label: 'Issues Abertas', value: stats.issuesAbertas, icon: AlertCircle },
             { label: 'Próximo Compromisso', value: stats.proximoCompromisso, icon: CalendarClock },
-            { label: 'Processos Ativos', value: stats.processosAtivos, icon: FolderOpen },
-            { label: 'Total Processos', value: stats.totalProcessos, icon: FolderOpen },
-            { label: 'Factos Registados', value: stats.totalFactos, icon: FileText },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label} className="border-border">
               <CardContent className="p-5">
