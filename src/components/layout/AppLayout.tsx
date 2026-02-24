@@ -8,6 +8,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { CountdownFab } from '@/components/dashboard/CountdownFab';
 
 interface NavItem {
   label: string;
@@ -289,6 +290,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
+        <CountdownFab />
       </div>
     </div>
   );
