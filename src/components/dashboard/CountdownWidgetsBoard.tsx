@@ -45,7 +45,7 @@ export function CountdownWidgetsBoard() {
       .select('id, title, target_date, settings')
       .eq('user_id', user.id)
       .order('target_date', { ascending: true });
-    setEvents((data as CountdownEvent[] | null) ?? []);
+    setEvents((data as unknown as CountdownEvent[] | null) ?? []);
     setLoading(false);
   }, [user]);
 

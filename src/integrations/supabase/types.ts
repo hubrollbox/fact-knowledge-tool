@@ -135,36 +135,6 @@ export type Database = {
         }
         Relationships: []
       }
-      countdown_events: {
-        Row: {
-          created_at: string | null
-          id: string
-          settings: Json
-          target_date: string
-          title: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          settings?: Json
-          target_date: string
-          title: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          settings?: Json
-          target_date?: string
-          title?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       conclusoes: {
         Row: {
           created_at: string | null
@@ -202,6 +172,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      countdown_events: {
+        Row: {
+          created_at: string | null
+          id: string
+          settings: Json
+          target_date: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          settings?: Json
+          target_date: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          settings?: Json
+          target_date?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       disciplina_processos: {
         Row: {
