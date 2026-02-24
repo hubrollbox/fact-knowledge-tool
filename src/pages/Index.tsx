@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FolderOpen, AlertCircle, FileText, Plus, ArrowRight } from 'lucide-react';
+import { FolderOpen, AlertCircle, FileText, Plus, ArrowRight, Mail, TimerReset, CalendarClock } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,42 +13,78 @@ import { CountdownWidgetsBoard } from '@/components/dashboard/CountdownWidgetsBo
 import type { Processo } from '@/types';
 
 interface Stats {
+  countdownAbertos: number;
+  emailsNaoLidos: number;
   totalProcessos: number;
   issuesAbertas: number;
   totalFactos: number;
   processosAtivos: number;
+  proximoCompromisso: string;
 }
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({ totalProcessos: 0, issuesAbertas: 0, totalFactos: 0, processosAtivos: 0 });
+  const [stats, setStats] = useState<Stats>({
+    countdownAbertos: 0,
+    emailsNaoLidos: 0,
+    totalProcessos: 0,
+    issuesAbertas: 0,
+    totalFactos: 0,
+    processosAtivos: 0,
+    proximoCompromisso: 'Sem agenda',
+  });
   const [processos, setProcessos] = useState<Processo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [pRes, iRes, fRes] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0];
+      const nowIso = new Date().toISOString();
+
+      const [pRes, iRes, fRes, allPTotal, countdownRes, emailServiceRes, docAgendaRes, factoAgendaRes] = await Promise.all([
         supabase.from('processos').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5),
         supabase.from('issues').select('id, estado, processo_id, processos!inner(user_id)').eq('processos.user_id', user.id).eq('estado', 'aberta'),
         supabase.from('factos').select('id, processos!inner(user_id)').eq('processos.user_id', user.id),
+        supabase.from('processos').select('id').eq('user_id', user.id),
+        supabase.from('countdown_events').select('id').eq('user_id', user.id).gte('target_date', nowIso),
+        supabase.from('user_services').select('connected, metadata').eq('user_id', user.id).eq('service', 'gmail').maybeSingle(),
+        supabase
+          .from('documentos')
+          .select('data_documento, processos!inner(user_id)')
+          .eq('processos.user_id', user.id)
+          .not('data_documento', 'is', null)
+          .gte('data_documento', today)
+          .order('data_documento', { ascending: true })
+          .limit(1),
+        supabase
+          .from('factos')
+          .select('data_facto, processos!inner(user_id)')
+          .eq('processos.user_id', user.id)
+          .not('data_facto', 'is', null)
+          .gte('data_facto', today)
+          .order('data_facto', { ascending: true })
+          .limit(1),
       ]);
 
       setProcessos((pRes.data as Processo[]) || []);
       const total = (pRes.data || []).length;
       const ativos = (pRes.data || []).filter((p: Processo) => p.estado !== 'arquivado' && p.estado !== 'concluido').length;
+      const docDate = docAgendaRes.data?.[0]?.data_documento;
+      const factoDate = factoAgendaRes.data?.[0]?.data_facto;
+      const nextDate = [docDate, factoDate].filter(Boolean).sort((a, b) => (a as string).localeCompare(b as string))[0] as string | undefined;
+      const rawUnread = (emailServiceRes.data?.metadata as { unread_count?: number; unreadCount?: number } | null) || null;
+      const unreadCount = emailServiceRes.data?.connected ? Number(rawUnread?.unread_count ?? rawUnread?.unreadCount ?? 0) : 0;
+
       setStats({
-        totalProcessos: total,
+        countdownAbertos: (countdownRes.data || []).length,
+        emailsNaoLidos: Number.isFinite(unreadCount) ? unreadCount : 0,
+        totalProcessos: (allPTotal.data || []).length || total,
         issuesAbertas: (iRes.data || []).length,
         totalFactos: (fRes.data || []).length,
         processosAtivos: ativos,
+        proximoCompromisso: nextDate ? new Date(`${nextDate}T00:00:00`).toLocaleDateString('pt-PT') : 'Sem agenda',
       });
-
-      // fetch all for total
-      const allP = await supabase.from('processos').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5);
-      setProcessos((allP.data as Processo[]) || []);
-      const allPTotal = await supabase.from('processos').select('id').eq('user_id', user.id);
-      setStats(prev => ({ ...prev, totalProcessos: (allPTotal.data || []).length }));
 
       setLoading(false);
     };
@@ -75,7 +111,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Visão geral dos seus processos</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Workoffice</p>
           </div>
           <Button asChild>
             <Link to="/processos/novo">
@@ -86,11 +122,14 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {[
-            { label: 'Total Processos', value: stats.totalProcessos, icon: FolderOpen },
-            { label: 'Processos Ativos', value: stats.processosAtivos, icon: FolderOpen },
+            { label: 'Countdown Abertos', value: stats.countdownAbertos, icon: TimerReset },
+            { label: 'Emails Não Lidos', value: stats.emailsNaoLidos, icon: Mail },
             { label: 'Issues Abertas', value: stats.issuesAbertas, icon: AlertCircle },
+            { label: 'Próximo Compromisso', value: stats.proximoCompromisso, icon: CalendarClock },
+            { label: 'Processos Ativos', value: stats.processosAtivos, icon: FolderOpen },
+            { label: 'Total Processos', value: stats.totalProcessos, icon: FolderOpen },
             { label: 'Factos Registados', value: stats.totalFactos, icon: FileText },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label} className="border-border">
