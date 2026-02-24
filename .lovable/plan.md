@@ -1,68 +1,57 @@
 
 
-# Plano: Perfil do Utilizador com Sincronizacao de Servicos
+# Plano: Corrigir Countdown Widgets e tornar acessiveis em qualquer pagina
 
-## Resumo
+## Problemas identificados
 
-Adicionar um cartao "Perfil" ao hub de Gestao e criar uma nova pagina `/gestao/perfil` onde o utilizador pode ver os seus dados e ligar/desligar servicos externos (Google Drive, OneDrive, Gmail, Google Calendar, GitHub).
+1. **Tabela `countdown_events` nao existe na base de dados** -- os pedidos de rede retornam 404 com "Could not find the table 'public.countdown_events' in the schema cache".
+2. **Erro de build no TypeScript** -- o tipo `Json` do Supabase nao e compativel com `CountdownSettings`. E preciso fazer cast via `unknown`.
+3. **Os countdowns so aparecem no dashboard** -- o utilizador quer poder criar/ver countdowns a partir de qualquer pagina.
 
-## O que vai mudar
+## O que vai ser feito
 
-### 1. Novo cartao no hub de Gestao
-- Adicionar um quarto cartao "Perfil" com icone de utilizador na pagina Gestao.tsx
-- O grid passa de 3 para 4 colunas em desktop (`sm:grid-cols-4`)
-
-### 2. Nova pagina de Perfil (`src/pages/gestao/Perfil.tsx`)
-
-A pagina tera duas seccoes:
-
-**Dados do utilizador** (lidos do Supabase Auth):
-- Email
-- Data de criacao da conta
-- Botao de logout
-
-**Servicos externos** - cards para cada servico com estado (conectado/desconectado) e botao de acao:
-- Google Drive
-- OneDrive
-- Gmail / Email
-- Google Calendar
-- GitHub
-
-Cada card mostra o nome do servico, um icone, o estado atual (guardado numa tabela `user_services`) e um botao para conectar ou desconectar.
-
-### 3. Tabela `user_services` (migracao SQL)
+### 1. Criar a tabela `countdown_events` (migracao SQL)
 
 ```text
-user_services
-  id          uuid PK default gen_random_uuid()
-  user_id     uuid NOT NULL
-  service     text NOT NULL  (google_drive, onedrive, gmail, google_calendar, github)
-  connected   boolean default false
-  metadata    jsonb default '{}'
-  connected_at timestamptz
-  created_at  timestamptz default now()
-  updated_at  timestamptz default now()
-  UNIQUE(user_id, service)
+countdown_events
+  id           uuid PK default gen_random_uuid()
+  user_id      uuid NOT NULL
+  title        text NOT NULL
+  target_date  timestamptz NOT NULL
+  settings     jsonb NOT NULL default '{}'
+  created_at   timestamptz default now()
+  updated_at   timestamptz default now()
 ```
 
-RLS: `user_id = auth.uid()` para ALL.
+RLS: `user_id = auth.uid()` para ALL. Trigger `updated_at`.
 
-Nota: nesta fase, os botoes de "Conectar" vao marcar o servico como conectado na base de dados (placeholder). A integracao OAuth real com cada servico sera implementada numa fase posterior -- a estrutura fica preparada para isso.
+### 2. Corrigir o erro de tipos no CountdownWidgetsBoard.tsx
 
-### 4. Nova rota em App.tsx
+Na linha 48, alterar o cast de `data as CountdownEvent[]` para converter primeiro para `unknown`:
+```
+setEvents((data as unknown as CountdownEvent[]) ?? []);
+```
 
-Adicionar `import Perfil` e rota `/gestao/perfil` protegida.
+### 3. Criar componente flutuante global para countdowns
 
-## Detalhes tecnicos
+Criar um componente `CountdownFab` (floating action button) que:
+- Aparece em todas as paginas (colocado no `AppLayout`)
+- Permite abrir um painel/popover com a lista de countdowns existentes
+- Permite criar um novo countdown directamente a partir de qualquer pagina
+- Reutiliza a logica ja existente do `CountdownWidgetsBoard`
 
-**Ficheiros a criar:**
-- `src/pages/gestao/Perfil.tsx` -- pagina com useAuth() para dados do utilizador + queries a `user_services`
+### 4. Actualizar tipos Supabase
 
-**Ficheiros a modificar:**
-- `src/pages/gestao/Gestao.tsx` -- adicionar cartao Perfil
-- `src/App.tsx` -- adicionar rota `/gestao/perfil`
+Adicionar a tabela `countdown_events` ao ficheiro `src/integrations/supabase/types.ts`.
 
-**Migracao SQL:**
-- Criar tabela `user_services` com RLS policy `own` (user_id = auth.uid())
-- Trigger `updated_at`
+## Ficheiros a criar
+- `src/components/dashboard/CountdownFab.tsx` -- botao flutuante com popover de countdowns
+
+## Ficheiros a modificar
+- `src/components/dashboard/CountdownWidgetsBoard.tsx` -- corrigir cast de tipos (linha 48)
+- `src/components/layout/AppLayout.tsx` -- adicionar `CountdownFab` ao layout global
+- `src/integrations/supabase/types.ts` -- adicionar tipo `countdown_events`
+
+## Migracao SQL
+- Criar tabela `countdown_events` com RLS e trigger `updated_at`
 
