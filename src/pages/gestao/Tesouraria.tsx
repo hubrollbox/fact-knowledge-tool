@@ -60,6 +60,9 @@ export default function Tesouraria() {
   }, [movimentos]);
 
   const saldo = totais.creditos - totais.debitos;
+  const totalMovimentado = totais.creditos + totais.debitos;
+  const percentagemCreditos = totalMovimentado === 0 ? 50 : (totais.creditos / totalMovimentado) * 100;
+  const percentagemDebitos = 100 - percentagemCreditos;
 
   const adicionarMovimento = () => {
     const valor = Number(form.valor.replace(',', '.'));
@@ -112,6 +115,52 @@ export default function Tesouraria() {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Balança financeira</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-700">
+                <p className="text-xs uppercase tracking-wide">Receitas</p>
+                <p className="text-xl font-semibold">{moeda.format(totais.creditos)}</p>
+              </div>
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-red-700 text-right">
+                <p className="text-xs uppercase tracking-wide">Despesas</p>
+                <p className="text-xl font-semibold">{moeda.format(totais.debitos)}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+                <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400" style={{ width: `${percentagemCreditos}%` }} />
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Receitas: {percentagemCreditos.toFixed(1)}%</span>
+                <span>Despesas: {percentagemDebitos.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            <div className="relative h-20">
+              <div className="absolute inset-x-2 top-9 h-1 rounded-full bg-border" />
+              <div className="absolute left-1/2 top-8 h-3 w-3 -translate-x-1/2 rounded-full bg-primary" />
+              <div
+                className="absolute top-9 h-1 rounded-full bg-emerald-500 transition-all"
+                style={{ left: '50%', width: `${Math.max(0, percentagemCreditos - 50) * 2}%` }}
+              />
+              <div
+                className="absolute top-9 h-1 rounded-full bg-red-500 transition-all"
+                style={{ right: '50%', width: `${Math.max(0, percentagemDebitos - 50) * 2}%` }}
+              />
+              <div className="absolute left-2 top-2 text-xs font-medium text-emerald-600">Receitas</div>
+              <div className="absolute right-2 top-2 text-xs font-medium text-red-600">Despesas</div>
+              <div className={`absolute left-1/2 bottom-0 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-semibold ${saldo >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                {saldo >= 0 ? 'Mais receitas' : 'Mais despesas'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
