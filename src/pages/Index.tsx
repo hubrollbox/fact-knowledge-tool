@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
 import { AgendaWidget } from '@/components/dashboard/AgendaWidget';
 import { EmailWidget } from '@/components/dashboard/EmailWidget';
+import { CountdownWidgetsBoard } from '@/components/dashboard/CountdownWidgetsBoard';
 import type { Processo } from '@/types';
 
 interface Stats {
@@ -160,6 +161,8 @@ export default function Dashboard() {
           <AgendaWidget />
           <EmailWidget />
         </div>
+
+        <CountdownWidgetsBoard />
       </div>
     </AppLayout>
   );
