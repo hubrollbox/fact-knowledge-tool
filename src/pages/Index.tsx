@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
+import { AgendaWidget } from '@/components/dashboard/AgendaWidget';
+import { EmailWidget } from '@/components/dashboard/EmailWidget';
 import type { Processo } from '@/types';
 
 interface Stats {
@@ -152,6 +154,12 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Agenda & Email widgets */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <AgendaWidget />
+          <EmailWidget />
+        </div>
       </div>
     </AppLayout>
   );
