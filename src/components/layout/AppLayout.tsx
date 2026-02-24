@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon, UserCircle
+  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ const navItems: NavItem[] = [
       { label: 'Clientes', href: '/gestao/clientes', icon: Users },
       { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
       { label: 'Relatórios', href: '/gestao/relatorios', icon: FileText },
+      { label: 'Tesouraria', href: '/gestao/tesouraria', icon: Landmark },
     ]
   },
 ];
