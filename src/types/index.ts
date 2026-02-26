@@ -121,6 +121,12 @@ export interface Disciplina {
   user_id: string;
   nome: string;
   descricao: string | null;
+  docente: string | null;
+  docente_telm: string | null;
+  docente_email: string | null;
+  regente: string | null;
+  regente_telm: string | null;
+  regente_email: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, BookOpen, Search, MessageSquare, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, BookOpen, Search, MessageSquare, CheckCircle, Mail, Phone } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -167,6 +167,21 @@ export default function DisciplinaDetalhe() {
   const completedCount = progressos.filter(p => p.completado).length;
   const progressPercent = topicos.length > 0 ? Math.round((completedCount / topicos.length) * 100) : 0;
 
+  const pessoasDisciplina = [
+    {
+      role: 'Docente',
+      nome: disciplina?.docente,
+      telm: disciplina?.docente_telm,
+      email: disciplina?.docente_email,
+    },
+    {
+      role: 'Regente',
+      nome: disciplina?.regente,
+      telm: disciplina?.regente_telm,
+      email: disciplina?.regente_email,
+    },
+  ].filter(pessoa => pessoa.nome || pessoa.telm || pessoa.email);
+
   if (loading) return <AppLayout><div className="p-6"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
   if (!disciplina) return (
     <AppLayout>
@@ -192,6 +207,27 @@ export default function DisciplinaDetalhe() {
             Progresso: {completedCount}/{topicos.length} ({progressPercent}%)
           </div>
         </div>
+
+        {pessoasDisciplina.length > 0 && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {pessoasDisciplina.map(pessoa => (
+              <Card key={pessoa.role} className="border-border">
+                <CardContent className="p-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pessoa.role}</p>
+                  {pessoa.nome && <p className="text-sm font-medium">{pessoa.nome}</p>}
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    {pessoa.telm && (
+                      <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" />{pessoa.telm}</p>
+                    )}
+                    {pessoa.email && (
+                      <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{pessoa.email}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Progress bar */}
         <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
