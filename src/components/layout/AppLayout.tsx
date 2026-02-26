@@ -24,11 +24,14 @@ const navItems: NavItem[] = [
       { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
     ]
   },
-  { label: 'Conhecimento', href: '/conhecimento', icon: BookOpen },
+  {
+    label: 'Conhecimento', href: '/conhecimento', icon: BookOpen, children: [
+      { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
+    ]
+  },
   {
     label: 'Gestão', icon: Settings, children: [
       { label: 'Clientes', href: '/gestao/clientes', icon: Users },
-      { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
       { label: 'Relatórios', href: '/gestao/relatorios', icon: FileText },
       { label: 'Tesouraria', href: '/gestao/tesouraria', icon: Landmark },
     ]
@@ -141,7 +144,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
