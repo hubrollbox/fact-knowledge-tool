@@ -19,7 +19,16 @@ export default function Conhecimento() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Disciplina | null>(null);
-  const [form, setForm] = useState({ nome: '', descricao: '' });
+  const [form, setForm] = useState({
+    nome: '',
+    descricao: '',
+    docente: '',
+    docente_telm: '',
+    docente_email: '',
+    regente: '',
+    regente_telm: '',
+    regente_email: '',
+  });
   const [saving, setSaving] = useState(false);
 
   const fetch = async () => {
@@ -31,16 +40,53 @@ export default function Conhecimento() {
 
   useEffect(() => { fetch(); }, [user]);
 
-  const openNew = () => { setEditing(null); setForm({ nome: '', descricao: '' }); setDialogOpen(true); };
-  const openEdit = (d: Disciplina) => { setEditing(d); setForm({ nome: d.nome, descricao: d.descricao || '' }); setDialogOpen(true); };
+  const openNew = () => {
+    setEditing(null);
+    setForm({
+      nome: '',
+      descricao: '',
+      docente: '',
+      docente_telm: '',
+      docente_email: '',
+      regente: '',
+      regente_telm: '',
+      regente_email: '',
+    });
+    setDialogOpen(true);
+  };
+  const openEdit = (d: Disciplina) => {
+    setEditing(d);
+    setForm({
+      nome: d.nome,
+      descricao: d.descricao || '',
+      docente: d.docente || '',
+      docente_telm: d.docente_telm || '',
+      docente_email: d.docente_email || '',
+      regente: d.regente || '',
+      regente_telm: d.regente_telm || '',
+      regente_email: d.regente_email || '',
+    });
+    setDialogOpen(true);
+  };
 
   const handleSave = async () => {
     if (!form.nome.trim() || !user) return;
     setSaving(true);
+    const disciplinaPayload = {
+      nome: form.nome.trim(),
+      descricao: form.descricao.trim() || null,
+      docente: form.docente.trim() || null,
+      docente_telm: form.docente_telm.trim() || null,
+      docente_email: form.docente_email.trim() || null,
+      regente: form.regente.trim() || null,
+      regente_telm: form.regente_telm.trim() || null,
+      regente_email: form.regente_email.trim() || null,
+    };
+
     if (editing) {
-      await supabase.from('disciplinas').update({ nome: form.nome.trim(), descricao: form.descricao.trim() || null }).eq('id', editing.id);
+      await supabase.from('disciplinas').update(disciplinaPayload).eq('id', editing.id);
     } else {
-      await supabase.from('disciplinas').insert({ user_id: user.id, nome: form.nome.trim(), descricao: form.descricao.trim() || null });
+      await supabase.from('disciplinas').insert({ user_id: user.id, ...disciplinaPayload });
     }
     await fetch();
     setSaving(false);
@@ -110,6 +156,34 @@ export default function Conhecimento() {
             <div className="space-y-2">
               <Label>Descrição</Label>
               <Textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Descrição da disciplina..." rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Docente</Label>
+              <Input value={form.docente} onChange={e => setForm(f => ({ ...f, docente: e.target.value }))} placeholder="Nome do docente" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Contacto telm. (Docente)</Label>
+                <Input value={form.docente_telm} onChange={e => setForm(f => ({ ...f, docente_telm: e.target.value }))} placeholder="+351 9xx xxx xxx" />
+              </div>
+              <div className="space-y-2">
+                <Label>Email (Docente)</Label>
+                <Input type="email" value={form.docente_email} onChange={e => setForm(f => ({ ...f, docente_email: e.target.value }))} placeholder="docente@exemplo.pt" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Regente</Label>
+              <Input value={form.regente} onChange={e => setForm(f => ({ ...f, regente: e.target.value }))} placeholder="Nome do regente" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Contacto telm. (Regente)</Label>
+                <Input value={form.regente_telm} onChange={e => setForm(f => ({ ...f, regente_telm: e.target.value }))} placeholder="+351 9xx xxx xxx" />
+              </div>
+              <div className="space-y-2">
+                <Label>Email (Regente)</Label>
+                <Input type="email" value={form.regente_email} onChange={e => setForm(f => ({ ...f, regente_email: e.target.value }))} placeholder="regente@exemplo.pt" />
+              </div>
             </div>
           </div>
           <DialogFooter>
