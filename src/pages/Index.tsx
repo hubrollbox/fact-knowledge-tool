@@ -4,7 +4,7 @@ import { FolderOpen, AlertCircle, Plus, ArrowRight, Mail, TimerReset, CalendarCl
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
 import { AgendaWidget } from '@/components/dashboard/AgendaWidget';

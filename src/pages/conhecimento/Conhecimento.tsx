@@ -8,13 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { formatarData } from '@/lib/utils-fkt';
 import type { Disciplina } from '@/types';
 
 export default function Conhecimento() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,10 +34,30 @@ export default function Conhecimento() {
   const [saving, setSaving] = useState(false);
 
   const fetch = async () => {
-    if (!user) return;
-    const { data } = await supabase.from('disciplinas').select('*').eq('user_id', user.id).order('nome');
-    setDisciplinas((data as Disciplina[]) || []);
-    setLoading(false);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('disciplinas')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('nome');
+
+      if (error) throw error;
+      setDisciplinas((data as Disciplina[]) || []);
+    } catch (error) {
+      console.error('Erro ao carregar disciplinas:', error);
+      toast({
+        title: 'Erro ao carregar disciplinas',
+        description: 'Não foi possível carregar as disciplinas. Tenta novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetch(); }, [user]);
@@ -82,21 +104,46 @@ export default function Conhecimento() {
       regente_telm: form.regente_telm.trim() || null,
       regente_email: form.regente_email.trim() || null,
     };
+    try {
+      if (editing) {
+        const { error } = await supabase.from('disciplinas').update(disciplinaPayload).eq('id', editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('disciplinas').insert({ user_id: user.id, ...disciplinaPayload });
+        if (error) throw error;
+      }
 
-    if (editing) {
-      await supabase.from('disciplinas').update(disciplinaPayload).eq('id', editing.id);
-    } else {
-      await supabase.from('disciplinas').insert({ user_id: user.id, ...disciplinaPayload });
+      await fetch();
+      setDialogOpen(false);
+      toast({ title: editing ? 'Disciplina atualizada' : 'Disciplina criada' });
+    } catch (error) {
+      console.error('Erro ao guardar disciplina:', error);
+      toast({
+        title: 'Erro ao guardar disciplina',
+        description: 'Não foi possível guardar a disciplina. Verifica as permissões e tenta novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
     }
-    await fetch();
-    setSaving(false);
-    setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta disciplina e todos os seus tópicos?')) return;
-    await supabase.from('disciplinas').delete().eq('id', id);
-    setDisciplinas(prev => prev.filter(d => d.id !== id));
+    try {
+      const { error } = await supabase.from('disciplinas').delete().eq('id', id);
+      if (error) throw error;
+
+      setDisciplinas(prev => prev.filter(d => d.id !== id));
+      toast({ title: 'Disciplina eliminada' });
+    } catch (error) {
+      console.error('Erro ao eliminar disciplina:', error);
+      toast({
+        title: 'Erro ao eliminar disciplina',
+        description: 'Não foi possível eliminar a disciplina. Tenta novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
