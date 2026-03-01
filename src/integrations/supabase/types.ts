@@ -562,7 +562,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_disciplina_user_id: {
+        Args: { _disciplina_id: string }
+        Returns: string
+      }
+      get_issue_processo_user_id: {
+        Args: { _issue_id: string }
+        Returns: string
+      }
+      get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
