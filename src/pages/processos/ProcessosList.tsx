@@ -28,11 +28,11 @@ export default function ProcessosList() {
         .select('*, cliente:clientes(id, nome)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      setProcessos((data as Processo[]) || []);
+      setProcessos((data as unknown as Processo[]) || []);
 
       // fetch counts
       if (data && data.length > 0) {
-        const ids = data.map((p: Processo) => p.id);
+        const ids = data.map((p: any) => p.id);
         const [fRes, dRes] = await Promise.all([
           supabase.from('factos').select('processo_id').in('processo_id', ids),
           supabase.from('documentos').select('processo_id').in('processo_id', ids),

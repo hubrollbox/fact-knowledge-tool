@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatDatabaseError } from '@/lib/error-utils';
 import type { Processo } from '@/types';
 
 export function useProcessos() {
@@ -18,8 +19,8 @@ export function useProcessos() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) setError(error.message);
-    else setProcessos((data as Processo[]) || []);
+    if (error) setError(formatDatabaseError(error));
+    else setProcessos((data as unknown as Processo[]) || []);
     setLoading(false);
   };
 
@@ -46,8 +47,8 @@ export function useProcesso(id: string | undefined) {
       .eq('user_id', user.id)
       .single();
 
-    if (error) setError(error.message);
-    else setProcesso(data as Processo);
+    if (error) setError(formatDatabaseError(error));
+    else setProcesso(data as unknown as Processo);
     setLoading(false);
   };
 

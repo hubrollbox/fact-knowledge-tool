@@ -51,7 +51,7 @@ export default function ProcessoNovo() {
       cliente_id: (form.tipo === 'profissional' && form.cliente_id) ? form.cliente_id : null,
     }).select().single();
 
-    if (error) { setError(error.message); setSaving(false); return; }
+    if (error) { console.error('Create processo error:', error); setError('Ocorreu um erro ao criar o processo. Por favor, tente novamente.'); setSaving(false); return; }
     navigate(`/processos/${data.id}`);
   };
 

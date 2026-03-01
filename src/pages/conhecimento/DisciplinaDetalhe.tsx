@@ -73,19 +73,19 @@ export default function DisciplinaDetalhe() {
     const [dRes, tRes, qRes, discRes, progRes, dpRes, pRes] = await Promise.all([
       supabase.from('disciplinas').select('*').eq('id', id).eq('user_id', user.id).single(),
       supabase.from('topicos').select('*').eq('disciplina_id', id).order('nome'),
-      supabase.from('quizzes').select('*').eq('disciplina_id', id),
-      supabase.from('discussoes').select('*').eq('disciplina_id', id),
-      supabase.from('progressos').select('*').eq('user_id', user.id).eq('disciplina_id', id),
+      (supabase as any).from('quizzes').select('*').eq('disciplina_id', id),
+      (supabase as any).from('discussoes').select('*').eq('disciplina_id', id),
+      (supabase as any).from('progressos').select('*').eq('user_id', user.id).eq('disciplina_id', id),
       supabase.from('disciplina_processos').select('*, processo:processos(id,titulo,tipo,estado,materia)').eq('disciplina_id', id),
       supabase.from('processos').select('id,titulo,tipo').eq('user_id', user.id).eq('tipo', 'academico').order('titulo'),
     ]);
     setDisciplina(dRes.data as Disciplina);
     setTopicos((tRes.data as TopicoExtended[]) || []);
-    setQuizzes((qRes.data as Quiz[]) || []);
-    setDiscussoes((discRes.data as Discussao[]) || []);
-    setProgressos((progRes.data as Progresso[]) || []);
-    setProcessosAssociados((dpRes.data || []).map((dp: { processo: Processo }) => dp.processo));
-    setTodosProcessos((pRes.data as Processo[]) || []);
+    setQuizzes((qRes.data as unknown as Quiz[]) || []);
+    setDiscussoes((discRes.data as unknown as Discussao[]) || []);
+    setProgressos((progRes.data as unknown as Progresso[]) || []);
+    setProcessosAssociados((dpRes.data || []).map((dp: any) => dp.processo));
+    setTodosProcessos((pRes.data as unknown as Processo[]) || []);
     setLoading(false);
   };
 
@@ -115,7 +115,7 @@ export default function DisciplinaDetalhe() {
   };
 
   const handleToggleCompletado = async (tid: string, completado: boolean) => {
-    await supabase.from('progressos').upsert({ topico_id: tid, user_id: user?.id, completado, disciplina_id: id }, { onConflict: 'topico_id,user_id' });
+    await (supabase as any).from('progressos').upsert({ topico_id: tid, user_id: user?.id, completado, disciplina_id: id }, { onConflict: 'topico_id,user_id' });
     await fetchAll();
   };
 
@@ -128,9 +128,9 @@ export default function DisciplinaDetalhe() {
       disciplina_id: id,
     };
     if (editingQuiz) {
-      await supabase.from('quizzes').update(updateData).eq('id', editingQuiz.id);
+      await (supabase as any).from('quizzes').update(updateData).eq('id', editingQuiz.id);
     } else {
-      await supabase.from('quizzes').insert(updateData);
+      await (supabase as any).from('quizzes').insert(updateData);
     }
     await fetchAll();
     setQuizDialog(false);
@@ -139,7 +139,7 @@ export default function DisciplinaDetalhe() {
   };
 
   const handleSaveDiscussao = async () => {
-    await supabase.from('discussoes').insert({ comentario: discussaoForm.comentario, topico_id: discussaoForm.topico_id, user_id: user?.id, disciplina_id: id });
+    await (supabase as any).from('discussoes').insert({ comentario: discussaoForm.comentario, topico_id: discussaoForm.topico_id, user_id: user?.id, disciplina_id: id });
     await fetchAll();
     setDiscussaoDialog(false);
     setDiscussaoForm({ comentario: '', topico_id: '' });
