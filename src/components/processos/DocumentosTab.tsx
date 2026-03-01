@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { formatarData } from '@/lib/utils-fkt';
+import { formatDatabaseError } from '@/lib/error-utils';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Documento } from '@/types';
 
@@ -32,7 +33,7 @@ export function DocumentosTab({ processoId }: Props) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      setError(`Não foi possível sincronizar documentos com o Supabase: ${error.message}`);
+      setError(formatDatabaseError(error));
       setDocumentos([]);
       setLoading(false);
       return;
@@ -56,7 +57,7 @@ export function DocumentosTab({ processoId }: Props) {
       const path = `${user.id}/${processoId}/${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('documentos').upload(path, file);
       if (error) {
-        setError(`Erro no upload do ficheiro: ${error.message}`);
+        setError(formatDatabaseError(error));
         setSaving(false);
         return;
       }
@@ -75,7 +76,7 @@ export function DocumentosTab({ processoId }: Props) {
     });
 
     if (insertError) {
-      setError(`Erro ao guardar documento: ${insertError.message}`);
+      setError(formatDatabaseError(insertError));
       setSaving(false);
       return;
     }
@@ -92,23 +93,34 @@ export function DocumentosTab({ processoId }: Props) {
     if (doc.storage_path) {
       const { error } = await supabase.storage.from('documentos').remove([doc.storage_path]);
       if (error) {
-        setError(`Erro ao remover ficheiro do storage: ${error.message}`);
+        setError(formatDatabaseError(error));
         return;
       }
     }
 
     const { error } = await supabase.from('documentos').delete().eq('id', doc.id);
     if (error) {
-      setError(`Erro ao eliminar documento: ${error.message}`);
+      setError(formatDatabaseError(error));
       return;
     }
 
     setDocumentos(prev => prev.filter(d => d.id !== doc.id));
   };
 
-  const getPublicUrl = (path: string) => {
-    const { data } = supabase.storage.from('documentos').getPublicUrl(path);
-    return data.publicUrl;
+  const getSignedUrl = async (path: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from('documentos')
+      .createSignedUrl(path, 3600); // 1 hour expiry
+    if (error) {
+      console.error('Error creating signed URL:', error);
+      return null;
+    }
+    return data.signedUrl;
+  };
+
+  const handleOpenFile = async (path: string) => {
+    const url = await getSignedUrl(path);
+    if (url) window.open(url, '_blank');
   };
 
   return (
@@ -150,10 +162,12 @@ export function DocumentosTab({ processoId }: Props) {
                 </div>
                 {doc.descricao && <p className="text-xs text-muted-foreground mt-1">{doc.descricao}</p>}
                 {doc.storage_path && (
-                  <a href={getPublicUrl(doc.storage_path)} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-foreground underline mt-1">
+                  <button
+                    onClick={() => handleOpenFile(doc.storage_path!)}
+                    className="inline-flex items-center gap-1 text-xs text-foreground underline mt-1 cursor-pointer bg-transparent border-none p-0"
+                  >
                     <ExternalLink className="h-3 w-3" />Ver ficheiro
-                  </a>
+                  </button>
                 )}
                 {doc.localizacao && !doc.storage_path && (
                   <a href={doc.localizacao} target="_blank" rel="noopener noreferrer"

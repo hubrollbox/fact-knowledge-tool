@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { validarFacto, formatarData, CERTEZA_LABELS } from '@/lib/utils-fkt';
+import { formatDatabaseError } from '@/lib/error-utils';
 import type { Facto, GrauCerteza } from '@/types';
 
 interface Props { processoId: string; }
@@ -32,7 +33,7 @@ export function FactosTab({ processoId }: Props) {
       .order('data_facto', { ascending: true, nullsFirst: false });
 
     if (error) {
-      setLoadError(`Não foi possível sincronizar factos com o Supabase: ${error.message}`);
+      setLoadError(formatDatabaseError(error));
       setFactos([]);
       setLoading(false);
       return;
@@ -67,7 +68,7 @@ export function FactosTab({ processoId }: Props) {
         observacoes: form.observacoes.trim() || null,
       }).eq('id', editing.id);
       if (error) {
-        setFormError(`Erro ao atualizar facto: ${error.message}`);
+        setFormError(formatDatabaseError(error));
         setSaving(false);
         return;
       }
@@ -80,7 +81,7 @@ export function FactosTab({ processoId }: Props) {
         observacoes: form.observacoes.trim() || null,
       });
       if (error) {
-        setFormError(`Erro ao criar facto: ${error.message}`);
+        setFormError(formatDatabaseError(error));
         setSaving(false);
         return;
       }
@@ -95,7 +96,7 @@ export function FactosTab({ processoId }: Props) {
     if (!confirm('Eliminar este facto?')) return;
     const { error } = await supabase.from('factos').delete().eq('id', id);
     if (error) {
-      alert(`Erro ao eliminar facto: ${error.message}`);
+      alert(formatDatabaseError(error));
       return;
     }
     setFactos(prev => prev.filter(f => f.id !== id));
