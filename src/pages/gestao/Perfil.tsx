@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +30,8 @@ export default function Perfil() {
   const [services, setServices] = useState<ServiceState>({});
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [pendingService, setPendingService] = useState<string | null>(null);
+  const [serviceEmail, setServiceEmail] = useState('');
 
   // Handle OAuth callback params
   useEffect(() => {
@@ -39,9 +44,12 @@ export default function Perfil() {
       // Refresh services
       if (user) fetchServices();
     } else if (oauthResult === 'error') {
+      const details = message === 'email_mismatch'
+        ? 'A conta Google autenticada não corresponde ao email indicado.'
+        : message || 'Não foi possível conectar o serviço.';
       toast({
         title: 'Erro na conexão OAuth',
-        description: message || 'Não foi possível conectar o serviço.',
+        description: details,
         variant: 'destructive',
       });
     }
@@ -83,13 +91,16 @@ export default function Perfil() {
     if (user) fetchServices();
   }, [user]);
 
-  const connectOAuthService = async (serviceKey: string) => {
+  const connectOAuthService = async (serviceKey: string, selectedEmail?: string) => {
     if (!session?.access_token) return;
     setToggling(serviceKey);
 
     try {
       const res = await supabase.functions.invoke('oauth-google', {
-        body: { service: serviceKey },
+        body: {
+          service: serviceKey,
+          serviceEmail: selectedEmail?.trim() || undefined,
+        },
       });
 
       if (res.error) throw res.error;
@@ -150,7 +161,8 @@ export default function Perfil() {
     if (isConnected) {
       await disconnectService(serviceKey);
     } else if (isOAuth) {
-      await connectOAuthService(serviceKey);
+      setPendingService(serviceKey);
+      setServiceEmail(user?.email ?? '');
     } else {
       // Non-OAuth services: show coming soon
       toast({
@@ -158,6 +170,13 @@ export default function Perfil() {
         description: 'A integração com este serviço será disponibilizada em breve.',
       });
     }
+  };
+
+  const confirmOAuthConnection = async () => {
+    if (!pendingService) return;
+    const targetService = pendingService;
+    setPendingService(null);
+    await connectOAuthService(targetService, serviceEmail);
   };
 
   const createdAt = user?.created_at
@@ -248,6 +267,37 @@ export default function Perfil() {
           )}
         </div>
       </div>
+
+      <Dialog open={!!pendingService} onOpenChange={(open) => !open && setPendingService(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Conectar serviço</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Label htmlFor="service-email">Email do serviço</Label>
+            <Input
+              id="service-email"
+              type="email"
+              value={serviceEmail}
+              onChange={(e) => setServiceEmail(e.target.value)}
+              placeholder="email@exemplo.pt"
+            />
+            <p className="text-xs text-muted-foreground">
+              Vamos abrir a autenticação Google e pedir seleção explícita de conta para este email.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingService(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmOAuthConnection} disabled={!serviceEmail.trim()}>
+              Continuar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
 
-    const { service } = await req.json();
+    const { service, serviceEmail } = await req.json();
     if (!service || !SERVICE_SCOPES[service]) {
       return new Response(
         JSON.stringify({ error: "Invalid service" }),
@@ -66,7 +66,12 @@ Deno.serve(async (req) => {
     const redirectUri = `${SUPABASE_URL}/functions/v1/oauth-callback`;
 
     // State encodes userId + service for the callback
-    const state = btoa(JSON.stringify({ userId, service }));
+    const normalizedEmail = typeof serviceEmail === "string" ? serviceEmail.trim().toLowerCase() : "";
+    const state = btoa(JSON.stringify({
+      userId,
+      service,
+      serviceEmail: normalizedEmail || null,
+    }));
 
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
@@ -74,9 +79,13 @@ Deno.serve(async (req) => {
       response_type: "code",
       scope: ["openid", "email", ...scopes].join(" "),
       access_type: "offline",
-      prompt: "consent",
+      prompt: "consent select_account",
       state,
     });
+
+    if (normalizedEmail) {
+      params.set("login_hint", normalizedEmail);
+    }
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
