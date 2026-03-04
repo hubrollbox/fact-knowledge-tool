@@ -182,10 +182,10 @@ export default function DisciplinaDetalhe() {
     },
   ].filter(pessoa => pessoa.nome || pessoa.telm || pessoa.email);
 
-  if (loading) return <AppLayout><div className="p-6"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
+  if (loading) return <AppLayout><div className="p-6 max-w-6xl mx-auto"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
   if (!disciplina) return (
     <AppLayout>
-      <div className="p-6 text-center">
+      <div className="p-6 max-w-6xl mx-auto text-center">
         <p className="text-muted-foreground">Disciplina não encontrada.</p>
         <Button asChild className="mt-4" variant="outline"><Link to="/conhecimento">Voltar</Link></Button>
       </div>
@@ -194,7 +194,7 @@ export default function DisciplinaDetalhe() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/conhecimento')}><ArrowLeft className="h-4 w-4" /></Button>

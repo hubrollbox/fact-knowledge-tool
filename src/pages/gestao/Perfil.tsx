@@ -185,7 +185,7 @@ export default function Perfil() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-3xl mx-auto space-y-8">
+      <div className="p-6 max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold">Perfil</h1>
