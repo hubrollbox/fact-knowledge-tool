@@ -5,6 +5,7 @@ const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = Deno.env.get("APP_URL") || "https://fact-knowledge-tool.lovable.app";
+const GOOGLE_REDIRECT_URI = Deno.env.get("GOOGLE_REDIRECT_URI") || `${SUPABASE_URL}/functions/v1/oauth-callback`;
 
 const decodeJwtPayload = (token: string) => {
   const [, payload] = token.split(".");
@@ -40,8 +41,6 @@ Deno.serve(async (req) => {
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=invalid_state`, 302);
     }
 
-    const redirectUri = `${SUPABASE_URL}/functions/v1/oauth-callback`;
-
     // Exchange code for tokens
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -50,7 +49,7 @@ Deno.serve(async (req) => {
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: redirectUri,
+        redirect_uri: GOOGLE_REDIRECT_URI,
         grant_type: "authorization_code",
       }),
     });
