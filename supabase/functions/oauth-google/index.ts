@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Maps our service keys to Google OAuth scopes
 const SERVICE_SCOPES: Record<string, string[]> = {
@@ -37,14 +37,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUser = createClient(
+    const supabase = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getClaims(token);
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -62,30 +62,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch user's Google OAuth credentials from DB using service role
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { data: creds, error: credsError } = await supabaseAdmin
-      .from("user_oauth_credentials")
-      .select("client_id, client_secret")
-      .eq("user_id", userId)
-      .eq("provider", "google")
-      .maybeSingle();
-
-    if (credsError) {
-      console.error("Error fetching credentials:", credsError);
-      return new Response(
-        JSON.stringify({ error: "Erro ao obter credenciais" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!creds) {
-      return new Response(
-        JSON.stringify({ error: "Credenciais Google OAuth não configuradas. Vai ao Perfil e guarda o teu Client ID e Client Secret." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const scopes = SERVICE_SCOPES[service];
     const redirectUri = `${SUPABASE_URL}/functions/v1/oauth-callback`;
 
@@ -93,7 +69,7 @@ Deno.serve(async (req) => {
     const state = btoa(JSON.stringify({ userId, service }));
 
     const params = new URLSearchParams({
-      client_id: creds.client_id,
+      client_id: GOOGLE_CLIENT_ID,
       redirect_uri: redirectUri,
       response_type: "code",
       scope: ["openid", "email", ...scopes].join(" "),
