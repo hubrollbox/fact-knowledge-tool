@@ -1,7 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID")!;
-const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = Deno.env.get("APP_URL") || "https://fact-knowledge-tool.lovable.app";
@@ -30,68 +28,100 @@ Deno.serve(async (req) => {
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=invalid_state`, 302);
     }
 
-    const redirectUri = `${SUPABASE_URL}/functions/v1/oauth-callback`;
-
-    // Exchange code for tokens
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: redirectUri,
-        grant_type: "authorization_code",
-      }),
-    });
-
-    const tokenData = await tokenRes.json();
-
-    if (!tokenRes.ok || !tokenData.access_token) {
-      console.error("Token exchange failed:", tokenData);
-      return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=token_exchange_failed`, 302);
-    }
-
-    // Use service role to store tokens (user isn't authenticated in this redirect flow)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const expiresAt = tokenData.expires_in
-      ? new Date(Date.now() + tokenData.expires_in * 1000).toISOString()
-      : null;
+    // Fetch user's Google OAuth credentials from DB
+    const { data: creds, error: credsError } = await supabase
+      .from("user_oauth_credentials")
+      .select("client_id, client_secret")
+      .eq("user_id", state.userId)
+      .eq("provider", "google")
+      .maybeSingle();
 
-    // Upsert token
-    const { error: upsertError } = await supabase.from("oauth_tokens").upsert(
-      {
-        user_id: state.userId,
-        provider: state.service,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token || null,
-        expires_at: expiresAt,
-        scopes: tokenData.scope ? tokenData.scope.split(" ") : [],
-      },
-      { onConflict: "user_id,provider" }
-    );
+    if (credsError || !creds) {
+      console.error("Error fetching user credentials:", credsError);
+      // Fallback to env vars
+      const fallbackClientId = Deno.env.get("GOOGLE_CLIENT_ID");
+      const fallbackClientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
 
-    if (upsertError) {
-      console.error("Token storage error:", upsertError);
-      return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=storage_failed`, 302);
+      if (!fallbackClientId || !fallbackClientSecret) {
+        return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=no_credentials`, 302);
+      }
+
+      // Use fallback
+      return await exchangeAndStore(code, fallbackClientId, fallbackClientSecret, state, supabase);
     }
 
-    // Update user_services to mark as connected
-    await supabase.from("user_services").upsert(
-      {
-        user_id: state.userId,
-        service: state.service,
-        connected: true,
-        connected_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,service" }
-    );
-
-    return Response.redirect(`${APP_URL}/gestao/perfil?oauth=success&service=${state.service}`, 302);
+    return await exchangeAndStore(code, creds.client_id, creds.client_secret, state, supabase);
   } catch (error) {
     console.error("Callback error:", error);
-    const APP_URL = Deno.env.get("APP_URL") || "https://fact-knowledge-tool.lovable.app";
     return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=internal_error`, 302);
   }
 });
+
+async function exchangeAndStore(
+  code: string,
+  clientId: string,
+  clientSecret: string,
+  state: { userId: string; service: string },
+  supabase: any
+) {
+  const APP_URL_inner = Deno.env.get("APP_URL") || "https://fact-knowledge-tool.lovable.app";
+  const SUPABASE_URL_inner = Deno.env.get("SUPABASE_URL")!;
+  const redirectUri = `${SUPABASE_URL_inner}/functions/v1/oauth-callback`;
+
+  // Exchange code for tokens
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }),
+  });
+
+  const tokenData = await tokenRes.json();
+
+  if (!tokenRes.ok || !tokenData.access_token) {
+    console.error("Token exchange failed:", tokenData);
+    return Response.redirect(`${APP_URL_inner}/gestao/perfil?oauth=error&message=token_exchange_failed`, 302);
+  }
+
+  const expiresAt = tokenData.expires_in
+    ? new Date(Date.now() + tokenData.expires_in * 1000).toISOString()
+    : null;
+
+  // Upsert token
+  const { error: upsertError } = await supabase.from("oauth_tokens").upsert(
+    {
+      user_id: state.userId,
+      provider: state.service,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token || null,
+      expires_at: expiresAt,
+      scopes: tokenData.scope ? tokenData.scope.split(" ") : [],
+    },
+    { onConflict: "user_id,provider" }
+  );
+
+  if (upsertError) {
+    console.error("Token storage error:", upsertError);
+    return Response.redirect(`${APP_URL_inner}/gestao/perfil?oauth=error&message=storage_failed`, 302);
+  }
+
+  // Update user_services to mark as connected
+  await supabase.from("user_services").upsert(
+    {
+      user_id: state.userId,
+      service: state.service,
+      connected: true,
+      connected_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,service" }
+  );
+
+  return Response.redirect(`${APP_URL_inner}/gestao/perfil?oauth=success&service=${state.service}`, 302);
+}
