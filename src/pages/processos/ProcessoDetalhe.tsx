@@ -40,7 +40,7 @@ export default function ProcessoDetalhe() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="p-6 space-y-4">
+        <div className="p-6 max-w-6xl mx-auto space-y-4">
           <div className="h-8 w-48 bg-muted rounded animate-pulse" />
           <div className="h-4 w-64 bg-muted rounded animate-pulse" />
         </div>
@@ -51,7 +51,7 @@ export default function ProcessoDetalhe() {
   if (error || !processo) {
     return (
       <AppLayout>
-        <div className="p-6 text-center">
+        <div className="p-6 max-w-6xl mx-auto text-center">
           <p className="text-muted-foreground">Processo não encontrado.</p>
           <Button asChild className="mt-4" variant="outline"><Link to="/processos">Voltar</Link></Button>
         </div>

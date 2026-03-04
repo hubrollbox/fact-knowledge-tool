@@ -30,7 +30,7 @@ export default function Arquivo() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Arquivo</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{processos.length} processo{processos.length !== 1 ? 's' : ''} arquivado{processos.length !== 1 ? 's' : ''}</p>
