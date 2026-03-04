@@ -64,3 +64,10 @@ Erros comuns de login
 - `Auth session missing!`: utilizador não autenticado ao aceder rotas protegidas. Faça login primeiro.
 - `Invalid login credentials`: email ou palavra-passe inválidos.
 - `Email not confirmed`: confirme o registo no email antes de entrar.
+
+
+Configuração OAuth Google (evitar `redirect_uri_mismatch`)
+- Defina `GOOGLE_REDIRECT_URI` nos secrets das Edge Functions quando necessário (ex.: múltiplos ambientes).
+- Se não definir, o sistema usa por defeito: `https://<PROJECT_REF>.supabase.co/functions/v1/oauth-callback`.
+- Em **Google Cloud Console → OAuth 2.0 Client IDs → Authorized redirect URIs**, adicione exatamente o mesmo valor usado em `GOOGLE_REDIRECT_URI` (ou o valor por defeito acima).
+- O `oauth-google` e o `oauth-callback` têm de usar o mesmo redirect URI.

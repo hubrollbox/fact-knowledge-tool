@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const GOOGLE_REDIRECT_URI = Deno.env.get("GOOGLE_REDIRECT_URI") || `${SUPABASE_URL}/functions/v1/oauth-callback`;
 
 // Maps our service keys to Google OAuth scopes
 const SERVICE_SCOPES: Record<string, string[]> = {
@@ -63,8 +64,6 @@ Deno.serve(async (req) => {
     }
 
     const scopes = SERVICE_SCOPES[service];
-    const redirectUri = `${SUPABASE_URL}/functions/v1/oauth-callback`;
-
     // State encodes userId + service for the callback
     const normalizedEmail = typeof serviceEmail === "string" ? serviceEmail.trim().toLowerCase() : "";
     const state = btoa(JSON.stringify({
@@ -75,7 +74,7 @@ Deno.serve(async (req) => {
 
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: redirectUri,
+      redirect_uri: GOOGLE_REDIRECT_URI,
       response_type: "code",
       scope: ["openid", "email", ...scopes].join(" "),
       access_type: "offline",
