@@ -6,8 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Maps our service keys to Google OAuth scopes
 const SERVICE_SCOPES: Record<string, string[]> = {
@@ -37,42 +37,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseAuth = createClient(
+    const supabase = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
-    if (userError || !user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = user.id;
+    const userId = claimsData.claims.sub as string;
 
     const { service } = await req.json();
     if (!service || !SERVICE_SCOPES[service]) {
       return new Response(
         JSON.stringify({ error: "Invalid service" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Fetch user's own OAuth credentials from user_oauth_credentials table
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { data: creds, error: credsError } = await supabaseAdmin
-      .from("user_oauth_credentials")
-      .select("client_id, client_secret")
-      .eq("user_id", userId)
-      .eq("provider", "google")
-      .maybeSingle();
-
-    if (credsError || !creds) {
-      return new Response(
-        JSON.stringify({ error: "Credenciais Google OAuth não configuradas. Vai ao Perfil e configura o Client ID e Client Secret." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -84,7 +69,7 @@ Deno.serve(async (req) => {
     const state = btoa(JSON.stringify({ userId, service }));
 
     const params = new URLSearchParams({
-      client_id: creds.client_id,
+      client_id: GOOGLE_CLIENT_ID,
       redirect_uri: redirectUri,
       response_type: "code",
       scope: ["openid", "email", ...scopes].join(" "),
