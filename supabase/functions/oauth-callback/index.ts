@@ -6,6 +6,16 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = Deno.env.get("APP_URL") || "https://fact-knowledge-tool.lovable.app";
 
+const decodeJwtPayload = (token: string) => {
+  const [, payload] = token.split(".");
+  if (!payload) return null;
+
+  const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+
+  return JSON.parse(atob(padded));
+};
+
 Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
@@ -23,7 +33,7 @@ Deno.serve(async (req) => {
     }
 
     // Decode state
-    let state: { userId: string; service: string };
+    let state: { userId: string; service: string; serviceEmail?: string | null };
     try {
       state = JSON.parse(atob(stateParam));
     } catch {
@@ -50,6 +60,20 @@ Deno.serve(async (req) => {
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error("Token exchange failed:", tokenData);
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=token_exchange_failed`, 302);
+    }
+
+    if (state.serviceEmail) {
+      const idTokenEmail = tokenData.id_token
+        ? (decodeJwtPayload(tokenData.id_token)?.email as string | undefined)?.toLowerCase()
+        : null;
+
+      if (!idTokenEmail || idTokenEmail !== state.serviceEmail.toLowerCase()) {
+        console.error("OAuth email mismatch", {
+          expected: state.serviceEmail,
+          received: idTokenEmail,
+        });
+        return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=email_mismatch`, 302);
+      }
     }
 
     // Use service role to store tokens (user isn't authenticated in this redirect flow)
