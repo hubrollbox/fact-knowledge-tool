@@ -560,6 +560,36 @@ export type Database = {
           },
         ]
       }
+      user_oauth_credentials: {
+        Row: {
+          client_id: string
+          client_secret: string
+          created_at: string | null
+          id: string
+          provider: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          client_secret: string
+          created_at?: string | null
+          id?: string
+          provider: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string | null
+          id?: string
+          provider?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_services: {
         Row: {
           connected: boolean
