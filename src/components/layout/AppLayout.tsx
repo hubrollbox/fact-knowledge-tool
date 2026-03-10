@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CountdownFab } from '@/components/dashboard/CountdownFab';
+import { Footer } from '@/components/layout/Footer';
 
 interface NavItem {
   label: string;
@@ -296,6 +297,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
+        <Footer />
       </div>
     </div>
   );
