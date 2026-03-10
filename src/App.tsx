@@ -25,6 +25,10 @@ import Relatorios from "./pages/gestao/Relatorios";
 import Perfil from "./pages/gestao/Perfil";
 import Tesouraria from "./pages/gestao/Tesouraria";
 
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
+import Licenca from "./pages/Licenca";
+
 const queryClient = new QueryClient();
 
 const App = () => (
