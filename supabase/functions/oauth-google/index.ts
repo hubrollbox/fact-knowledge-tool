@@ -6,21 +6,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GOOGLE_CLIENT_ID = Deno.env.get("GOOGLE_CLIENT_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GOOGLE_REDIRECT_URI = Deno.env.get("GOOGLE_REDIRECT_URI") || `${SUPABASE_URL}/functions/v1/oauth-callback`;
 
-// Maps our service keys to Google OAuth scopes
 const SERVICE_SCOPES: Record<string, string[]> = {
-  google_drive: [
-    "https://www.googleapis.com/auth/drive.readonly",
-  ],
-  gmail: [
-    "https://www.googleapis.com/auth/gmail.readonly",
-  ],
-  google_calendar: [
-    "https://www.googleapis.com/auth/calendar.readonly",
-  ],
+  google_drive: ["https://www.googleapis.com/auth/drive.readonly"],
+  gmail: ["https://www.googleapis.com/auth/gmail.readonly"],
+  google_calendar: ["https://www.googleapis.com/auth/calendar.readonly"],
 };
 
 Deno.serve(async (req) => {
@@ -38,14 +31,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
+    const supabaseAuth = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -63,8 +56,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch user's Google OAuth credentials from DB
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: creds, error: credsError } = await supabaseAdmin
+      .from("user_oauth_credentials")
+      .select("client_id")
+      .eq("user_id", userId)
+      .eq("provider", "google")
+      .maybeSingle();
+
+    if (credsError || !creds) {
+      return new Response(
+        JSON.stringify({ error: "Credenciais Google OAuth não configuradas. Guarda o Client ID e Client Secret no teu Perfil." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const scopes = SERVICE_SCOPES[service];
-    // State encodes userId + service for the callback
     const normalizedEmail = typeof serviceEmail === "string" ? serviceEmail.trim().toLowerCase() : "";
     const state = btoa(JSON.stringify({
       userId,
@@ -73,7 +81,7 @@ Deno.serve(async (req) => {
     }));
 
     const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
+      client_id: creds.client_id,
       redirect_uri: GOOGLE_REDIRECT_URI,
       response_type: "code",
       scope: ["openid", "email", ...scopes].join(" "),
