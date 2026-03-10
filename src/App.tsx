@@ -25,6 +25,10 @@ import Relatorios from "./pages/gestao/Relatorios";
 import Perfil from "./pages/gestao/Perfil";
 import Tesouraria from "./pages/gestao/Tesouraria";
 
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
+import Licenca from "./pages/Licenca";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -49,6 +53,9 @@ const App = () => (
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/licenca" element={<Licenca />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
