@@ -1,57 +1,30 @@
 
 
-# Plano: Corrigir Countdown Widgets e tornar acessiveis em qualquer pagina
+## Plano: Credenciais OAuth por utilizador
 
-## Problemas identificados
+A tabela `user_oauth_credentials` ja existe na BD com RLS configurado. Falta apenas ligar tudo.
 
-1. **Tabela `countdown_events` nao existe na base de dados** -- os pedidos de rede retornam 404 com "Could not find the table 'public.countdown_events' in the schema cache".
-2. **Erro de build no TypeScript** -- o tipo `Json` do Supabase nao e compativel com `CountdownSettings`. E preciso fazer cast via `unknown`.
-3. **Os countdowns so aparecem no dashboard** -- o utilizador quer poder criar/ver countdowns a partir de qualquer pagina.
+### Alteracoes
 
-## O que vai ser feito
+**1. Perfil.tsx** -- Adicionar seccao "Credenciais Google OAuth"
+- Formulario com Client ID e Client Secret acima da lista de servicos
+- Carregar credenciais existentes ao montar (select da tabela `user_oauth_credentials` where provider='google')
+- Botao Guardar faz upsert
+- Botoes Conectar dos servicos Google ficam disabled enquanto nao houver credenciais guardadas
+- Tooltip/mensagem explicativa
 
-### 1. Criar a tabela `countdown_events` (migracao SQL)
+**2. Edge Function `oauth-google`**
+- Usar service role client para ler `user_oauth_credentials` do userId
+- Usar o `client_id` da BD em vez do env var `GOOGLE_CLIENT_ID`
+- Se nao existirem credenciais, retornar erro 400
 
-```text
-countdown_events
-  id           uuid PK default gen_random_uuid()
-  user_id      uuid NOT NULL
-  title        text NOT NULL
-  target_date  timestamptz NOT NULL
-  settings     jsonb NOT NULL default '{}'
-  created_at   timestamptz default now()
-  updated_at   timestamptz default now()
-```
+**3. Edge Function `oauth-callback`**
+- Usar service role client para ler `user_oauth_credentials` do userId (vindo do state)
+- Usar `client_id` e `client_secret` da BD no token exchange
+- Manter redirect URI do env como fallback
 
-RLS: `user_id = auth.uid()` para ALL. Trigger `updated_at`.
-
-### 2. Corrigir o erro de tipos no CountdownWidgetsBoard.tsx
-
-Na linha 48, alterar o cast de `data as CountdownEvent[]` para converter primeiro para `unknown`:
-```
-setEvents((data as unknown as CountdownEvent[]) ?? []);
-```
-
-### 3. Criar componente flutuante global para countdowns
-
-Criar um componente `CountdownFab` (floating action button) que:
-- Aparece em todas as paginas (colocado no `AppLayout`)
-- Permite abrir um painel/popover com a lista de countdowns existentes
-- Permite criar um novo countdown directamente a partir de qualquer pagina
-- Reutiliza a logica ja existente do `CountdownWidgetsBoard`
-
-### 4. Actualizar tipos Supabase
-
-Adicionar a tabela `countdown_events` ao ficheiro `src/integrations/supabase/types.ts`.
-
-## Ficheiros a criar
-- `src/components/dashboard/CountdownFab.tsx` -- botao flutuante com popover de countdowns
-
-## Ficheiros a modificar
-- `src/components/dashboard/CountdownWidgetsBoard.tsx` -- corrigir cast de tipos (linha 48)
-- `src/components/layout/AppLayout.tsx` -- adicionar `CountdownFab` ao layout global
-- `src/integrations/supabase/types.ts` -- adicionar tipo `countdown_events`
-
-## Migracao SQL
-- Criar tabela `countdown_events` com RLS e trigger `updated_at`
+### Ficheiros alterados
+- `src/pages/gestao/Perfil.tsx`
+- `supabase/functions/oauth-google/index.ts`
+- `supabase/functions/oauth-callback/index.ts`
 
