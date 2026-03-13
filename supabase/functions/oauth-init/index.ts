@@ -14,6 +14,14 @@ const SERVICE_SCOPES: Record<string, string[]> = {
   google_drive: ["https://www.googleapis.com/auth/drive.readonly"],
   gmail: ["https://www.googleapis.com/auth/gmail.readonly"],
   google_calendar: ["https://www.googleapis.com/auth/calendar.readonly"],
+  onedrive: ["Files.Read.All", "offline_access"],
+  github: ["repo", "read:user"],
+};
+
+const PROVIDER_AUTH_URLS: Record<string, string> = {
+  google: "https://accounts.google.com/o/oauth2/v2/auth",
+  microsoft: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+  github: "https://github.com/login/oauth/authorize",
 };
 
 Deno.serve(async (req) => {
@@ -22,7 +30,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -48,7 +55,7 @@ Deno.serve(async (req) => {
 
     const userId = claimsData.claims.sub as string;
 
-    const { service, serviceEmail } = await req.json();
+    const { service, provider, serviceEmail } = await req.json();
     if (!service || !SERVICE_SCOPES[service]) {
       return new Response(
         JSON.stringify({ error: "Invalid service" }),
@@ -56,18 +63,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch user's Google OAuth credentials from DB
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: creds, error: credsError } = await supabaseAdmin
       .from("user_oauth_credentials")
       .select("client_id")
       .eq("user_id", userId)
-      .eq("provider", "google")
+      .eq("provider", provider || "google")
       .maybeSingle();
 
     if (credsError || !creds) {
       return new Response(
-        JSON.stringify({ error: "Credenciais Google OAuth não configuradas. Guarda o Client ID e Client Secret no teu Perfil." }),
+        JSON.stringify({ error: `Credenciais ${provider} não configuradas no teu Perfil.` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -77,6 +83,7 @@ Deno.serve(async (req) => {
     const state = btoa(JSON.stringify({
       userId,
       service,
+      provider: provider || "google",
       serviceEmail: normalizedEmail || null,
     }));
 
@@ -84,17 +91,23 @@ Deno.serve(async (req) => {
       client_id: creds.client_id,
       redirect_uri: GOOGLE_REDIRECT_URI,
       response_type: "code",
-      scope: ["openid", "email", ...scopes].join(" "),
-      access_type: "offline",
-      prompt: "consent select_account",
       state,
     });
 
-    if (normalizedEmail) {
-      params.set("login_hint", normalizedEmail);
+    if (provider === "google") {
+      params.set("scope", ["openid", "email", ...scopes].join(" "));
+      params.set("access_type", "offline");
+      params.set("prompt", "consent select_account");
+      if (normalizedEmail) params.set("login_hint", normalizedEmail);
+    } else if (provider === "microsoft") {
+      params.set("scope", ["openid", "email", "profile", ...scopes].join(" "));
+      params.set("prompt", "select_account");
+      if (normalizedEmail) params.set("login_hint", normalizedEmail);
+    } else if (provider === "github") {
+      params.set("scope", scopes.join(" "));
     }
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const authUrl = `${PROVIDER_AUTH_URLS[provider || "google"]}?${params.toString()}`;
 
     return new Response(JSON.stringify({ url: authUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

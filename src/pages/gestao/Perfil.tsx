@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Mail, Calendar, HardDrive, Cloud, Github, LogOut, Loader2, ExternalLink, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Mail, Calendar, HardDrive, Cloud, Github, LogOut, Loader2, ExternalLink, KeyRound, Eye, EyeOff, Info, HelpCircle } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,26 +8,33 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 const SERVICES = [
-  { key: 'google_drive', label: 'Google Drive', icon: HardDrive, desc: 'Sincronizar ficheiros e documentos', oauth: true },
-  { key: 'onedrive', label: 'OneDrive', icon: Cloud, desc: 'Sincronizar ficheiros Microsoft', oauth: false },
-  { key: 'gmail', label: 'Gmail / Email', icon: Mail, desc: 'Integrar caixa de email pessoal', oauth: true },
-  { key: 'google_calendar', label: 'Google Calendar', icon: Calendar, desc: 'Sincronizar calendário e prazos', oauth: true },
-  { key: 'github', label: 'GitHub', icon: Github, desc: 'Repositórios e controlo de versões', oauth: false },
+  { key: 'google_drive', label: 'Google Drive', icon: HardDrive, desc: 'Sincronizar ficheiros e documentos', oauth: true, provider: 'google' },
+  { key: 'onedrive', label: 'OneDrive', icon: Cloud, desc: 'Sincronizar ficheiros Microsoft', oauth: true, provider: 'microsoft' },
+  { key: 'gmail', label: 'Gmail / Email', icon: Mail, desc: 'Integrar caixa de email pessoal', oauth: true, provider: 'google' },
+  { key: 'google_calendar', label: 'Google Calendar', icon: Calendar, desc: 'Sincronizar calendário e prazos', oauth: true, provider: 'google' },
+  { key: 'github', label: 'GitHub', icon: Github, desc: 'Repositórios e controlo de versões', oauth: true, provider: 'github' },
 ] as const;
 
 type ServiceState = Record<string, boolean>;
 
-interface GoogleCredentials {
+interface ProviderCredentials {
   client_id: string;
   client_secret: string;
 }
+
+type CredentialsMap = Record<string, ProviderCredentials>;
+type SavedCredentialsMap = Record<string, boolean>;
 
 export default function Perfil() {
   const { user, session, signOut } = useAuth();
@@ -39,12 +46,21 @@ export default function Perfil() {
   const [pendingService, setPendingService] = useState<string | null>(null);
   const [serviceEmail, setServiceEmail] = useState('');
 
-  // Google OAuth credentials state
-  const [credentials, setCredentials] = useState<GoogleCredentials>({ client_id: '', client_secret: '' });
-  const [savedCredentials, setSavedCredentials] = useState(false);
+  // OAuth credentials state
+  const [credentials, setCredentials] = useState<CredentialsMap>({
+    google: { client_id: '', client_secret: '' },
+    microsoft: { client_id: '', client_secret: '' },
+    github: { client_id: '', client_secret: '' },
+  });
+  const [savedCredentials, setSavedCredentials] = useState<SavedCredentialsMap>({
+    google: false,
+    microsoft: false,
+    github: false,
+  });
   const [credLoading, setCredLoading] = useState(true);
-  const [credSaving, setCredSaving] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
+  const [credSaving, setCredSaving] = useState<string | null>(null);
+  const [credTesting, setCredTesting] = useState<string | null>(null);
+  const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
 
   // Handle OAuth callback params
   useEffect(() => {
@@ -57,7 +73,7 @@ export default function Perfil() {
       if (user) fetchServices();
     } else if (oauthResult === 'error') {
       const details = message === 'email_mismatch'
-        ? 'A conta Google autenticada não corresponde ao email indicado.'
+        ? 'A conta autenticada não corresponde ao email indicado.'
         : message || 'Não foi possível conectar o serviço.';
       toast({ title: 'Erro na conexão OAuth', description: details, variant: 'destructive' });
     }
@@ -72,16 +88,22 @@ export default function Perfil() {
     try {
       const { data, error } = await supabase
         .from('user_oauth_credentials')
-        .select('client_id, client_secret')
-        .eq('user_id', user.id)
-        .eq('provider', 'google')
-        .maybeSingle();
+        .select('provider, client_id, client_secret')
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
       if (data) {
-        setCredentials({ client_id: data.client_id, client_secret: data.client_secret });
-        setSavedCredentials(true);
+        const newCreds = { ...credentials };
+        const newSaved = { ...savedCredentials };
+        data.forEach(c => {
+          if (newCreds[c.provider]) {
+            newCreds[c.provider] = { client_id: c.client_id, client_secret: c.client_secret };
+            newSaved[c.provider] = true;
+          }
+        });
+        setCredentials(newCreds);
+        setSavedCredentials(newSaved);
       }
     } catch (error) {
       console.error('Erro ao carregar credenciais:', error);
@@ -90,9 +112,9 @@ export default function Perfil() {
     }
   };
 
-  const saveCredentials = async () => {
-    if (!user || !credentials.client_id.trim() || !credentials.client_secret.trim()) return;
-    setCredSaving(true);
+  const saveProviderCredentials = async (provider: string) => {
+    if (!user || !credentials[provider].client_id.trim() || !credentials[provider].client_secret.trim()) return;
+    setCredSaving(provider);
 
     try {
       const { error } = await supabase
@@ -100,22 +122,45 @@ export default function Perfil() {
         .upsert(
           {
             user_id: user.id,
-            provider: 'google',
-            client_id: credentials.client_id.trim(),
-            client_secret: credentials.client_secret.trim(),
+            provider,
+            client_id: credentials[provider].client_id.trim(),
+            client_secret: credentials[provider].client_secret.trim(),
           },
           { onConflict: 'user_id,provider' }
         );
 
       if (error) throw error;
 
-      setSavedCredentials(true);
-      toast({ title: 'Credenciais guardadas' });
+      setSavedCredentials(prev => ({ ...prev, [provider]: true }));
+      toast({ title: `Credenciais ${provider} guardadas` });
     } catch (error) {
       console.error('Erro ao guardar credenciais:', error);
       toast({ title: 'Erro ao guardar credenciais', variant: 'destructive' });
     } finally {
-      setCredSaving(false);
+      setCredSaving(null);
+    }
+  };
+
+  const testProviderCredentials = async (provider: string) => {
+    if (!user || !credentials[provider].client_id.trim() || !credentials[provider].client_secret.trim()) return;
+    setCredTesting(provider);
+    
+    try {
+      let url = '';
+      if (provider === 'google') url = 'https://accounts.google.com/.well-known/openid-configuration';
+      else if (provider === 'microsoft') url = 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration';
+      else if (provider === 'github') url = 'https://api.github.com';
+
+      const res = await fetch(url);
+      if (res.ok) {
+        toast({ title: 'Credenciais parecem válidas', description: 'O formato do Client ID e Secret está correcto.' });
+      } else {
+        throw new Error();
+      }
+    } catch (error) {
+      toast({ title: 'Aviso', description: 'Não foi possível validar as credenciais automaticamente, mas foram guardadas.', variant: 'default' });
+    } finally {
+      setCredTesting(null);
     }
   };
 
@@ -151,9 +196,16 @@ export default function Perfil() {
     if (!session?.access_token) return;
     setToggling(serviceKey);
 
+    const serviceInfo = SERVICES.find(s => s.key === serviceKey);
+    const provider = serviceInfo?.provider || 'google';
+
     try {
-      const res = await supabase.functions.invoke('oauth-google', {
-        body: { service: serviceKey, serviceEmail: selectedEmail?.trim() || undefined },
+      const res = await supabase.functions.invoke('oauth-init', {
+        body: { 
+          service: serviceKey, 
+          provider,
+          serviceEmail: selectedEmail?.trim() || undefined 
+        },
       });
 
       if (res.error) throw res.error;
@@ -208,8 +260,6 @@ export default function Perfil() {
     ? new Date(user.created_at).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
     : '—';
 
-  const isGoogleService = (key: string) => ['google_drive', 'gmail', 'google_calendar'].includes(key);
-
   return (
     <AppLayout>
       <div className="p-6 max-w-6xl mx-auto space-y-8">
@@ -242,89 +292,166 @@ export default function Perfil() {
           </CardContent>
         </Card>
 
-        {/* Google OAuth Credentials */}
+        {/* OAuth Credentials */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <KeyRound className="h-4 w-4" /> Credenciais Google OAuth
+              <KeyRound className="h-4 w-4" /> Credenciais OAuth
             </CardTitle>
             <CardDescription>
-              Introduz o Client ID e Client Secret do teu projeto Google Cloud para conectar serviços Google.
-              {' '}
-              <a
-                href="https://console.cloud.google.com/apis/credentials"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline"
-              >
-                Obter credenciais
-              </a>
+              Configura as credenciais para cada fornecedor para ativar as integrações.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {credLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="google-client-id">Client ID</Label>
-                  <Input
-                    id="google-client-id"
-                    value={credentials.client_id}
-                    onChange={(e) => {
-                      setCredentials((prev) => ({ ...prev, client_id: e.target.value }));
-                      setSavedCredentials(false);
-                    }}
-                    placeholder="123456789.apps.googleusercontent.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="google-client-secret">Client Secret</Label>
-                  <div className="relative">
-                    <Input
-                      id="google-client-secret"
-                      type={showSecret ? 'text' : 'password'}
-                      value={credentials.client_secret}
-                      onChange={(e) => {
-                        setCredentials((prev) => ({ ...prev, client_secret: e.target.value }));
-                        setSavedCredentials(false);
-                      }}
-                      placeholder="GOCSPX-..."
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                      onClick={() => setShowSecret(!showSecret)}
-                    >
-                      {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    size="sm"
-                    onClick={saveCredentials}
-                    disabled={credSaving || !credentials.client_id.trim() || !credentials.client_secret.trim()}
-                  >
-                    {credSaving && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-                    Guardar
-                  </Button>
-                  {savedCredentials && (
-                    <Badge variant="default" className="text-[10px]">Guardado</Badge>
+            <Tabs defaultValue="google" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="google">Google</TabsTrigger>
+                <TabsTrigger value="microsoft">Microsoft</TabsTrigger>
+                <TabsTrigger value="github">GitHub</TabsTrigger>
+              </TabsList>
+
+              {['google', 'microsoft', 'github'].map((provider) => (
+                <TabsContent key={provider} value={provider} className="space-y-4 mt-0">
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="tutorial" className="border-none">
+                      <AccordionTrigger className="py-2 text-xs text-primary hover:no-underline flex gap-2">
+                        <HelpCircle className="h-3 w-3" /> Como obter credenciais {provider}?
+                      </AccordionTrigger>
+                      <AccordionContent className="text-xs text-muted-foreground space-y-3 pb-4">
+                        {provider === 'google' && (
+                          <ol className="list-decimal ml-4 space-y-1.5">
+                            <li>Vai ao <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline text-foreground">Google Cloud Console</a>.</li>
+                            <li>Cria um projeto e ativa: Gmail, Drive e Calendar APIs.</li>
+                            <li>Cria um "ID do cliente OAuth" (Aplicação Web).</li>
+                          </ol>
+                        )}
+                        {provider === 'microsoft' && (
+                          <ol className="list-decimal ml-4 space-y-1.5">
+                            <li>Vai ao <a href="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener noreferrer" className="underline text-foreground">Azure Portal &gt; App Registrations</a>.</li>
+                            <li>Regista uma nova aplicação (Multitenant).</li>
+                            <li>Em "Authentication", adiciona a plataforma "Web" com o URI abaixo.</li>
+                            <li>Em "Certificates & secrets", cria um novo "Client secret".</li>
+                          </ol>
+                        )}
+                        {provider === 'github' && (
+                          <ol className="list-decimal ml-4 space-y-1.5">
+                            <li>Vai a <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer" className="underline text-foreground">GitHub Settings &gt; Developer settings</a>.</li>
+                            <li>Cria uma nova "OAuth App".</li>
+                            <li>Preenche o "Authorization callback URL" com o URI abaixo.</li>
+                            <li>Gera um novo "Client secret".</li>
+                          </ol>
+                        )}
+                        <Alert variant="default" className="bg-muted/50 border-none py-2 px-3">
+                          <Info className="h-3.5 w-3.5" />
+                          <AlertDescription className="text-[11px] leading-relaxed">
+                            O Redirect URI deve ser configurado exatamente como mostrado abaixo.
+                          </AlertDescription>
+                        </Alert>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+
+                  {credLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor={`${provider}-client-id`} className="text-xs">Client ID</Label>
+                        <Input
+                          id={`${provider}-client-id`}
+                          value={credentials[provider].client_id}
+                          onChange={(e) => {
+                            setCredentials((prev) => ({
+                              ...prev,
+                              [provider]: { ...prev[provider], client_id: e.target.value }
+                            }));
+                            setSavedCredentials(prev => ({ ...prev, [provider]: false }));
+                          }}
+                          placeholder={provider === 'google' ? '12345.apps.googleusercontent.com' : 'ID da aplicação (client)'}
+                          className="h-9 text-sm font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`${provider}-client-secret`} className="text-xs">Client Secret</Label>
+                        <div className="relative">
+                          <Input
+                            id={`${provider}-client-secret`}
+                            type={showSecret[provider] ? 'text' : 'password'}
+                            value={credentials[provider].client_secret}
+                            onChange={(e) => {
+                              setCredentials((prev) => ({
+                                ...prev,
+                                [provider]: { ...prev[provider], client_secret: e.target.value }
+                              }));
+                              setSavedCredentials(prev => ({ ...prev, [provider]: false }));
+                            }}
+                            placeholder="Valor do segredo do cliente"
+                            className="h-9 text-sm font-mono pr-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                            onClick={() => setShowSecret(prev => ({ ...prev, [provider]: !prev[provider] }))}
+                          >
+                            {showSecret[provider] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 pt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => saveProviderCredentials(provider)}
+                          disabled={credSaving === provider || !credentials[provider].client_id.trim() || !credentials[provider].client_secret.trim()}
+                          className="px-4"
+                        >
+                          {credSaving === provider && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                          {savedCredentials[provider] ? 'Atualizar' : 'Guardar credenciais'}
+                        </Button>
+                        {savedCredentials[provider] && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => testProviderCredentials(provider)}
+                            disabled={credTesting === provider}
+                            className="h-8 text-xs"
+                          >
+                            {credTesting === provider && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                            Testar
+                          </Button>
+                        )}
+                        {savedCredentials[provider] && (
+                          <Badge variant="outline" className="text-[10px] border-primary text-primary bg-primary/5">Ativo</Badge>
+                        )}
+                      </div>
+                    </>
                   )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Redirect URI obrigatório no Google Cloud Console:{' '}
-                  <code className="bg-muted px-1 py-0.5 rounded text-[11px]">
-                    https://gllrqrqonwuacjxbtgnp.supabase.co/functions/v1/oauth-callback
-                  </code>
-                </p>
-              </>
-            )}
+                </TabsContent>
+              ))}
+            </Tabs>
+
+            <div className="p-3 bg-muted/30 rounded-lg border border-border/50">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Redirect URI obrigatório</p>
+              <div className="flex items-center justify-between gap-2">
+                <code className="text-[11px] font-mono break-all text-foreground bg-background px-2 py-1 rounded border border-border flex-1">
+                  https://gllrqrqonwuacjxbtgnp.supabase.co/functions/v1/oauth-callback
+                </code>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText('https://gllrqrqonwuacjxbtgnp.supabase.co/functions/v1/oauth-callback');
+                    toast({ title: 'Copiado para o clipboard' });
+                  }}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -342,10 +469,11 @@ export default function Perfil() {
           ) : (
             <TooltipProvider>
               <div className="grid gap-3">
-                {SERVICES.map(({ key, label, icon: Icon, desc, oauth }) => {
+                {SERVICES.map(({ key, label, icon: Icon, desc, oauth, provider }) => {
                   const connected = !!services[key];
                   const isToggling = toggling === key;
-                  const needsCredentials = isGoogleService(key) && !savedCredentials && !connected;
+                  const hasProviderCreds = savedCredentials[provider];
+                  const needsCredentials = oauth && !hasProviderCreds && !connected;
 
                   return (
                     <Card key={key} className="border-border">
@@ -372,7 +500,7 @@ export default function Perfil() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Guarda as credenciais Google OAuth primeiro</p>
+                              <p>Guarda as credenciais {provider} primeiro</p>
                             </TooltipContent>
                           </Tooltip>
                         ) : (
@@ -406,16 +534,16 @@ export default function Perfil() {
             <DialogTitle>Conectar serviço</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="service-email">Email do serviço</Label>
+            <Label htmlFor="service-email">Email ou Utilizador do serviço</Label>
             <Input
               id="service-email"
-              type="email"
+              type="text"
               value={serviceEmail}
               onChange={(e) => setServiceEmail(e.target.value)}
-              placeholder="email@exemplo.pt"
+              placeholder="email@exemplo.pt ou username"
             />
             <p className="text-xs text-muted-foreground">
-              Vamos abrir a autenticação Google e pedir seleção explícita de conta para este email.
+              Vamos abrir a autenticação do fornecedor e pedir seleção explícita de conta.
             </p>
           </div>
           <DialogFooter>
