@@ -50,81 +50,83 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary mb-4">
-            <Scale className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">FKT</h1>
-          <p className="text-sm text-muted-foreground mt-1">Factual Knowledge Tool</p>
-        </div>
-
-        <Card className="border-border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">{mode === 'login' ? 'Entrar' : 'Criar conta'}</CardTitle>
-            <CardDescription>
-              {mode === 'login'
-                ? 'Aceda à sua conta FKT'
-                : 'Registe-se para começar a usar o FKT'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@exemplo.pt"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Palavra-passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                />
-              </div>
-
-              {error && (
-                <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-                  {error}
-                </p>
-              )}
-              {success && (
-                <p className="text-sm text-foreground bg-muted px-3 py-2 rounded-md">
-                  {success}
-                </p>
-              )}
-
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? 'A processar...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); setSuccess(null); }}
-                className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
-              >
-                {mode === 'login' ? 'Não tem conta? Registe-se' : 'Já tem conta? Entre'}
-              </button>
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary mb-4">
+              <Scale className="h-7 w-7 text-primary-foreground" />
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">FKT</h1>
+            <p className="text-sm text-muted-foreground mt-1">Factual Knowledge Tool</p>
+          </div>
+
+          <Card className="border-border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">{mode === 'login' ? 'Entrar' : 'Criar conta'}</CardTitle>
+              <CardDescription>
+                {mode === 'login'
+                  ? 'Aceda à sua conta FKT'
+                  : 'Registe-se para começar a usar o FKT'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@exemplo.pt"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Palavra-passe</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                    {error}
+                  </p>
+                )}
+                {success && (
+                  <p className="text-sm text-foreground bg-muted px-3 py-2 rounded-md">
+                    {success}
+                  </p>
+                )}
+
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? 'A processar...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
+                </Button>
+              </form>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); setSuccess(null); }}
+                  className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+                >
+                  {mode === 'login' ? 'Não tem conta? Registe-se' : 'Já tem conta? Entre'}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <Footer />
     </div>
