@@ -200,7 +200,7 @@ export default function Perfil() {
     const provider = serviceInfo?.provider || 'google';
 
     try {
-      const res = await supabase.functions.invoke('oauth-init', {
+      const { data, error: invokeError } = await supabase.functions.invoke('oauth-init', {
         body: { 
           service: serviceKey, 
           provider,
@@ -208,12 +208,30 @@ export default function Perfil() {
         },
       });
 
-      if (res.error) throw res.error;
-      const { url } = res.data;
-      if (url) window.location.href = url;
-    } catch (error) {
+      if (invokeError) {
+        console.error('Invoke error:', invokeError);
+        const details = await invokeError.context?.json?.() || invokeError.message;
+        toast({ 
+          title: 'Erro ao iniciar conexão', 
+          description: details?.error || details || 'Não foi possível iniciar o fluxo OAuth.', 
+          variant: 'destructive' 
+        });
+        setToggling(null);
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('URL de autenticação não recebida');
+      }
+    } catch (error: any) {
       console.error('OAuth error:', error);
-      toast({ title: 'Erro ao iniciar conexão', description: 'Não foi possível iniciar o fluxo OAuth. Tenta novamente.', variant: 'destructive' });
+      toast({ 
+        title: 'Erro inesperado', 
+        description: error.message || 'Ocorreu um erro ao tentar conectar o serviço.', 
+        variant: 'destructive' 
+      });
       setToggling(null);
     }
   };
