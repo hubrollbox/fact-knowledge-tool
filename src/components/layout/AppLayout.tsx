@@ -48,7 +48,7 @@ function NavItemComponent({ item, collapsed }: { item: NavItem; collapsed: boole
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    if (href === '/') return location.pathname === '/';
+    if (href === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(href);
   };
 
