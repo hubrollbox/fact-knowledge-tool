@@ -19,7 +19,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
     label: 'Projectos', href: '/processos', icon: FolderOpen, children: [
       { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
@@ -48,7 +48,7 @@ function NavItemComponent({ item, collapsed }: { item: NavItem; collapsed: boole
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    if (href === '/') return location.pathname === '/';
+    if (href === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(href);
   };
 
@@ -168,7 +168,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
