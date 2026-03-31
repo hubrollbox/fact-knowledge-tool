@@ -168,7 +168,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
