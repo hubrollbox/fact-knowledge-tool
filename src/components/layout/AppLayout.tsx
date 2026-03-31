@@ -19,7 +19,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
     label: 'Projectos', href: '/processos', icon: FolderOpen, children: [
       { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
