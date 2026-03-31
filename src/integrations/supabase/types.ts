@@ -395,6 +395,39 @@ export type Database = {
           },
         ]
       }
+      movimentos: {
+        Row: {
+          created_at: string | null
+          data: string
+          descricao: string
+          id: string
+          tipo: string
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string
+          descricao: string
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id: string
+          valor: number
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       oauth_tokens: {
         Row: {
           access_token: string
@@ -625,7 +658,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_oauth_credentials_safe: {
+        Row: {
+          client_id: string | null
+          client_secret: string | null
+          created_at: string | null
+          id: string | null
+          provider: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          client_secret?: never
+          created_at?: string | null
+          id?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          client_secret?: never
+          created_at?: string | null
+          id?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_disciplina_user_id: {
