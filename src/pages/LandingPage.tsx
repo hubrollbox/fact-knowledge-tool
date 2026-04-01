@@ -7,7 +7,7 @@ const services = [
   {
     icon: Scale,
     title: 'Gestão de Processos',
-    description: 'Organize todos os seus processos com factos, documentos, issues e cronologia num único lugar.',
+    description: 'Organize todos os seus processos com factos, documentos, problemas e cronologia num único lugar.',
   },
   {
     icon: FileText,
