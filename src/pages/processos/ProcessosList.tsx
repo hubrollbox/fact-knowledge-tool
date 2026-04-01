@@ -49,7 +49,9 @@ export default function ProcessosList() {
   }, [user]);
 
   const filtered = processos.filter(p => {
-    const matchSearch = !search || p.titulo.toLowerCase().includes(search.toLowerCase()) || (p.materia || '').toLowerCase().includes(search.toLowerCase());
+    const s = search.toLowerCase();
+    const clienteNome = p.cliente ? (p.cliente as { nome: string }).nome.toLowerCase() : '';
+    const matchSearch = !search || p.titulo.toLowerCase().includes(s) || (p.materia || '').toLowerCase().includes(s) || clienteNome.includes(s);
     const matchEstado = filterEstado === 'todos' || p.estado === filterEstado;
     return matchSearch && matchEstado;
   });
