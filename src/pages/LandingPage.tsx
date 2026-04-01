@@ -12,7 +12,7 @@ const services = [
   {
     icon: FileText,
     title: 'Documentos & Factos',
-    description: 'Registe factos relevantes, associe documentos e construa a sua argumentação de forma estruturada.',
+    description: 'Registe factos relevantes, associe documentos e construa a sua logica de forma estruturada.',
   },
   {
     icon: BookOpen,
