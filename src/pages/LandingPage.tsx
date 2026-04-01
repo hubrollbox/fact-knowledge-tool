@@ -42,7 +42,7 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <span className="text-lg font-bold tracking-tight">Workoffice</span>
+          <span className="text-lg font-bold tracking-tight">FKT</span>
           <Button asChild variant="outline" size="sm">
             <Link to="/login">Entrar</Link>
           </Button>
