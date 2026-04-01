@@ -62,7 +62,7 @@ export default function LandingPage() {
             <span className="text-muted-foreground">simplificado.</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Gerencie processos, documentos, prazos e conhecimento jurídico numa plataforma integrada — desenhada para profissionais exigentes.
+            Gerencie processos, documentos, prazos e conhecimento numa plataforma integrada, desenhada para profissionais exigentes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
