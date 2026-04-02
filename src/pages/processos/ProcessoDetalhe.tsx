@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Settings, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
 import { useProcesso } from '@/hooks/useProcessos';
+import { ResumoTab } from '@/components/processos/ResumoTab';
 import { FactosTab } from '@/components/processos/FactosTab';
 import { IssuesTab } from '@/components/processos/IssuesTab';
 import { RulesTab } from '@/components/processos/RulesTab';
@@ -22,6 +23,7 @@ export default function ProcessoDetalhe() {
   const navigate = useNavigate();
   const { processo, loading, error, refetch } = useProcesso(id);
   const [updatingEstado, setUpdatingEstado] = useState(false);
+  const [activeTab, setActiveTab] = useState('resumo');
 
   const handleEstadoChange = async (novoEstado: string) => {
     if (!id || !user) return;
@@ -77,9 +79,6 @@ export default function ProcessoDetalhe() {
                   {processo.cliente && <span>· {(processo.cliente as { nome: string }).nome}</span>}
                   <span>· {formatarData(processo.created_at)}</span>
                 </div>
-                {processo.descricao && (
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{processo.descricao}</p>
-                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Select value={processo.estado} onValueChange={handleEstadoChange} disabled={updatingEstado}>
@@ -101,19 +100,22 @@ export default function ProcessoDetalhe() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="factos">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="h-auto flex-wrap gap-0 border-b border-border rounded-none bg-transparent p-0 w-full justify-start">
-            {['factos', 'issues', 'rules', 'applications', 'conclusoes', 'documentos'].map(tab => (
+            {['resumo', 'factos', 'issues', 'rules', 'applications', 'conclusoes', 'documentos'].map(tab => (
               <TabsTrigger
                 key={tab}
                 value={tab}
                 className="capitalize rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2 text-sm"
               >
-                {tab === 'conclusoes' ? 'Conclusões' : tab === 'documentos' ? 'Documentos' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === 'resumo' ? 'Resumo' : tab === 'conclusoes' ? 'Conclusões' : tab === 'documentos' ? 'Documentos' : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </TabsTrigger>
             ))}
           </TabsList>
 
+          <TabsContent value="resumo" className="mt-6">
+            <ResumoTab processoId={processo.id} processo={processo} onNavigateTab={setActiveTab} />
+          </TabsContent>
           <TabsContent value="factos" className="mt-6">
             <FactosTab processoId={processo.id} />
           </TabsContent>
