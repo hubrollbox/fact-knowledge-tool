@@ -1,57 +1,35 @@
 
 
-# Plano: Corrigir Countdown Widgets e tornar acessiveis em qualquer pagina
+## Plano: Dashboard do Processo com Cards de Resumo
 
-## Problemas identificados
+Atualmente, ao abrir um processo, o utilizador ve imediatamente os tabs FIRAC. A ideia e criar uma vista "Overview" como tab default, com cards informativos que dao uma visao rapida do processo antes de mergulhar nos detalhes.
 
-1. **Tabela `countdown_events` nao existe na base de dados** -- os pedidos de rede retornam 404 com "Could not find the table 'public.countdown_events' in the schema cache".
-2. **Erro de build no TypeScript** -- o tipo `Json` do Supabase nao e compativel com `CountdownSettings`. E preciso fazer cast via `unknown`.
-3. **Os countdowns so aparecem no dashboard** -- o utilizador quer poder criar/ver countdowns a partir de qualquer pagina.
+### Estrutura da nova tab "Resumo"
 
-## O que vai ser feito
+Adicionar uma nova tab "Resumo" como default (antes de "Factos"), com o seguinte layout:
 
-### 1. Criar a tabela `countdown_events` (migracao SQL)
+**1. Card Descricao** -- Descricao completa do processo (em vez do `line-clamp-2` atual no header)
 
-```text
-countdown_events
-  id           uuid PK default gen_random_uuid()
-  user_id      uuid NOT NULL
-  title        text NOT NULL
-  target_date  timestamptz NOT NULL
-  settings     jsonb NOT NULL default '{}'
-  created_at   timestamptz default now()
-  updated_at   timestamptz default now()
-```
+**2. Card Documentos Recentes** -- Ultimos 3-4 documentos associados, com link rapido para a tab Documentos
 
-RLS: `user_id = auth.uid()` para ALL. Trigger `updated_at`.
+**3. Card FIRAC** -- Contadores resumidos (X factos, Y issues, Z rules, W applications, N conclusoes) com botoes de acesso rapido a cada tab
 
-### 2. Corrigir o erro de tipos no CountdownWidgetsBoard.tsx
+**4. Card Cronologia** -- Ultimos 3-5 factos ordenados por data, mini-timeline visual
 
-Na linha 48, alterar o cast de `data as CountdownEvent[]` para converter primeiro para `unknown`:
-```
-setEvents((data as unknown as CountdownEvent[]) ?? []);
-```
+**5. Card Cliente** -- Dados do cliente associado (nome, email, telefone) se existir
 
-### 3. Criar componente flutuante global para countdowns
+### Ficheiros alterados
 
-Criar um componente `CountdownFab` (floating action button) que:
-- Aparece em todas as paginas (colocado no `AppLayout`)
-- Permite abrir um painel/popover com a lista de countdowns existentes
-- Permite criar um novo countdown directamente a partir de qualquer pagina
-- Reutiliza a logica ja existente do `CountdownWidgetsBoard`
+- **`src/pages/processos/ProcessoDetalhe.tsx`** -- Adicionar tab "Resumo" como default, importar novo componente
+- **`src/components/processos/ResumoTab.tsx`** (novo) -- Componente com os cards de resumo. Faz queries independentes para contar factos/issues/rules/applications/conclusoes e buscar ultimos documentos e factos
 
-### 4. Actualizar tipos Supabase
+### Detalhes tecnicos
 
-Adicionar a tabela `countdown_events` ao ficheiro `src/integrations/supabase/types.ts`.
-
-## Ficheiros a criar
-- `src/components/dashboard/CountdownFab.tsx` -- botao flutuante com popover de countdowns
-
-## Ficheiros a modificar
-- `src/components/dashboard/CountdownWidgetsBoard.tsx` -- corrigir cast de tipos (linha 48)
-- `src/components/layout/AppLayout.tsx` -- adicionar `CountdownFab` ao layout global
-- `src/integrations/supabase/types.ts` -- adicionar tipo `countdown_events`
-
-## Migracao SQL
-- Criar tabela `countdown_events` com RLS e trigger `updated_at`
+- O componente `ResumoTab` recebe `processoId` e o objeto `processo` como props
+- Usa queries paralelas com `Promise.all` para buscar contagens e dados recentes
+- Cards usam os componentes `Card/CardHeader/CardContent` existentes
+- Layout responsivo: grid de 2 colunas em desktop, 1 coluna em mobile
+- Cada card com icone Lucide e acao de click que muda o tab ativo (passado via callback)
+- O `defaultValue` dos Tabs passa de `"factos"` para `"resumo"`
+- Tab "Resumo" usa state controlado nos Tabs para permitir navegacao dos cards para outros tabs
 
