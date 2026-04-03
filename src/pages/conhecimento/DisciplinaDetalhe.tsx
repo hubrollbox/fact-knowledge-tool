@@ -76,8 +76,8 @@ export default function DisciplinaDetalhe() {
       (supabase as any).from('quizzes').select('*').eq('disciplina_id', id),
       (supabase as any).from('discussoes').select('*').eq('disciplina_id', id),
       (supabase as any).from('progressos').select('*').eq('user_id', user.id).eq('disciplina_id', id),
-      supabase.from('disciplina_processos').select('*, processo:processos(id,titulo,tipo,estado,materia)').eq('disciplina_id', id),
-      supabase.from('processos').select('id,titulo,tipo').eq('user_id', user.id).eq('tipo', 'academico').order('titulo'),
+      supabase.from('disciplina_processos').select('*, processo:dossiers(id,titulo,tipo,estado,materia)').eq('disciplina_id', id),
+      supabase.from('dossiers').select('id,titulo,tipo').eq('user_id', user.id).eq('tipo', 'academico').order('titulo'),
     ]);
     setDisciplina(dRes.data as Disciplina);
     setTopicos((tRes.data as TopicoExtended[]) || []);

@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Cliente } from '@/types';
 
-export default function ProcessoNovo() {
+export default function DossierNovo() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -41,7 +41,7 @@ export default function ProcessoNovo() {
     setSaving(true);
     setError(null);
 
-    const { data, error } = await supabase.from('processos').insert({
+    const { data, error } = await supabase.from('dossiers').insert({
       user_id: user.id,
       titulo: form.titulo.trim(),
       tipo: form.tipo,
@@ -51,26 +51,26 @@ export default function ProcessoNovo() {
       cliente_id: (form.tipo === 'profissional' && form.cliente_id && form.cliente_id !== 'nenhum') ? form.cliente_id : null,
     }).select().single();
 
-    if (error) { console.error('Create processo error:', error); setError('Ocorreu um erro ao criar o processo. Por favor, tente novamente.'); setSaving(false); return; }
-    navigate(`/processos/${data.id}`);
+    if (error) { console.error('Create dossier error:', error); setError('Ocorreu um erro ao criar o dossier. Por favor, tente novamente.'); setSaving(false); return; }
+    navigate(`/dossiers/${data.id}`);
   };
 
   return (
     <AppLayout>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/processos')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/dossiers')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Novo Processo</h1>
-            <p className="text-sm text-muted-foreground">Crie um novo processo de análise factual</p>
+            <h1 className="text-2xl font-bold">Novo Dossier</h1>
+            <p className="text-sm text-muted-foreground">Crie um novo dossier de análise factual</p>
           </div>
         </div>
 
         <Card className="border-border">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base">Informações do Processo</CardTitle>
+            <CardTitle className="text-base">Informações do Dossier</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -89,9 +89,7 @@ export default function ProcessoNovo() {
                 <div className="space-y-2">
                   <Label>Tipo *</Label>
                   <Select value={form.tipo} onValueChange={v => setForm(f => ({ ...f, tipo: v as 'academico' | 'profissional' }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="academico">Académico</SelectItem>
                       <SelectItem value="profissional">Profissional</SelectItem>
@@ -102,9 +100,7 @@ export default function ProcessoNovo() {
                 <div className="space-y-2">
                   <Label>Estado inicial</Label>
                   <Select value={form.estado} onValueChange={v => setForm(f => ({ ...f, estado: v }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="em_analise">Em Análise</SelectItem>
                       <SelectItem value="em_progresso">Em Progresso</SelectItem>
@@ -146,7 +142,7 @@ export default function ProcessoNovo() {
                   id="descricao"
                   value={form.descricao}
                   onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                  placeholder="Breve descrição do processo..."
+                  placeholder="Breve descrição do dossier..."
                   rows={4}
                 />
               </div>
@@ -156,11 +152,11 @@ export default function ProcessoNovo() {
               )}
 
               <div className="flex gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={() => navigate('/processos')}>
+                <Button type="button" variant="outline" onClick={() => navigate('/dossiers')}>
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={saving}>
-                  {saving ? 'A criar...' : 'Criar Processo'}
+                  {saving ? 'A criar...' : 'Criar Dossier'}
                 </Button>
               </div>
             </form>

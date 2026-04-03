@@ -8,30 +8,30 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatarData, CERTEZA_LABELS, exportarCSV } from '@/lib/utils-fkt';
-import type { Facto, Processo } from '@/types';
+import type { Facto, Dossier } from '@/types';
 
-interface FactoWithProcesso extends Facto {
-  processo: { titulo: string };
+interface FactoWithDossier extends Facto {
+  dossier: { titulo: string };
 }
 
 export default function Cronologia() {
   const { user } = useAuth();
-  const [factos, setFactos] = useState<FactoWithProcesso[]>([]);
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [factos, setFactos] = useState<FactoWithDossier[]>([]);
+  const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterProcesso, setFilterProcesso] = useState('todos');
+  const [filterDossier, setFilterDossier] = useState('todos');
   const [filterCerteza, setFilterCerteza] = useState('todas');
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       const [pRes, fRes] = await Promise.all([
-        supabase.from('processos').select('id, titulo').eq('user_id', user.id).order('titulo'),
-        supabase.from('factos').select('*, processo:processos!inner(titulo, user_id)').eq('processos.user_id', user.id).order('data_facto', { ascending: true, nullsFirst: false }),
+        supabase.from('dossiers').select('id, titulo').eq('user_id', user.id).order('titulo'),
+        supabase.from('factos').select('*, dossier:dossiers!inner(titulo, user_id)').eq('dossiers.user_id', user.id).order('data_facto', { ascending: true, nullsFirst: false }),
       ]);
-      setProcessos((pRes.data as Processo[]) || []);
-      setFactos((fRes.data as FactoWithProcesso[]) || []);
+      setDossiers((pRes.data as Dossier[]) || []);
+      setFactos((fRes.data as FactoWithDossier[]) || []);
       setLoading(false);
     };
     load();
@@ -39,16 +39,16 @@ export default function Cronologia() {
 
   const filtered = factos.filter(f => {
     const matchSearch = !search || f.descricao.toLowerCase().includes(search.toLowerCase());
-    const matchProcesso = filterProcesso === 'todos' || f.processo_id === filterProcesso;
+    const matchDossier = filterDossier === 'todos' || f.processo_id === filterDossier;
     const matchCerteza = filterCerteza === 'todas' || f.grau_certeza === filterCerteza;
-    return matchSearch && matchProcesso && matchCerteza;
+    return matchSearch && matchDossier && matchCerteza;
   });
 
   const handleExport = () => {
     exportarCSV(
       filtered.map(f => ({
         Data: formatarData(f.data_facto),
-        Processo: f.processo?.titulo || '',
+        Dossier: f.dossier?.titulo || '',
         Descrição: f.descricao,
         Certeza: CERTEZA_LABELS[f.grau_certeza],
         Observações: f.observacoes || '',
@@ -85,14 +85,14 @@ export default function Cronologia() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Pesquisar factos..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
-          <Select value={filterProcesso} onValueChange={setFilterProcesso}>
+          <Select value={filterDossier} onValueChange={setFilterDossier}>
             <SelectTrigger className="w-full sm:w-44">
               <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos os processos</SelectItem>
-              {processos.map(p => <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>)}
+              <SelectItem value="todos">Todos os dossiers</SelectItem>
+              {dossiers.map(p => <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterCerteza} onValueChange={setFilterCerteza}>
@@ -128,7 +128,7 @@ export default function Cronologia() {
                           <p className="text-sm text-foreground">{f.descricao}</p>
                           <div className="flex items-center gap-3 mt-2 flex-wrap">
                             <span className="text-xs text-muted-foreground font-medium">{formatarData(f.data_facto)}</span>
-                            <span className="text-xs text-muted-foreground">· {f.processo?.titulo}</span>
+                            <span className="text-xs text-muted-foreground">· {f.dossier?.titulo}</span>
                             {certezaBadge(f.grau_certeza)}
                           </div>
                           {f.observacoes && <p className="text-xs text-muted-foreground mt-1 italic">{f.observacoes}</p>}

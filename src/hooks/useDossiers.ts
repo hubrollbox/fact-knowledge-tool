@@ -2,59 +2,59 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDatabaseError } from '@/lib/error-utils';
-import type { Processo } from '@/types';
+import type { Dossier } from '@/types';
 
-export function useProcessos() {
+export function useDossiers() {
   const { user } = useAuth();
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProcessos = async () => {
+  const fetchDossiers = async () => {
     if (!user) return;
     setLoading(true);
     const { data, error } = await supabase
-      .from('processos')
+      .from('dossiers')
       .select(`*, cliente:clientes(id, nome)`)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) setError(formatDatabaseError(error));
-    else setProcessos((data as unknown as Processo[]) || []);
+    else setDossiers((data as unknown as Dossier[]) || []);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchProcessos();
+    fetchDossiers();
   }, [user]);
 
-  return { processos, loading, error, refetch: fetchProcessos };
+  return { dossiers, loading, error, refetch: fetchDossiers };
 }
 
-export function useProcesso(id: string | undefined) {
+export function useDossier(id: string | undefined) {
   const { user } = useAuth();
-  const [processo, setProcesso] = useState<Processo | null>(null);
+  const [dossier, setDossier] = useState<Dossier | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProcesso = async () => {
+  const fetchDossier = async () => {
     if (!id || !user) return;
     setLoading(true);
     const { data, error } = await supabase
-      .from('processos')
+      .from('dossiers')
       .select(`*, cliente:clientes(id, nome, email, telefone, morada)`)
       .eq('id', id)
       .eq('user_id', user.id)
       .single();
 
     if (error) setError(formatDatabaseError(error));
-    else setProcesso(data as unknown as Processo);
+    else setDossier(data as unknown as Dossier);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchProcesso();
+    fetchDossier();
   }, [id, user]);
 
-  return { processo, loading, error, refetch: fetchProcesso };
+  return { dossier, loading, error, refetch: fetchDossier };
 }

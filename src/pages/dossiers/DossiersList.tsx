@@ -9,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
-import type { Processo } from '@/types';
+import type { Dossier } from '@/types';
 
-export default function ProcessosList() {
+export default function DossiersList() {
   const { user } = useAuth();
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState('todos');
@@ -24,13 +24,12 @@ export default function ProcessosList() {
     const fetch = async () => {
       setLoading(true);
       const { data } = await supabase
-        .from('processos')
+        .from('dossiers')
         .select('*, cliente:clientes(id, nome)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      setProcessos((data as unknown as Processo[]) || []);
+      setDossiers((data as unknown as Dossier[]) || []);
 
-      // fetch counts
       if (data && data.length > 0) {
         const ids = data.map((p: any) => p.id);
         const [fRes, dRes] = await Promise.all([
@@ -48,7 +47,7 @@ export default function ProcessosList() {
     fetch();
   }, [user]);
 
-  const filtered = processos.filter(p => {
+  const filtered = dossiers.filter(p => {
     const s = search.toLowerCase();
     const clienteNome = p.cliente ? (p.cliente as { nome: string }).nome.toLowerCase() : '';
     const matchSearch = !search || p.titulo.toLowerCase().includes(s) || (p.materia || '').toLowerCase().includes(s) || clienteNome.includes(s);
@@ -75,15 +74,14 @@ export default function ProcessosList() {
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Processos</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{processos.length} processo{processos.length !== 1 ? 's' : ''} no total</p>
+            <h1 className="text-2xl font-bold">Dossiers</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{dossiers.length} dossier{dossiers.length !== 1 ? 's' : ''} no total</p>
           </div>
           <Button asChild>
-            <Link to="/processos/novo"><Plus className="h-4 w-4 mr-2" />Novo Processo</Link>
+            <Link to="/dossiers/novo"><Plus className="h-4 w-4 mr-2" />Novo Dossier</Link>
           </Button>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -108,7 +106,6 @@ export default function ProcessosList() {
           </Select>
         </div>
 
-        {/* List */}
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted rounded-lg animate-pulse" />)}
@@ -116,10 +113,10 @@ export default function ProcessosList() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">{search || filterEstado !== 'todos' ? 'Nenhum processo encontrado' : 'Nenhum processo criado ainda'}</p>
+            <p className="text-muted-foreground">{search || filterEstado !== 'todos' ? 'Nenhum dossier encontrado' : 'Nenhum dossier criado ainda'}</p>
             {!search && filterEstado === 'todos' && (
               <Button asChild className="mt-4" variant="outline">
-                <Link to="/processos/novo">Criar primeiro processo</Link>
+                <Link to="/dossiers/novo">Criar primeiro dossier</Link>
               </Button>
             )}
           </div>
@@ -128,7 +125,7 @@ export default function ProcessosList() {
             {filtered.map(p => (
               <Card key={p.id} className="border-border hover:border-foreground/20 transition-colors">
                 <CardContent className="p-4">
-                  <Link to={`/processos/${p.id}`} className="block">
+                  <Link to={`/dossiers/${p.id}`} className="block">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">

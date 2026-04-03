@@ -8,12 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatarData, CERTEZA_LABELS, PRIORIDADE_LABELS } from '@/lib/utils-fkt';
-import type { Processo, Facto, Issue, Rule, Application, Conclusao } from '@/types';
+import type { Dossier, Facto, Issue, Rule, Application, Conclusao } from '@/types';
 
 type RelatorioTipo = 'factos' | 'firac' | 'lacunas';
 
 interface RelatorioData {
-  processo: Processo;
+  processo: Dossier;
   factos: Facto[];
   issues: Issue[];
   rules: Rule[];
@@ -23,7 +23,7 @@ interface RelatorioData {
 
 export default function Relatorios() {
   const { user } = useAuth();
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [processos, setProcessos] = useState<Dossier[]>([]);
   const [selectedProcesso, setSelectedProcesso] = useState('');
   const [tipo, setTipo] = useState<RelatorioTipo>('firac');
   const [data, setData] = useState<RelatorioData | null>(null);
@@ -32,14 +32,14 @@ export default function Relatorios() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('processos').select('id,titulo,tipo,estado,materia,descricao,created_at').eq('user_id', user.id).neq('estado','arquivado').order('titulo').then(({ data }) => setProcessos((data as Processo[]) || []));
+    supabase.from('dossiers').select('id,titulo,tipo,estado,materia,descricao,created_at').eq('user_id', user.id).neq('estado','arquivado').order('titulo').then(({ data }) => setProcessos((data as Dossier[]) || []));
   }, [user]);
 
   const gerarRelatorio = async () => {
     if (!selectedProcesso) return;
     setLoading(true);
     const [pRes, fRes, iRes, rRes, aRes, cRes] = await Promise.all([
-      supabase.from('processos').select('*, cliente:clientes(nome)').eq('id', selectedProcesso).single(),
+      supabase.from('dossiers').select('*, cliente:clientes(nome)').eq('id', selectedProcesso).single(),
       supabase.from('factos').select('*').eq('processo_id', selectedProcesso).order('data_facto', { ascending: true }),
       supabase.from('issues').select('*').eq('processo_id', selectedProcesso).order('created_at'),
       supabase.from('rules').select('*').eq('processo_id', selectedProcesso).order('created_at'),
@@ -47,7 +47,7 @@ export default function Relatorios() {
       supabase.from('conclusoes').select('*').in('issue_id', (await supabase.from('issues').select('id').eq('processo_id', selectedProcesso)).data?.map(i => i.id) || []),
     ]);
     setData({
-      processo: pRes.data as Processo,
+      processo: pRes.data as Dossier,
       factos: (fRes.data as Facto[]) || [],
       issues: (iRes.data as Issue[]) || [],
       rules: (rRes.data as Rule[]) || [],
@@ -80,9 +80,9 @@ export default function Relatorios() {
           <CardContent className="p-5">
             <div className="grid sm:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
-                <Label>Processo</Label>
+                <Label>Dossier</Label>
                 <Select value={selectedProcesso} onValueChange={setSelectedProcesso}>
-                  <SelectTrigger><SelectValue placeholder="Seleccionar processo..." /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Seleccionar dossier..." /></SelectTrigger>
                   <SelectContent>
                     {processos.map(p => <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>)}
                   </SelectContent>

@@ -6,8 +6,8 @@ import { Footer } from '@/components/layout/Footer';
 const services = [
   {
     icon: Scale,
-    title: 'Gestão de Processos',
-    description: 'Organize todos os seus processos com factos, documentos, problemas e cronologia num único lugar.',
+    title: 'Gestão de Dossiers',
+    description: 'Organize todos os seus dossiers com factos, documentos, problemas e cronologia num único lugar.',
   },
   {
     icon: FileText,
@@ -39,7 +39,6 @@ const services = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* Nav */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <span className="text-lg font-bold tracking-tight">FKT</span>
@@ -49,7 +48,6 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="flex-1 flex items-center justify-center px-6 py-20 md:py-32">
         <div className="max-w-3xl text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-2">
@@ -62,7 +60,7 @@ export default function LandingPage() {
             <span className="text-muted-foreground">simplificado.</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Gerencie processos, documentos, prazos e conhecimento numa plataforma integrada, desenhada para profissionais exigentes.
+            Gerencie dossiers, documentos, prazos e conhecimento numa plataforma integrada, desenhada para profissionais exigentes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
@@ -78,7 +76,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Services */}
       <section id="servicos" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
@@ -104,14 +101,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="px-6 py-20 md:py-28">
         <div className="max-w-2xl mx-auto text-center space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
             Pronto para organizar o seu escritório?
           </h2>
           <p className="text-muted-foreground">
-            Crie a sua conta gratuitamente e comece a gerir processos em minutos.
+            Crie a sua conta gratuitamente e comece a gerir dossiers em minutos.
           </p>
           <Button asChild size="lg">
             <Link to="/login">

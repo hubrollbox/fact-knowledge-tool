@@ -21,8 +21,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   {
-    label: 'Projectos', href: '/processos', icon: FolderOpen, children: [
-      { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
+    label: 'Dossiers', href: '/dossiers', icon: FolderOpen, children: [
+      { label: 'Cronologia', href: '/dossiers/cronologia', icon: Clock },
     ]
   },
   {
@@ -173,7 +173,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className={cn(
         'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border',
         collapsed && 'justify-center px-2'
@@ -189,14 +188,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
         {navItems.map(item => (
           <NavItemComponent key={item.label} item={item} collapsed={collapsed} />
         ))}
       </nav>
 
-      {/* User */}
       <div className={cn(
         'border-t border-sidebar-border p-3',
         collapsed && 'flex flex-col items-center gap-2'
@@ -230,7 +227,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Desktop sidebar */}
       <aside className={cn(
         'hidden md:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shrink-0',
         sidebarCollapsed ? 'w-16' : 'w-60'
@@ -238,7 +234,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         <SidebarContent collapsed={sidebarCollapsed} />
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
@@ -246,7 +241,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside className={cn(
         'fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-sidebar border-r border-sidebar-border md:hidden transition-transform duration-300',
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -254,11 +248,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         <SidebarContent collapsed={false} />
       </aside>
 
-      {/* Main */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header */}
         <header className="flex h-14 items-center border-b border-border bg-background px-4 gap-3 shrink-0">
-          {/* Mobile toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -268,7 +259,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
 
-          {/* Desktop collapse */}
           <Button
             variant="ghost"
             size="icon"
@@ -282,7 +272,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <CountdownFab contentSide="bottom" />
 
-          {/* Dark mode toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -293,7 +282,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Button>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>

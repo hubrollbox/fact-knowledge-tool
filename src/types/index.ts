@@ -1,9 +1,10 @@
-export type ProcessoTipo = 'academico' | 'profissional';
-export type ProcessoEstado = 'em_analise' | 'em_progresso' | 'concluido' | 'arquivado';
+export type DossierTipo = 'academico' | 'profissional';
+export type DossierEstado = 'em_analise' | 'em_progresso' | 'concluido' | 'arquivado';
 export type IssuePrioridade = 'alta' | 'media' | 'baixa';
 export type IssueEstado = 'aberta' | 'resolvida';
 export type ApplicationTipo = 'pro' | 'contra';
 export type GrauCerteza = 'alto' | 'medio' | 'baixo' | 'desconhecido';
+export type ActionEstado = 'ativo' | 'a_aguardar' | 'concluido';
 
 export interface Cliente {
   id: string;
@@ -16,12 +17,12 @@ export interface Cliente {
   updated_at: string;
 }
 
-export interface Processo {
+export interface Dossier {
   id: string;
   user_id: string;
   titulo: string;
-  tipo: ProcessoTipo;
-  estado: ProcessoEstado;
+  tipo: DossierTipo;
+  estado: DossierEstado;
   materia: string | null;
   descricao: string | null;
   cliente_id: string | null;
@@ -33,6 +34,20 @@ export interface Processo {
     documentos: number;
     issues: number;
   };
+}
+
+/** @deprecated Use Dossier instead */
+export type Processo = Dossier;
+
+export interface Action {
+  id: string;
+  dossier_id: string;
+  titulo: string;
+  data: string | null;
+  estado: ActionEstado;
+  created_at: string;
+  updated_at: string;
+  dossier?: Dossier;
 }
 
 export interface Facto {
@@ -145,5 +160,5 @@ export interface DisciplinaProcesso {
   id: string;
   disciplina_id: string;
   processo_id: string;
-  processo?: Processo;
+  processo?: Dossier;
 }
