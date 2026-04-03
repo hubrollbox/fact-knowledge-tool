@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatarData, CERTEZA_LABELS, PRIORIDADE_LABELS } from '@/lib/utils-fkt';
-import type { Processo, Facto, Issue, Rule, Application, Conclusao } from '@/types';
+import type { Dossier, Facto, Issue, Rule, Application, Conclusao } from '@/types';
 
 type RelatorioTipo = 'factos' | 'firac' | 'lacunas';
 
