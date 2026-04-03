@@ -3,7 +3,6 @@ import { Calendar, Clock, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -11,9 +10,9 @@ interface AgendaItem {
   id: string;
   titulo: string;
   data: string;
-  tipo: 'documento' | 'facto' | 'processo' | 'google_event';
-  processoId?: string;
-  processoTitulo?: string;
+  tipo: 'documento' | 'facto' | 'dossier' | 'google_event';
+  dossierId?: string;
+  dossierTitulo?: string;
   time?: string;
 }
 
@@ -24,32 +23,30 @@ export function AgendaWidget() {
   const [connected, setConnected] = useState(false);
 
   const loadAgenda = async () => {
-    // Check if Google Calendar is connected
     const { data: svc } = await supabase
       .from('user_services')
       .select('connected')
-      .eq('user_id', user.id)
+      .eq('user_id', user!.id)
       .eq('service', 'google_calendar')
       .maybeSingle();
     
     const isConnected = !!svc?.connected;
     setConnected(isConnected);
 
-    // Load recent dates from documentos and factos
     const now = new Date().toISOString().split('T')[0];
     const [docRes, factoRes] = await Promise.all([
       supabase
         .from('documentos')
-        .select('id, titulo, data_documento, processo_id, processos!inner(user_id, titulo)')
-        .eq('processos.user_id', user.id)
+        .select('id, titulo, data_documento, processo_id, dossiers!inner(user_id, titulo)')
+        .eq('dossiers.user_id', user!.id)
         .not('data_documento', 'is', null)
         .gte('data_documento', now)
         .order('data_documento', { ascending: true })
         .limit(5),
       supabase
         .from('factos')
-        .select('id, descricao, data_facto, processo_id, processos!inner(user_id, titulo)')
-        .eq('processos.user_id', user.id)
+        .select('id, descricao, data_facto, processo_id, dossiers!inner(user_id, titulo)')
+        .eq('dossiers.user_id', user!.id)
         .not('data_facto', 'is', null)
         .gte('data_facto', now)
         .order('data_facto', { ascending: true })
@@ -64,8 +61,8 @@ export function AgendaWidget() {
         titulo: d.titulo,
         data: d.data_documento,
         tipo: 'documento',
-        processoId: d.processo_id,
-        processoTitulo: d.processos?.titulo,
+        dossierId: d.processo_id,
+        dossierTitulo: d.dossiers?.titulo,
       });
     });
 
@@ -75,12 +72,11 @@ export function AgendaWidget() {
         titulo: f.descricao.substring(0, 60) + (f.descricao.length > 60 ? '…' : ''),
         data: f.data_facto,
         tipo: 'facto',
-        processoId: f.processo_id,
-        processoTitulo: f.processos?.titulo,
+        dossierId: f.processo_id,
+        dossierTitulo: f.dossiers?.titulo,
       });
     });
 
-    // If connected to Google Calendar, fetch events
     if (isConnected) {
       try {
         const res = await supabase.functions.invoke('service-proxy', {
@@ -95,7 +91,7 @@ export function AgendaWidget() {
               data: start.split('T')[0],
               time: event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : undefined,
               tipo: 'google_event',
-              processoTitulo: 'Google Calendar',
+              dossierTitulo: 'Google Calendar',
             });
           });
         }
@@ -125,15 +121,6 @@ export function AgendaWidget() {
     if (diff === 1) return { label: 'Amanhã', formatted, urgent: true };
     if (diff <= 7) return { label: `${diff} dias`, formatted, urgent: false };
     return { label: formatted, formatted, urgent: false };
-  };
-
-  const tipoBadge = (tipo: string) => {
-    const map: Record<string, string> = {
-      documento: 'Doc',
-      facto: 'Facto',
-      processo: 'Proc',
-    };
-    return map[tipo] || tipo;
   };
 
   return (
@@ -171,12 +158,12 @@ export function AgendaWidget() {
           <div className="space-y-2">
             {items.map((item) => {
               const { label, formatted, urgent } = formatDate(item.data);
-              const ItemWrapper = item.processoId ? Link : 'div';
+              const ItemWrapper = item.dossierId ? Link : 'div';
               
               return (
                 <ItemWrapper 
                   key={item.id} 
-                  to={item.processoId ? `/processos/${item.processoId}` : undefined}
+                  to={item.dossierId ? `/dossiers/${item.dossierId}` : undefined}
                   className="flex items-center justify-between py-2.5 px-2 rounded-md hover:bg-muted/50 transition-colors group cursor-pointer"
                 >
                   <div className="flex items-start gap-3 min-w-0">
@@ -195,7 +182,7 @@ export function AgendaWidget() {
                         {item.time && <span className="ml-2 text-[10px] text-muted-foreground">({item.time})</span>}
                       </p>
                       <p className="text-[11px] text-muted-foreground truncate">
-                        {item.tipo === 'google_event' ? 'Google Calendar' : item.processoTitulo || 'Sem processo'}
+                        {item.tipo === 'google_event' ? 'Google Calendar' : item.dossierTitulo || 'Sem dossier'}
                       </p>
                     </div>
                   </div>

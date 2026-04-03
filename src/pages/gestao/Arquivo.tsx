@@ -7,25 +7,25 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatarData } from '@/lib/utils-fkt';
-import type { Processo } from '@/types';
+import type { Dossier } from '@/types';
 
 export default function Arquivo() {
   const { user } = useAuth();
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = async () => {
     if (!user) return;
-    const { data } = await supabase.from('processos').select('*, cliente:clientes(id,nome)').eq('user_id', user.id).eq('estado', 'arquivado').order('updated_at', { ascending: false });
-    setProcessos((data as Processo[]) || []);
+    const { data } = await supabase.from('dossiers').select('*, cliente:clientes(id,nome)').eq('user_id', user.id).eq('estado', 'arquivado').order('updated_at', { ascending: false });
+    setDossiers((data as Dossier[]) || []);
     setLoading(false);
   };
 
   useEffect(() => { fetch(); }, [user]);
 
   const handleRestore = async (id: string) => {
-    await supabase.from('processos').update({ estado: 'em_analise' }).eq('id', id);
-    setProcessos(prev => prev.filter(p => p.id !== id));
+    await supabase.from('dossiers').update({ estado: 'em_analise' }).eq('id', id);
+    setDossiers(prev => prev.filter(p => p.id !== id));
   };
 
   return (
@@ -33,24 +33,24 @@ export default function Arquivo() {
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Arquivo</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{processos.length} processo{processos.length !== 1 ? 's' : ''} arquivado{processos.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{dossiers.length} dossier{dossiers.length !== 1 ? 's' : ''} arquivado{dossiers.length !== 1 ? 's' : ''}</p>
         </div>
 
         {loading ? (
           <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />)}</div>
-        ) : processos.length === 0 ? (
+        ) : dossiers.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-border rounded-lg">
             <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhum processo arquivado</p>
+            <p className="text-muted-foreground">Nenhum dossier arquivado</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {processos.map(p => (
+            {dossiers.map(p => (
               <Card key={p.id} className="border-border">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <Link to={`/processos/${p.id}`} className="text-sm font-medium text-foreground hover:underline">{p.titulo}</Link>
+                      <Link to={`/dossiers/${p.id}`} className="text-sm font-medium text-foreground hover:underline">{p.titulo}</Link>
                       <div className="flex gap-2 mt-0.5 text-xs text-muted-foreground">
                         <span className="capitalize">{p.tipo}</span>
                         {p.materia && <span>· {p.materia}</span>}

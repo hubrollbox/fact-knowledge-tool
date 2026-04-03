@@ -11,10 +11,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-import ProcessosList from "./pages/processos/ProcessosList";
-import ProcessoNovo from "./pages/processos/ProcessoNovo";
-import ProcessoDetalhe from "./pages/processos/ProcessoDetalhe";
-import Cronologia from "./pages/processos/Cronologia";
+import DossiersList from "./pages/dossiers/DossiersList";
+import DossierNovo from "./pages/dossiers/DossierNovo";
+import DossierDetalhe from "./pages/dossiers/DossierDetalhe";
+import Cronologia from "./pages/dossiers/Cronologia";
 
 import Conhecimento from "./pages/conhecimento/Conhecimento";
 import DisciplinaDetalhe from "./pages/conhecimento/DisciplinaDetalhe";
@@ -43,10 +43,10 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/processos" element={<ProtectedRoute><ProcessosList /></ProtectedRoute>} />
-            <Route path="/processos/novo" element={<ProtectedRoute><ProcessoNovo /></ProtectedRoute>} />
-            <Route path="/processos/cronologia" element={<ProtectedRoute><Cronologia /></ProtectedRoute>} />
-            <Route path="/processos/:id" element={<ProtectedRoute><ProcessoDetalhe /></ProtectedRoute>} />
+            <Route path="/dossiers" element={<ProtectedRoute><DossiersList /></ProtectedRoute>} />
+            <Route path="/dossiers/novo" element={<ProtectedRoute><DossierNovo /></ProtectedRoute>} />
+            <Route path="/dossiers/cronologia" element={<ProtectedRoute><Cronologia /></ProtectedRoute>} />
+            <Route path="/dossiers/:id" element={<ProtectedRoute><DossierDetalhe /></ProtectedRoute>} />
             <Route path="/conhecimento" element={<ProtectedRoute><Conhecimento /></ProtectedRoute>} />
             <Route path="/conhecimento/disciplinas/:id" element={<ProtectedRoute><DisciplinaDetalhe /></ProtectedRoute>} />
             <Route path="/gestao" element={<ProtectedRoute><Gestao /></ProtectedRoute>} />
