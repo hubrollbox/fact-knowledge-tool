@@ -23,7 +23,7 @@ interface RelatorioData {
 
 export default function Relatorios() {
   const { user } = useAuth();
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [processos, setProcessos] = useState<Dossier[]>([]);
   const [selectedProcesso, setSelectedProcesso] = useState('');
   const [tipo, setTipo] = useState<RelatorioTipo>('firac');
   const [data, setData] = useState<RelatorioData | null>(null);
