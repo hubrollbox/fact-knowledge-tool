@@ -29,7 +29,7 @@ export default function Clientes() {
     setClientes((data as Cliente[]) || []);
     if (data && data.length > 0) {
       const ids = data.map((c: Cliente) => c.id);
-      const { data: procs } = await supabase.from('processos').select('cliente_id').in('cliente_id', ids);
+      const { data: procs } = await supabase.from('dossiers').select('cliente_id').in('cliente_id', ids);
       const counts: Record<string, number> = {};
       ids.forEach(id => { counts[id] = 0; });
       (procs || []).forEach((p: { cliente_id: string }) => { if (counts[p.cliente_id] !== undefined) counts[p.cliente_id]++; });
