@@ -32,7 +32,7 @@ export default function Relatorios() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('processos').select('id,titulo,tipo,estado,materia,descricao,created_at').eq('user_id', user.id).neq('estado','arquivado').order('titulo').then(({ data }) => setProcessos((data as Processo[]) || []));
+    supabase.from('dossiers').select('id,titulo,tipo,estado,materia,descricao,created_at').eq('user_id', user.id).neq('estado','arquivado').order('titulo').then(({ data }) => setProcessos((data as Dossier[]) || []));
   }, [user]);
 
   const gerarRelatorio = async () => {
