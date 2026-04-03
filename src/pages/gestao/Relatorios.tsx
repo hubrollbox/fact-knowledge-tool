@@ -13,7 +13,7 @@ import type { Dossier, Facto, Issue, Rule, Application, Conclusao } from '@/type
 type RelatorioTipo = 'factos' | 'firac' | 'lacunas';
 
 interface RelatorioData {
-  processo: Processo;
+  processo: Dossier;
   factos: Facto[];
   issues: Issue[];
   rules: Rule[];
