@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      actions: {
+        Row: {
+          created_at: string
+          data: string | null
+          dossier_id: string
+          estado: string
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string | null
+          dossier_id: string
+          estado?: string
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string | null
+          dossier_id?: string
+          estado?: string
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actions_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_factos: {
         Row: {
           application_id: string
@@ -90,7 +128,7 @@ export type Database = {
             foreignKeyName: "applications_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
           {
@@ -231,7 +269,7 @@ export type Database = {
             foreignKeyName: "disciplina_processos_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
@@ -308,7 +346,54 @@ export type Database = {
             foreignKeyName: "documentos_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dossiers: {
+        Row: {
+          cliente_id: string | null
+          created_at: string | null
+          descricao: string | null
+          estado: string
+          id: string
+          materia: string | null
+          tipo: string
+          titulo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          estado?: string
+          id?: string
+          materia?: string | null
+          tipo?: string
+          titulo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          estado?: string
+          id?: string
+          materia?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "processos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]
@@ -352,7 +437,7 @@ export type Database = {
             foreignKeyName: "factos_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
@@ -390,7 +475,7 @@ export type Database = {
             foreignKeyName: "issues_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
@@ -464,53 +549,6 @@ export type Database = {
         }
         Relationships: []
       }
-      processos: {
-        Row: {
-          cliente_id: string | null
-          created_at: string | null
-          descricao: string | null
-          estado: string
-          id: string
-          materia: string | null
-          tipo: string
-          titulo: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          cliente_id?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          estado?: string
-          id?: string
-          materia?: string | null
-          tipo?: string
-          titulo: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          cliente_id?: string | null
-          created_at?: string | null
-          descricao?: string | null
-          estado?: string
-          id?: string
-          materia?: string | null
-          tipo?: string
-          titulo?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "processos_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       rules: {
         Row: {
           created_at: string | null
@@ -550,7 +588,7 @@ export type Database = {
             foreignKeyName: "rules_processo_id_fkey"
             columns: ["processo_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
