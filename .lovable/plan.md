@@ -1,35 +1,32 @@
 
+## Plano: Rename Processos → Dossier + Módulo Planner
 
-## Plano: Dashboard do Processo com Cards de Resumo
+### Fase 1 — Migração DB: Renomear tabela `processos` → `dossiers`
 
-Atualmente, ao abrir um processo, o utilizador ve imediatamente os tabs FIRAC. A ideia e criar uma vista "Overview" como tab default, com cards informativos que dao uma visao rapida do processo antes de mergulhar nos detalhes.
+**Migration SQL:**
+- Renomear tabela `processos` para `dossiers`
+- Atualizar todas as foreign keys, RLS policies, e functions que referenciam `processos`
+- Criar tabela `actions` (id, dossier_id, titulo, data, estado, created_at, updated_at)
+- RLS policies para `actions` via dossier owner
 
-### Estrutura da nova tab "Resumo"
+### Fase 2 — Rename no código frontend
 
-Adicionar uma nova tab "Resumo" como default (antes de "Factos"), com o seguinte layout:
+- Atualizar `src/types/index.ts` e `src/types/database.ts` (Processo → Dossier, processos → dossiers)
+- Atualizar todas as queries Supabase que referenciam `processos` → `dossiers`
+- Renomear ficheiros e componentes:
+  - `src/pages/processos/` → `src/pages/dossiers/`
+  - `src/hooks/useProcessos.ts` → `src/hooks/useDossiers.ts`
+  - `src/components/processos/` → `src/components/dossiers/`
+- Atualizar rotas no `App.tsx`: `/processos` → `/dossiers`
+- Atualizar labels na UI (sidebar, dashboard, breadcrumbs)
 
-**1. Card Descricao** -- Descricao completa do processo (em vez do `line-clamp-2` atual no header)
+### Fase 3 — Módulo Planner
 
-**2. Card Documentos Recentes** -- Ultimos 3-4 documentos associados, com link rapido para a tab Documentos
+- Criar hook `useActions.ts` para CRUD de actions
+- Criar componente `PlannerOverview` no dashboard (agrupado por Atrasado/Hoje/Próximos/Sem data)
+- Dentro de cada dossier: secção "Próxima Ação" + histórico de ações
+- Interações: marcar concluída, editar inline, link para dossier
 
-**3. Card FIRAC** -- Contadores resumidos (X factos, Y issues, Z rules, W applications, N conclusoes) com botoes de acesso rapido a cada tab
-
-**4. Card Cronologia** -- Ultimos 3-5 factos ordenados por data, mini-timeline visual
-
-**5. Card Cliente** -- Dados do cliente associado (nome, email, telefone) se existir
-
-### Ficheiros alterados
-
-- **`src/pages/processos/ProcessoDetalhe.tsx`** -- Adicionar tab "Resumo" como default, importar novo componente
-- **`src/components/processos/ResumoTab.tsx`** (novo) -- Componente com os cards de resumo. Faz queries independentes para contar factos/issues/rules/applications/conclusoes e buscar ultimos documentos e factos
-
-### Detalhes tecnicos
-
-- O componente `ResumoTab` recebe `processoId` e o objeto `processo` como props
-- Usa queries paralelas com `Promise.all` para buscar contagens e dados recentes
-- Cards usam os componentes `Card/CardHeader/CardContent` existentes
-- Layout responsivo: grid de 2 colunas em desktop, 1 coluna em mobile
-- Cada card com icone Lucide e acao de click que muda o tab ativo (passado via callback)
-- O `defaultValue` dos Tabs passa de `"factos"` para `"resumo"`
-- Tab "Resumo" usa state controlado nos Tabs para permitir navegacao dos cards para outros tabs
-
+### Notas
+- A migration renomeia a tabela mas mantém compatibilidade com RLS existente
+- Constraint: máximo 1 ação "ativo" por dossier (via trigger ou app-level)
