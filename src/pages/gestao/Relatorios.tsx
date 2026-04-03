@@ -80,9 +80,9 @@ export default function Relatorios() {
           <CardContent className="p-5">
             <div className="grid sm:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
-                <Label>Processo</Label>
+                <Label>Dossier</Label>
                 <Select value={selectedProcesso} onValueChange={setSelectedProcesso}>
-                  <SelectTrigger><SelectValue placeholder="Seleccionar processo..." /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Seleccionar dossier..." /></SelectTrigger>
                   <SelectContent>
                     {processos.map(p => <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>)}
                   </SelectContent>

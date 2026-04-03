@@ -96,8 +96,8 @@ export default function Clientes() {
                         {c.morada && <span>· {c.morada}</span>}
                       </div>
                       {processosCounts[c.id] !== undefined && (
-                        <Link to={`/processos?cliente=${c.id}`} className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-2 hover:text-foreground transition-colors">
-                          <FolderOpen className="h-3 w-3" />{processosCounts[c.id]} processo{processosCounts[c.id] !== 1 ? 's' : ''}
+                        <Link to={`/dossiers?cliente=${c.id}`} className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-2 hover:text-foreground transition-colors">
+                          <FolderOpen className="h-3 w-3" />{processosCounts[c.id]} dossier{processosCounts[c.id] !== 1 ? 's' : ''}
                         </Link>
                       )}
                     </div>
