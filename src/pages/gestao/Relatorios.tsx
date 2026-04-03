@@ -47,7 +47,7 @@ export default function Relatorios() {
       supabase.from('conclusoes').select('*').in('issue_id', (await supabase.from('issues').select('id').eq('processo_id', selectedProcesso)).data?.map(i => i.id) || []),
     ]);
     setData({
-      processo: pRes.data as Processo,
+      processo: pRes.data as Dossier,
       factos: (fRes.data as Facto[]) || [],
       issues: (iRes.data as Issue[]) || [],
       rules: (rRes.data as Rule[]) || [],
