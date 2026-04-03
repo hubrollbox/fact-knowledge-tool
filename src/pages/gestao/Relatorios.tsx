@@ -39,7 +39,7 @@ export default function Relatorios() {
     if (!selectedProcesso) return;
     setLoading(true);
     const [pRes, fRes, iRes, rRes, aRes, cRes] = await Promise.all([
-      supabase.from('processos').select('*, cliente:clientes(nome)').eq('id', selectedProcesso).single(),
+      supabase.from('dossiers').select('*, cliente:clientes(nome)').eq('id', selectedProcesso).single(),
       supabase.from('factos').select('*').eq('processo_id', selectedProcesso).order('data_facto', { ascending: true }),
       supabase.from('issues').select('*').eq('processo_id', selectedProcesso).order('created_at'),
       supabase.from('rules').select('*').eq('processo_id', selectedProcesso).order('created_at'),
