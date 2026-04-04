@@ -39,7 +39,7 @@ export default function Dashboard() {
 
       const [pRes, iRes, countdownRes, emailServiceRes, docAgendaRes, factoAgendaRes] = await Promise.all([
         supabase.from('dossiers').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5),
-        supabase.from('issues').select('id, estado, processo_id, dossiers!inner(user_id)').eq('dossiers.user_id', user.id).eq('estado', 'aberta'),
+        supabase.from('issues').select('id, estado, dossier_id, dossiers!inner(user_id)').eq('dossiers.user_id', user.id).eq('estado', 'aberta'),
         supabase.from('countdown_events').select('id').eq('user_id', user.id).gte('target_date', nowIso),
         supabase.from('user_services').select('connected, metadata').eq('user_id', user.id).eq('service', 'gmail').maybeSingle(),
         supabase
