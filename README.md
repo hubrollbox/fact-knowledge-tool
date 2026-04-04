@@ -1,73 +1,111 @@
-FKT — Fact Knowledge Tool
-Aplicação web para análise jurídica estruturada.
+# FKT — Fact Knowledge Tool
+
+Sistema para organização de informação, análise estruturada e apoio à decisão.
+
 O FKT operacionaliza um método formal que impõe a separação rigorosa entre:
-Factos
-Normas
-Raciocínio jurídico
+- Contexto (factos)
+- Problema
+- Referências
+- Análise
+- Decisão
+
 O sistema garante que qualquer conclusão seja rastreável, reconstruível e estruturalmente validada.
-MVP funcional em produção.
-Repositório: https://github.com/hubrollbox/fact-knowledge-tool�
-Propósito
-O FKT não é software de aconselhamento jurídico.
+
+MVP funcional em produção.  
+Repositório: https://github.com/hubrollbox/fact-knowledge-tool
+
+---
+
+## Propósito
+
+O FKT não é software de aconselhamento.
+
 É uma infraestrutura metodológica que impõe:
-Registo factual explícito
-Referenciação normativa verificável
-Estrutura obrigatória de raciocínio (FIRAC)
-Cadeia analítica rastreável
-O objetivo é impedir a confusão entre facto, interpretação e conclusão.
-Como Funciona
+
+- Registo factual explícito  
+- Referenciação verificável  
+- Estrutura obrigatória de raciocínio  
+- Cadeia analítica rastreável  
+
+O objetivo é impedir a confusão entre informação, interpretação e conclusão.
+
+---
+
+## Como Funciona
+
 O FKT organiza o trabalho em dois domínios distintos:
-Base de Conhecimentos
-Espaço dedicado ao estudo teórico e organização estruturada de normas, conceitos e apontamentos.
-Processos
-Análise estruturada de casos concretos segundo método formal obrigatório.
+
+### Base de Conhecimento
+Espaço dedicado ao estudo, organização de referências e estruturação de informação.
+
+### Dossiers (Processos)
+Análise estruturada de situações concretas segundo um método formal obrigatório.
+
 Os dois domínios são logicamente separados.
-Método FIRAC
-Cada processo segue obrigatoriamente a estrutura:
-F — Factos
-I — Issue (Questão jurídica)
-R — Rules (Normas aplicáveis)
-A — Application (Aplicação das normas aos factos)
-C — Conclusion (Conclusão fundamentada)
-Regras do sistema:
-Factos são registados separadamente da qualificação jurídica.
-Normas exigem referência explícita.
-Conclusões só existem se ligadas a factos e normas.
-Um processo só pode ser considerado concluído se cumprir os requisitos estruturais.
-Funcionalidades Atuais (MVP)
-Autenticação de utilizadores
-Criação estruturada de processos
-Modelo formal para:
-Factos
-Normas
-Processos
-Fluxo FIRAC obrigatório
-Geração automática de cronologia factual
-Separação entre Base de Conhecimentos e Processos
-Estado do Projeto
-MVP funcional em produção.
+
+---
+
+## Método
+
+Cada dossier segue obrigatoriamente uma estrutura:
+
+- Contexto  
+- Problema  
+- Referências  
+- Análise  
+- Decisão  
+
+### Regras do sistema:
+
+- O contexto é registado separadamente da interpretação  
+- As referências exigem identificação explícita  
+- A análise liga contexto e referências  
+- A decisão tem de ser justificável  
+- Um dossier só pode ser considerado concluído se cumprir os requisitos estruturais  
+
+---
+
+## Aplicação
+
+O sistema pode ser utilizado em qualquer área que exija decisão estruturada baseada em informação verificável, incluindo:
+
+- Jurídico  
+- Gestão e administração  
+- Saúde (humana e veterinária)  
+- Engenharia e qualidade  
+- Tecnologia e análise de incidentes  
+- Educação e investigação  
+
+---
+
+## Funcionalidades Atuais (MVP)
+
+- Autenticação de utilizadores  
+- Criação estruturada de dossiers  
+- Modelo formal para:
+  - Contexto  
+  - Referências  
+  - Análise  
+- Separação entre Base de Conhecimento e Dossiers  
+- Estrutura obrigatória de análise  
+- Organização cronológica de informação  
+
+---
+
+## Estado do Projeto
+
+MVP funcional em produção.  
 Em desenvolvimento contínuo.
-Propriedade Intelectual
-Não é concedida licença open source.
+
+---
+
+## Propriedade Intelectual
+
+Não é concedida licença open source.  
 Todos os direitos reservados.
 
+---
 
-Configuração de autenticação (Supabase)
+## Configuração de autenticação (Supabase)
+
 Para o login funcionar em ambiente local, copie `.env.example` para `.env.local` e preencha as credenciais:
-
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SEU_ANON_OU_PUBLISHABLE_KEY
-
-Também é aceite `VITE_SUPABASE_PUBLISHABLE_KEY` como alternativa ao `VITE_SUPABASE_ANON_KEY`.
-
-Erros comuns de login
-- `Auth session missing!`: utilizador não autenticado ao aceder rotas protegidas. Faça login primeiro.
-- `Invalid login credentials`: email ou palavra-passe inválidos.
-- `Email not confirmed`: confirme o registo no email antes de entrar.
-
-
-Configuração OAuth Google (evitar `redirect_uri_mismatch`)
-- Defina `GOOGLE_REDIRECT_URI` nos secrets das Edge Functions quando necessário (ex.: múltiplos ambientes).
-- Se não definir, o sistema usa por defeito: `https://<PROJECT_REF>.supabase.co/functions/v1/oauth-callback`.
-- Em **Google Cloud Console → OAuth 2.0 Client IDs → Authorized redirect URIs**, adicione exatamente o mesmo valor usado em `GOOGLE_REDIRECT_URI` (ou o valor por defeito acima).
-- O `oauth-google` e o `oauth-callback` têm de usar o mesmo redirect URI.
