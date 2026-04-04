@@ -109,32 +109,30 @@ export default function Dashboard() {
           </Button>
         </div>
 
+        {/* Planner — destaque principal */}
+        <PlannerOverview />
+
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Countdown Abertos', value: stats.countdownAbertos, icon: TimerReset },
-            { label: 'Emails Não Lidos', value: stats.emailsNaoLidos, icon: Mail },
-            { label: 'Issues Abertas', value: stats.issuesAbertas, icon: AlertCircle },
-            { label: 'Próximo Compromisso', value: stats.proximoCompromisso, icon: CalendarClock },
+            { label: 'Countdown', value: stats.countdownAbertos, icon: TimerReset },
+            { label: 'Emails', value: stats.emailsNaoLidos, icon: Mail },
+            { label: 'Issues', value: stats.issuesAbertas, icon: AlertCircle },
+            { label: 'Próximo', value: stats.proximoCompromisso, icon: CalendarClock },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label} className="border-border">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-                    <p className="text-3xl font-bold text-foreground mt-1">
-                      {loading ? '—' : value}
-                    </p>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground truncate">{label}</p>
+                    <p className="text-lg font-bold text-foreground">{loading ? '—' : value}</p>
                   </div>
-                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Planner */}
-        <PlannerOverview />
 
         {/* Dossiers recentes */}
         <Card className="border-border">
@@ -183,7 +181,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Agenda & Email widgets */}
+        {/* Widgets secundários */}
         <div className="grid md:grid-cols-2 gap-4">
           <AgendaWidget />
           <EmailWidget />
