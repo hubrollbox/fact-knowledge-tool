@@ -89,9 +89,9 @@ export type Database = {
         Row: {
           argumento: string
           created_at: string | null
+          dossier_id: string
           id: string
           issue_id: string
-          processo_id: string
           rule_id: string
           tipo: string
           updated_at: string | null
@@ -99,9 +99,9 @@ export type Database = {
         Insert: {
           argumento: string
           created_at?: string | null
+          dossier_id: string
           id?: string
           issue_id: string
-          processo_id: string
           rule_id: string
           tipo?: string
           updated_at?: string | null
@@ -109,26 +109,26 @@ export type Database = {
         Update: {
           argumento?: string
           created_at?: string | null
+          dossier_id?: string
           id?: string
           issue_id?: string
-          processo_id?: string
           rule_id?: string
           tipo?: string
           updated_at?: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "applications_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "applications_issue_id_fkey"
             columns: ["issue_id"]
             isOneToOne: false
             referencedRelation: "issues"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "applications_processo_id_fkey"
-            columns: ["processo_id"]
-            isOneToOne: false
-            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
           {
@@ -244,18 +244,18 @@ export type Database = {
       disciplina_processos: {
         Row: {
           disciplina_id: string
+          dossier_id: string
           id: string
-          processo_id: string
         }
         Insert: {
           disciplina_id: string
+          dossier_id: string
           id?: string
-          processo_id: string
         }
         Update: {
           disciplina_id?: string
+          dossier_id?: string
           id?: string
-          processo_id?: string
         }
         Relationships: [
           {
@@ -266,8 +266,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "disciplina_processos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "disciplina_processos_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
             referencedColumns: ["id"]
@@ -306,10 +306,10 @@ export type Database = {
           created_at: string | null
           data_documento: string | null
           descricao: string | null
+          dossier_id: string
           entidade_origem: string | null
           id: string
           localizacao: string | null
-          processo_id: string
           storage_path: string | null
           tipo: string | null
           titulo: string
@@ -319,10 +319,10 @@ export type Database = {
           created_at?: string | null
           data_documento?: string | null
           descricao?: string | null
+          dossier_id: string
           entidade_origem?: string | null
           id?: string
           localizacao?: string | null
-          processo_id: string
           storage_path?: string | null
           tipo?: string | null
           titulo: string
@@ -332,10 +332,10 @@ export type Database = {
           created_at?: string | null
           data_documento?: string | null
           descricao?: string | null
+          dossier_id?: string
           entidade_origem?: string | null
           id?: string
           localizacao?: string | null
-          processo_id?: string
           storage_path?: string | null
           tipo?: string | null
           titulo?: string
@@ -343,8 +343,8 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "documentos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "documentos_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
             referencedColumns: ["id"]
@@ -390,7 +390,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "processos_cliente_id_fkey"
+            foreignKeyName: "dossiers_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
@@ -404,10 +404,10 @@ export type Database = {
           data_facto: string | null
           descricao: string
           documento_id: string | null
+          dossier_id: string
           grau_certeza: string
           id: string
           observacoes: string | null
-          processo_id: string
           updated_at: string | null
         }
         Insert: {
@@ -415,10 +415,10 @@ export type Database = {
           data_facto?: string | null
           descricao: string
           documento_id?: string | null
+          dossier_id: string
           grau_certeza?: string
           id?: string
           observacoes?: string | null
-          processo_id: string
           updated_at?: string | null
         }
         Update: {
@@ -426,16 +426,16 @@ export type Database = {
           data_facto?: string | null
           descricao?: string
           documento_id?: string | null
+          dossier_id?: string
           grau_certeza?: string
           id?: string
           observacoes?: string | null
-          processo_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "factos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "factos_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
             referencedColumns: ["id"]
@@ -446,34 +446,34 @@ export type Database = {
         Row: {
           created_at: string | null
           descricao: string
+          dossier_id: string
           estado: string
           id: string
           prioridade: string
-          processo_id: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           descricao: string
+          dossier_id: string
           estado?: string
           id?: string
           prioridade?: string
-          processo_id: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           descricao?: string
+          dossier_id?: string
           estado?: string
           id?: string
           prioridade?: string
-          processo_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "issues_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "issues_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
             referencedColumns: ["id"]
@@ -552,9 +552,9 @@ export type Database = {
       rules: {
         Row: {
           created_at: string | null
+          dossier_id: string
           fonte: string | null
           id: string
-          processo_id: string
           referencia: string
           texto: string
           updated_at: string | null
@@ -563,9 +563,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          dossier_id: string
           fonte?: string | null
           id?: string
-          processo_id: string
           referencia: string
           texto: string
           updated_at?: string | null
@@ -574,9 +574,9 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          dossier_id?: string
           fonte?: string | null
           id?: string
-          processo_id?: string
           referencia?: string
           texto?: string
           updated_at?: string | null
@@ -585,8 +585,8 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "rules_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "rules_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
             referencedRelation: "dossiers"
             referencedColumns: ["id"]
@@ -728,6 +728,17 @@ export type Database = {
       }
     }
     Functions: {
+      create_application_with_factos: {
+        Args: {
+          _argumento: string
+          _dossier_id: string
+          _facto_ids?: string[]
+          _issue_id: string
+          _rule_id: string
+          _tipo?: string
+        }
+        Returns: string
+      }
       get_disciplina_user_id: {
         Args: { _disciplina_id: string }
         Returns: string
