@@ -1,44 +1,36 @@
 import { Link } from 'react-router-dom';
-import { Scale, FileText, BookOpen, Timer, Mail, BarChart3, ArrowRight, Shield } from 'lucide-react';
+import { FileText, BookOpen, Timer, Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
 
-const services = [
-  {
-    icon: Scale,
-    title: 'Gestão de Dossiers',
-    description: 'Organize todos os seus dossiers com factos, documentos, problemas e cronologia num único lugar.',
-  },
+const sections = [
   {
     icon: FileText,
-    title: 'Documentos & Factos',
-    description: 'Registe factos relevantes, associe documentos e construa a sua logica de forma estruturada.',
+    title: 'Dossiers',
+    description: 'Cada assunto é organizado num dossier com toda a informação relevante num único lugar.',
   },
   {
     icon: BookOpen,
-    title: 'Base de Conhecimento',
-    description: 'Crie disciplinas e tópicos de referência para consultar a qualquer momento.',
+    title: 'Estrutura',
+    description: 'A informação é organizada em contexto, problema, referências, análise e decisão.',
   },
   {
     icon: Timer,
-    title: 'Countdowns & Prazos',
-    description: 'Nunca perca um prazo — acompanhe datas-limite com contagens regressivas visuais.',
+    title: 'Ações e controlo',
+    description: 'Cada dossier tem ações associadas para garantir execução e controlo de prazos.',
   },
   {
-    icon: Mail,
-    title: 'Integração de Email',
-    description: 'Conecte o Gmail para monitorizar emails não lidos diretamente do dashboard.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Tesouraria & Relatórios',
-    description: 'Controle receitas e despesas com visão clara da saúde financeira do seu escritório.',
+    icon: Shield,
+    title: 'Decisão',
+    description: 'Toda a informação converge para uma decisão clara e fundamentada.',
   },
 ];
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      
+      {/* HEADER */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <span className="text-lg font-bold tracking-tight">FKT</span>
@@ -48,44 +40,57 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* HERO */}
       <section className="flex-1 flex items-center justify-center px-6 py-20 md:py-32">
         <div className="max-w-3xl text-center space-y-6">
+          
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-2">
             <Shield className="h-3 w-3" />
-            Plataforma segura e privada
+            Sistema privado e estruturado
           </div>
+
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            O seu escritório,
+            Processos organizados.
             <br />
-            <span className="text-muted-foreground">simplificado.</span>
+            Nada perdido.
+            <br />
+            <span className="text-muted-foreground">Decisões justificadas.</span>
           </h1>
+
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Gerencie dossiers, documentos, prazos e conhecimento numa plataforma integrada, desenhada para profissionais exigentes.
+            Sistema para organizar dossiers, estruturar informação e tomar decisões com base em dados claros.
           </p>
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link to="/login">
-                Começar agora
+                Entrar
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
+
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-              <a href="#servicos">Ver serviços</a>
+              <a href="#como-funciona">Como funciona</a>
             </Button>
           </div>
         </div>
       </section>
 
-      <section id="servicos" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-28">
+      {/* COMO FUNCIONA */}
+      <section id="como-funciona" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
+          
           <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Tudo o que precisa</h2>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Como funciona
+            </h2>
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Ferramentas integradas para cada aspeto do seu trabalho.
+              Um sistema simples baseado em dossiers, estrutura e ação.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map(({ icon: Icon, title, description }) => (
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {sections.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
                 className="group rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md hover:border-foreground/20"
@@ -101,20 +106,52 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* EXPLICAÇÃO DO MÉTODO */}
       <section className="px-6 py-20 md:py-28">
-        <div className="max-w-2xl mx-auto text-center space-y-6">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Pronto para organizar o seu escritório?
+            Estrutura do sistema
           </h2>
-          <p className="text-muted-foreground">
-            Crie a sua conta gratuitamente e comece a gerir dossiers em minutos.
+
+          <p className="text-muted-foreground leading-relaxed">
+            Cada dossier é organizado em cinco elementos fundamentais:
           </p>
+
+          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
+            <p><strong>Contexto:</strong> enquadramento da situação</p>
+            <p><strong>Problema:</strong> questão a resolver</p>
+            <p><strong>Referências:</strong> regras, normas ou informação relevante</p>
+            <p><strong>Análise:</strong> interpretação da informação</p>
+            <p><strong>Decisão:</strong> conclusão fundamentada</p>
+          </div>
+
+          <p className="text-muted-foreground">
+            Esta estrutura permite transformar informação dispersa em decisões claras e justificadas.
+          </p>
+
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="px-6 py-20 md:py-28 border-t border-border">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Um sistema simples para controlar processos e decisões
+          </h2>
+
+          <p className="text-muted-foreground">
+            O FKT está em desenvolvimento e em uso real. Esta página serve para explicar o conceito e a estrutura do sistema.
+          </p>
+
           <Button asChild size="lg">
             <Link to="/login">
-              Criar conta gratuita
+              Entrar no sistema
               <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
           </Button>
+
         </div>
       </section>
 
