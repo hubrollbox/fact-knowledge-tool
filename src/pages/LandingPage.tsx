@@ -106,7 +106,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* EXPLICAÇÃO DO MÉTODO */}
+      {/* ESTRUTURA DO SISTEMA */}
       <section className="px-6 py-20 md:py-28">
         <div className="max-w-3xl mx-auto text-center space-y-6">
           
@@ -127,8 +127,31 @@ export default function LandingPage() {
           </div>
 
           <p className="text-muted-foreground">
-            Esta estrutura permite transformar informação dispersa em decisões claras e justificadas.
+            Evita perda de informação, reduz erros e permite justificar qualquer decisão com base no que foi registado.
           </p>
+
+        </div>
+      </section>
+
+      {/* EXEMPLO */}
+      <section className="px-6 py-20 md:py-28 border-t border-border">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Exemplo simples
+          </h2>
+
+          <p className="text-muted-foreground">
+            Processo de compra de equipamento:
+          </p>
+
+          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
+            <p><strong>Contexto:</strong> necessidade de equipamento com orçamento limitado</p>
+            <p><strong>Problema:</strong> escolher fornecedor adequado</p>
+            <p><strong>Referências:</strong> orçamento disponível, propostas recebidas</p>
+            <p><strong>Análise:</strong> comparação entre preço, prazo e qualidade</p>
+            <p><strong>Decisão:</strong> selecionar fornecedor com melhor equilíbrio custo-benefício</p>
+          </div>
 
         </div>
       </section>
