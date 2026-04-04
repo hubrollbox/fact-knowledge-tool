@@ -38,13 +38,16 @@ export default function Relatorios() {
   const gerarRelatorio = async () => {
     if (!selectedProcesso) return;
     setLoading(true);
+
+    const { data: issueIds } = await supabase.from('issues').select('id').eq('dossier_id', selectedProcesso);
+
     const [pRes, fRes, iRes, rRes, aRes, cRes] = await Promise.all([
       supabase.from('dossiers').select('*, cliente:clientes(nome)').eq('id', selectedProcesso).single(),
-      supabase.from('factos').select('*').eq('processo_id', selectedProcesso).order('data_facto', { ascending: true }),
-      supabase.from('issues').select('*').eq('processo_id', selectedProcesso).order('created_at'),
-      supabase.from('rules').select('*').eq('processo_id', selectedProcesso).order('created_at'),
-      supabase.from('applications').select('*, issue:issues(descricao), rule:rules(referencia), application_factos(facto:factos(descricao))').eq('processo_id', selectedProcesso),
-      supabase.from('conclusoes').select('*').in('issue_id', (await supabase.from('issues').select('id').eq('processo_id', selectedProcesso)).data?.map(i => i.id) || []),
+      supabase.from('factos').select('*').eq('dossier_id', selectedProcesso).order('data_facto', { ascending: true }),
+      supabase.from('issues').select('*').eq('dossier_id', selectedProcesso).order('created_at'),
+      supabase.from('rules').select('*').eq('dossier_id', selectedProcesso).order('created_at'),
+      supabase.from('applications').select('*, issue:issues(descricao), rule:rules(referencia), application_factos(facto:factos(descricao))').eq('dossier_id', selectedProcesso),
+      supabase.from('conclusoes').select('*').in('issue_id', issueIds?.map(i => i.id) || []),
     ]);
     setData({
       processo: pRes.data as Dossier,
@@ -106,10 +109,8 @@ export default function Relatorios() {
           </CardContent>
         </Card>
 
-        {/* Relatório */}
         {data && (
           <div ref={printRef} className="print:p-0 space-y-8">
-            {/* Cabeçalho */}
             <div className="border-b border-border pb-6">
               <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">FKT — Factual Knowledge Tool</p>
               <h2 className="text-2xl font-bold text-foreground">{data.processo.titulo}</h2>
@@ -123,7 +124,6 @@ export default function Relatorios() {
               {tipo === 'lacunas' && <p className="mt-1 text-sm font-medium">Relatório: Análise de Lacunas</p>}
             </div>
 
-            {/* Factos */}
             <section>
               <h3 className="text-lg font-bold text-foreground mb-4 border-b border-border pb-2">F — Factos</h3>
               {data.factos.length === 0 ? (
@@ -146,7 +146,6 @@ export default function Relatorios() {
               )}
             </section>
 
-            {/* FIRAC completo */}
             {(tipo === 'firac' || tipo === 'lacunas') && (
               <>
                 <section>
@@ -222,7 +221,6 @@ export default function Relatorios() {
               </>
             )}
 
-            {/* Lacunas */}
             {tipo === 'lacunas' && issuesComLacunas.length > 0 && (
               <section>
                 <h3 className="text-lg font-bold text-foreground mb-4 border-b border-border pb-2">⚠️ Lacunas Identificadas</h3>
@@ -237,7 +235,6 @@ export default function Relatorios() {
               </section>
             )}
 
-            {/* Disclaimer */}
             <section className="border-t border-border pt-6 mt-8">
               <div className="p-4 border border-border rounded-lg bg-muted">
                 <p className="text-xs font-bold text-foreground mb-1">⚠️ DECLARAÇÃO IMPORTANTE — NÃO CONSTITUI ACONSELHAMENTO JURÍDICO</p>

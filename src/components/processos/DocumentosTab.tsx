@@ -29,7 +29,7 @@ export function DocumentosTab({ processoId }: Props) {
     const { data, error } = await supabase
       .from('documentos')
       .select('*')
-      .eq('processo_id', processoId)
+      .eq('dossier_id', processoId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -65,7 +65,7 @@ export function DocumentosTab({ processoId }: Props) {
     }
 
     const { error: insertError } = await supabase.from('documentos').insert({
-      processo_id: processoId,
+      dossier_id: processoId,
       titulo: form.titulo.trim(),
       tipo: form.tipo.trim() || null,
       data_documento: form.data_documento || null,
@@ -110,7 +110,7 @@ export function DocumentosTab({ processoId }: Props) {
   const getSignedUrl = async (path: string): Promise<string | null> => {
     const { data, error } = await supabase.storage
       .from('documentos')
-      .createSignedUrl(path, 3600); // 1 hour expiry
+      .createSignedUrl(path, 3600);
     if (error) {
       console.error('Error creating signed URL:', error);
       return null;

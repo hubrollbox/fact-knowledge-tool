@@ -55,8 +55,8 @@ export default function DossierDetalhe() {
   useEffect(() => {
     if (!id) return;
     Promise.all([
-      supabase.from('documentos').select('id, titulo, tipo, created_at').eq('processo_id', id).order('created_at', { ascending: false }).limit(4),
-      supabase.from('factos').select('id, descricao, data_facto').eq('processo_id', id).order('data_facto', { ascending: false, nullsFirst: false }).limit(5),
+      supabase.from('documentos').select('id, titulo, tipo, created_at').eq('dossier_id', id).order('created_at', { ascending: false }).limit(4),
+      supabase.from('factos').select('id, descricao, data_facto').eq('dossier_id', id).order('data_facto', { ascending: false, nullsFirst: false }).limit(5),
     ]).then(([docsRes, factosRes]) => {
       setRecentDocs((docsRes.data as RecentDoc[]) || []);
       setRecentFactos((factosRes.data as RecentFacto[]) || []);
@@ -161,7 +161,7 @@ export default function DossierDetalhe() {
           </div>
         </div>
 
-        {/* Próxima Ação */}
+        {/* Ações */}
         <Card className="border-border">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { Application, Issue, Rule, Facto, ApplicationTipo } from '@/types';
 
 interface Props { processoId: string; }
@@ -26,10 +27,10 @@ export function ApplicationsTab({ processoId }: Props) {
 
   const fetchAll = async () => {
     const [aRes, iRes, rRes, fRes] = await Promise.all([
-      supabase.from('applications').select('*, issue:issues(id,descricao), rule:rules(id,referencia), application_factos(id,facto_id,facto:factos(id,descricao,data_facto))').eq('processo_id', processoId).order('created_at', { ascending: true }),
-      supabase.from('issues').select('*').eq('processo_id', processoId),
-      supabase.from('rules').select('*').eq('processo_id', processoId),
-      supabase.from('factos').select('*').eq('processo_id', processoId).order('data_facto', { ascending: true }),
+      supabase.from('applications').select('*, issue:issues(id,descricao), rule:rules(id,referencia), application_factos(id,facto_id,facto:factos(id,descricao,data_facto))').eq('dossier_id', processoId).order('created_at', { ascending: true }),
+      supabase.from('issues').select('*').eq('dossier_id', processoId),
+      supabase.from('rules').select('*').eq('dossier_id', processoId),
+      supabase.from('factos').select('*').eq('dossier_id', processoId).order('data_facto', { ascending: true }),
     ]);
     setApplications((aRes.data as Application[]) || []);
     setIssues((iRes.data as Issue[]) || []);
@@ -46,31 +47,37 @@ export function ApplicationsTab({ processoId }: Props) {
     setSaving(true);
     setFormError(null);
 
-    const { data: app } = await supabase.from('applications').insert({
-      processo_id: processoId,
-      issue_id: form.issue_id,
-      rule_id: form.rule_id,
-      argumento: form.argumento.trim(),
-      tipo: form.tipo,
-    }).select().single();
+    try {
+      const { data, error } = await supabase.rpc('create_application_with_factos', {
+        _dossier_id: processoId,
+        _issue_id: form.issue_id,
+        _rule_id: form.rule_id,
+        _argumento: form.argumento.trim(),
+        _tipo: form.tipo,
+        _facto_ids: form.factos_ids,
+      });
+      if (error) throw error;
 
-    if (app) {
-      await supabase.from('application_factos').insert(
-        form.factos_ids.map(fid => ({ application_id: app.id, facto_id: fid }))
-      );
+      await fetchAll();
+      setDialogOpen(false);
+      setForm(emptyForm);
+    } catch (e: any) {
+      setFormError(e?.message || 'Erro ao criar application');
+    } finally {
+      setSaving(false);
     }
-
-    await fetchAll();
-    setSaving(false);
-    setDialogOpen(false);
-    setForm(emptyForm);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta application?')) return;
-    await supabase.from('application_factos').delete().eq('application_id', id);
-    await supabase.from('applications').delete().eq('id', id);
-    setApplications(prev => prev.filter(a => a.id !== id));
+    try {
+      await supabase.from('application_factos').delete().eq('application_id', id);
+      const { error } = await supabase.from('applications').delete().eq('id', id);
+      if (error) throw error;
+      setApplications(prev => prev.filter(a => a.id !== id));
+    } catch {
+      toast.error('Erro ao eliminar application');
+    }
   };
 
   const toggleFacto = (id: string) => {
@@ -107,7 +114,6 @@ export function ApplicationsTab({ processoId }: Props) {
               <div key={app.id} className="p-4 border border-border rounded-lg bg-card group hover:border-foreground/20 transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    {/* Chain visual */}
                     <div className="flex items-center gap-2 flex-wrap text-xs font-medium">
                       <span className="bg-muted px-2 py-1 rounded text-foreground truncate max-w-[180px]" title={issue?.descricao}>{issue?.descricao}</span>
                       <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />

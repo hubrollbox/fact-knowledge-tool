@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { CERTEZA_LABELS } from '@/lib/utils-fkt';
 import type { Issue, Conclusao, GrauCerteza } from '@/types';
 
@@ -22,14 +23,18 @@ export function ConclusoesTab({ processoId }: Props) {
   const [saving, setSaving] = useState(false);
 
   const fetchAll = async () => {
-    const [iRes, cRes] = await Promise.all([
-      supabase.from('issues').select('*').eq('processo_id', processoId).order('created_at'),
-      supabase.from('conclusoes').select('*').in('issue_id',
-        (await supabase.from('issues').select('id').eq('processo_id', processoId)).data?.map(i => i.id) || []
-      ),
-    ]);
-    setIssues((iRes.data as Issue[]) || []);
-    setConclusoes((cRes.data as Conclusao[]) || []);
+    const { data: issuesData, error: iErr } = await supabase.from('issues').select('*').eq('dossier_id', processoId).order('created_at');
+    if (iErr) { toast.error('Erro ao carregar issues'); setLoading(false); return; }
+    const issuesList = (issuesData as Issue[]) || [];
+    setIssues(issuesList);
+
+    if (issuesList.length > 0) {
+      const issueIds = issuesList.map(i => i.id);
+      const { data: concData } = await supabase.from('conclusoes').select('*').in('issue_id', issueIds);
+      setConclusoes((concData as Conclusao[]) || []);
+    } else {
+      setConclusoes([]);
+    }
     setLoading(false);
   };
 
@@ -54,19 +59,27 @@ export function ConclusoesTab({ processoId }: Props) {
   const handleSave = async () => {
     if (!selectedIssue || !form.resultado.trim()) return;
     setSaving(true);
-    if (editing) {
-      await supabase.from('conclusoes').update({ resultado: form.resultado.trim(), grau_confianca: form.grau_confianca, pontos_frageis: form.pontos_frageis.trim() || null }).eq('id', editing.id);
-    } else {
-      await supabase.from('conclusoes').insert({ issue_id: selectedIssue.id, resultado: form.resultado.trim(), grau_confianca: form.grau_confianca, pontos_frageis: form.pontos_frageis.trim() || null });
+    try {
+      if (editing) {
+        const { error } = await supabase.from('conclusoes').update({ resultado: form.resultado.trim(), grau_confianca: form.grau_confianca, pontos_frageis: form.pontos_frageis.trim() || null }).eq('id', editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('conclusoes').insert({ issue_id: selectedIssue.id, resultado: form.resultado.trim(), grau_confianca: form.grau_confianca, pontos_frageis: form.pontos_frageis.trim() || null });
+        if (error) throw error;
+      }
+      await fetchAll();
+      setDialogOpen(false);
+    } catch {
+      toast.error('Erro ao guardar conclusão');
+    } finally {
+      setSaving(false);
     }
-    await fetchAll();
-    setSaving(false);
-    setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta conclusão?')) return;
-    await supabase.from('conclusoes').delete().eq('id', id);
+    const { error } = await supabase.from('conclusoes').delete().eq('id', id);
+    if (error) { toast.error('Erro ao eliminar conclusão'); return; }
     setConclusoes(prev => prev.filter(c => c.id !== id));
   };
 
@@ -77,7 +90,6 @@ export function ConclusoesTab({ processoId }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Progresso */}
       <div className="p-4 border border-border rounded-lg bg-card">
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-medium text-foreground">Completude do Processo</p>

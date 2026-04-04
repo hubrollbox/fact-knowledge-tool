@@ -33,13 +33,13 @@ export default function DossiersList() {
       if (data && data.length > 0) {
         const ids = data.map((p: any) => p.id);
         const [fRes, dRes] = await Promise.all([
-          supabase.from('factos').select('processo_id').in('processo_id', ids),
-          supabase.from('documentos').select('processo_id').in('processo_id', ids),
+          supabase.from('factos').select('dossier_id').in('dossier_id', ids),
+          supabase.from('documentos').select('dossier_id').in('dossier_id', ids),
         ]);
         const c: Record<string, { factos: number; documentos: number }> = {};
         ids.forEach(id => { c[id] = { factos: 0, documentos: 0 }; });
-        (fRes.data || []).forEach((f: { processo_id: string }) => { if (c[f.processo_id]) c[f.processo_id].factos++; });
-        (dRes.data || []).forEach((d: { processo_id: string }) => { if (c[d.processo_id]) c[d.processo_id].documentos++; });
+        (fRes.data || []).forEach((f: any) => { if (c[f.dossier_id]) c[f.dossier_id].factos++; });
+        (dRes.data || []).forEach((d: any) => { if (c[d.dossier_id]) c[d.dossier_id].documentos++; });
         setCounts(c);
       }
       setLoading(false);

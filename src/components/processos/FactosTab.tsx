@@ -29,7 +29,7 @@ export function FactosTab({ processoId }: Props) {
     const { data, error } = await supabase
       .from('factos')
       .select('*')
-      .eq('processo_id', processoId)
+      .eq('dossier_id', processoId)
       .order('data_facto', { ascending: true, nullsFirst: false });
 
     if (error) {
@@ -74,7 +74,7 @@ export function FactosTab({ processoId }: Props) {
       }
     } else {
       const { error } = await supabase.from('factos').insert({
-        processo_id: processoId,
+        dossier_id: processoId,
         descricao: form.descricao.trim(),
         data_facto: form.data_facto || null,
         grau_certeza: form.grau_certeza,

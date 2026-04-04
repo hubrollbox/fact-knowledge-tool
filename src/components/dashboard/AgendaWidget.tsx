@@ -37,7 +37,7 @@ export function AgendaWidget() {
     const [docRes, factoRes] = await Promise.all([
       supabase
         .from('documentos')
-        .select('id, titulo, data_documento, processo_id, dossiers!inner(user_id, titulo)')
+        .select('id, titulo, data_documento, dossier_id, dossiers!inner(user_id, titulo)')
         .eq('dossiers.user_id', user!.id)
         .not('data_documento', 'is', null)
         .gte('data_documento', now)
@@ -45,7 +45,7 @@ export function AgendaWidget() {
         .limit(5),
       supabase
         .from('factos')
-        .select('id, descricao, data_facto, processo_id, dossiers!inner(user_id, titulo)')
+        .select('id, descricao, data_facto, dossier_id, dossiers!inner(user_id, titulo)')
         .eq('dossiers.user_id', user!.id)
         .not('data_facto', 'is', null)
         .gte('data_facto', now)
@@ -61,7 +61,7 @@ export function AgendaWidget() {
         titulo: d.titulo,
         data: d.data_documento,
         tipo: 'documento',
-        dossierId: d.processo_id,
+        dossierId: d.dossier_id,
         dossierTitulo: d.dossiers?.titulo,
       });
     });
@@ -72,7 +72,7 @@ export function AgendaWidget() {
         titulo: f.descricao.substring(0, 60) + (f.descricao.length > 60 ? '…' : ''),
         data: f.data_facto,
         tipo: 'facto',
-        dossierId: f.processo_id,
+        dossierId: f.dossier_id,
         dossierTitulo: f.dossiers?.titulo,
       });
     });

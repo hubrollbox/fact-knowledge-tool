@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { PRIORIDADE_LABELS } from '@/lib/utils-fkt';
 import type { Issue, IssuePrioridade, IssueEstado } from '@/types';
 
@@ -22,7 +23,8 @@ export function IssuesTab({ processoId }: Props) {
   const [saving, setSaving] = useState(false);
 
   const fetch = async () => {
-    const { data } = await supabase.from('issues').select('*').eq('processo_id', processoId).order('created_at', { ascending: true });
+    const { data, error } = await supabase.from('issues').select('*').eq('dossier_id', processoId).order('created_at', { ascending: true });
+    if (error) { toast.error('Erro ao carregar issues'); }
     setIssues((data as Issue[]) || []);
     setLoading(false);
   };
@@ -39,19 +41,27 @@ export function IssuesTab({ processoId }: Props) {
   const handleSave = async () => {
     if (!form.descricao.trim()) return;
     setSaving(true);
-    if (editing) {
-      await supabase.from('issues').update({ descricao: form.descricao.trim(), prioridade: form.prioridade, estado: form.estado }).eq('id', editing.id);
-    } else {
-      await supabase.from('issues').insert({ processo_id: processoId, descricao: form.descricao.trim(), prioridade: form.prioridade, estado: form.estado });
+    try {
+      if (editing) {
+        const { error } = await supabase.from('issues').update({ descricao: form.descricao.trim(), prioridade: form.prioridade, estado: form.estado }).eq('id', editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('issues').insert({ dossier_id: processoId, descricao: form.descricao.trim(), prioridade: form.prioridade, estado: form.estado });
+        if (error) throw error;
+      }
+      await fetch();
+      setDialogOpen(false);
+    } catch {
+      toast.error('Erro ao guardar issue');
+    } finally {
+      setSaving(false);
     }
-    await fetch();
-    setSaving(false);
-    setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta issue?')) return;
-    await supabase.from('issues').delete().eq('id', id);
+    const { error } = await supabase.from('issues').delete().eq('id', id);
+    if (error) { toast.error('Erro ao eliminar issue'); return; }
     setIssues(prev => prev.filter(i => i.id !== id));
   };
 

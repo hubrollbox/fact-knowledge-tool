@@ -39,7 +39,7 @@ export default function Cronologia() {
 
   const filtered = factos.filter(f => {
     const matchSearch = !search || f.descricao.toLowerCase().includes(search.toLowerCase());
-    const matchDossier = filterDossier === 'todos' || f.processo_id === filterDossier;
+    const matchDossier = filterDossier === 'todos' || f.dossier_id === filterDossier;
     const matchCerteza = filterCerteza === 'todas' || f.grau_certeza === filterCerteza;
     return matchSearch && matchDossier && matchCerteza;
   });
