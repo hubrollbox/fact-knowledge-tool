@@ -29,7 +29,7 @@ const sections = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      
+
       {/* HEADER */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
@@ -43,7 +43,7 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="flex-1 flex items-center justify-center px-6 py-20 md:py-32">
         <div className="max-w-3xl text-center space-y-6">
-          
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-2">
             <Shield className="h-3 w-3" />
             Sistema privado e estruturado
@@ -79,7 +79,7 @@ export default function LandingPage() {
       {/* COMO FUNCIONA */}
       <section id="como-funciona" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
-          
+
           <div className="text-center mb-14">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
               Como funciona
@@ -106,15 +106,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ESTRUTURA DO SISTEMA */}
+      {/* ESTRUTURA */}
       <section className="px-6 py-20 md:py-28">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          
+
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
             Estrutura do sistema
           </h2>
 
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="text-muted-foreground">
             Cada dossier é organizado em cinco elementos fundamentais:
           </p>
 
@@ -136,7 +136,7 @@ export default function LandingPage() {
       {/* EXEMPLO */}
       <section className="px-6 py-20 md:py-28 border-t border-border">
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          
+
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
             Exemplo simples
           </h2>
@@ -156,10 +156,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
+      {/* APLICAÇÃO */}
+      <section className="px-6 py-20 md:py-28 border-t border-border">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Aplicável a qualquer área
+          </h2>
+
+          <p className="text-muted-foreground">
+            Pode ser utilizado em qualquer contexto onde exista necessidade de organizar informação e tomar decisões com base em regras ou evidência.
+          </p>
+
+          <div className="grid sm:grid-cols-2 gap-4 text-sm text-left">
+            <div className="border border-border rounded-lg p-4 bg-card">Jurídico, compliance e auditoria</div>
+            <div className="border border-border rounded-lg p-4 bg-card">Saúde humana e veterinária</div>
+            <div className="border border-border rounded-lg p-4 bg-card">Gestão, estratégia e operações</div>
+            <div className="border border-border rounded-lg p-4 bg-card">Engenharia, qualidade e indústria</div>
+            <div className="border border-border rounded-lg p-4 bg-card">Tecnologia e análise de incidentes</div>
+            <div className="border border-border rounded-lg p-4 bg-card">Educação, investigação e estudo</div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* PORQUE FUNCIONA */}
+      <section className="px-6 py-20 md:py-28">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Porque funciona
+          </h2>
+
+          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
+            <p>• Separa informação de interpretação</p>
+            <p>• Obriga a definir claramente o problema</p>
+            <p>• Baseia decisões em referências objetivas</p>
+            <p>• Regista o raciocínio de forma estruturada</p>
+            <p>• Permite justificar e rever decisões</p>
+          </div>
+
+          <p className="text-muted-foreground">
+            O resultado é um sistema de decisão claro, consistente e rastreável.
+          </p>
+
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="px-6 py-20 md:py-28 border-t border-border">
         <div className="max-w-2xl mx-auto text-center space-y-6">
-          
+
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
             Um sistema simples para controlar processos e decisões
           </h2>
