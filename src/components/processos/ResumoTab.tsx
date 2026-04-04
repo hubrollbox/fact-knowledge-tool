@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { formatarData } from '@/lib/utils-fkt';
-import type { Processo } from '@/types';
+import type { Dossier } from '@/types';
 
 interface ResumoTabProps {
   processoId: string;
-  processo: Processo;
+  processo: Dossier;
   onNavigateTab: (tab: string) => void;
 }
 
@@ -54,17 +54,16 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
         { data: docs },
         { data: factos },
       ] = await Promise.all([
-        supabase.from('factos').select('*', { count: 'exact', head: true }).eq('processo_id', processoId),
-        supabase.from('issues').select('*', { count: 'exact', head: true }).eq('processo_id', processoId),
-        supabase.from('rules').select('*', { count: 'exact', head: true }).eq('processo_id', processoId),
-        supabase.from('applications').select('*', { count: 'exact', head: true }).eq('processo_id', processoId),
-        supabase.from('issues').select('id').eq('processo_id', processoId),
-        supabase.from('documentos').select('*', { count: 'exact', head: true }).eq('processo_id', processoId),
-        supabase.from('documentos').select('id, titulo, tipo, created_at').eq('processo_id', processoId).order('created_at', { ascending: false }).limit(4),
-        supabase.from('factos').select('id, descricao, data_facto, created_at').eq('processo_id', processoId).order('data_facto', { ascending: false, nullsFirst: false }).limit(5),
+        supabase.from('factos').select('*', { count: 'exact', head: true }).eq('dossier_id', processoId),
+        supabase.from('issues').select('*', { count: 'exact', head: true }).eq('dossier_id', processoId),
+        supabase.from('rules').select('*', { count: 'exact', head: true }).eq('dossier_id', processoId),
+        supabase.from('applications').select('*', { count: 'exact', head: true }).eq('dossier_id', processoId),
+        supabase.from('issues').select('id').eq('dossier_id', processoId),
+        supabase.from('documentos').select('*', { count: 'exact', head: true }).eq('dossier_id', processoId),
+        supabase.from('documentos').select('id, titulo, tipo, created_at').eq('dossier_id', processoId).order('created_at', { ascending: false }).limit(4),
+        supabase.from('factos').select('id, descricao, data_facto, created_at').eq('dossier_id', processoId).order('data_facto', { ascending: false, nullsFirst: false }).limit(5),
       ]);
 
-      // Count conclusoes via issue ids
       let concCount = 0;
       if (issuesForConc && issuesForConc.length > 0) {
         const issueIds = issuesForConc.map(i => i.id);
@@ -109,7 +108,6 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Descrição */}
       {processo.descricao && (
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
@@ -124,7 +122,6 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
         </Card>
       )}
 
-      {/* FIRAC */}
       <Card className="md:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
@@ -149,7 +146,6 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
         </CardContent>
       </Card>
 
-      {/* Documentos Recentes */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -181,7 +177,6 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
         </CardContent>
       </Card>
 
-      {/* Cronologia */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -216,7 +211,6 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
         </CardContent>
       </Card>
 
-      {/* Cliente */}
       {cliente && (
         <Card>
           <CardHeader className="pb-2">

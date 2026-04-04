@@ -52,7 +52,7 @@ export interface Action {
 
 export interface Facto {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   descricao: string;
   data_facto: string | null;
   grau_certeza: GrauCerteza;
@@ -64,7 +64,7 @@ export interface Facto {
 
 export interface Issue {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   descricao: string;
   prioridade: IssuePrioridade;
   estado: IssueEstado;
@@ -75,7 +75,7 @@ export interface Issue {
 
 export interface Rule {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   referencia: string;
   texto: string;
   vigencia_inicio: string | null;
@@ -87,7 +87,7 @@ export interface Rule {
 
 export interface Application {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   issue_id: string;
   rule_id: string;
   argumento: string;
@@ -119,7 +119,7 @@ export interface Conclusao {
 
 export interface Documento {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   titulo: string;
   tipo: string | null;
   data_documento: string | null;
@@ -159,6 +159,6 @@ export interface Topico {
 export interface DisciplinaProcesso {
   id: string;
   disciplina_id: string;
-  processo_id: string;
+  dossier_id: string;
   processo?: Dossier;
 }

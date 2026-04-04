@@ -147,7 +147,7 @@ export default function DisciplinaDetalhe() {
 
   const handleAssociarProcesso = async () => {
     if (!selectedProcesso) return;
-    await supabase.from('disciplina_processos').insert({ disciplina_id: id, processo_id: selectedProcesso });
+    await supabase.from('disciplina_processos').insert({ disciplina_id: id, dossier_id: selectedProcesso });
     await fetchAll();
     setProcessDialog(false);
     setSelectedProcesso('');

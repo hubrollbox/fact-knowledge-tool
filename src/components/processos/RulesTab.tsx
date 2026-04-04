@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { formatarData } from '@/lib/utils-fkt';
 import type { Rule } from '@/types';
 
@@ -22,7 +23,8 @@ export function RulesTab({ processoId }: Props) {
   const [saving, setSaving] = useState(false);
 
   const fetch = async () => {
-    const { data } = await supabase.from('rules').select('*').eq('processo_id', processoId).order('created_at', { ascending: true });
+    const { data, error } = await supabase.from('rules').select('*').eq('dossier_id', processoId).order('created_at', { ascending: true });
+    if (error) toast.error('Erro ao carregar normas');
     setRules((data as Rule[]) || []);
     setLoading(false);
   };
@@ -46,19 +48,27 @@ export function RulesTab({ processoId }: Props) {
       vigencia_fim: form.vigencia_fim || null,
       fonte: form.fonte.trim() || null,
     };
-    if (editing) {
-      await supabase.from('rules').update(payload).eq('id', editing.id);
-    } else {
-      await supabase.from('rules').insert({ ...payload, processo_id: processoId });
+    try {
+      if (editing) {
+        const { error } = await supabase.from('rules').update(payload).eq('id', editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('rules').insert({ ...payload, dossier_id: processoId });
+        if (error) throw error;
+      }
+      await fetch();
+      setDialogOpen(false);
+    } catch {
+      toast.error('Erro ao guardar norma');
+    } finally {
+      setSaving(false);
     }
-    await fetch();
-    setSaving(false);
-    setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta norma?')) return;
-    await supabase.from('rules').delete().eq('id', id);
+    const { error } = await supabase.from('rules').delete().eq('id', id);
+    if (error) { toast.error('Erro ao eliminar norma'); return; }
     setRules(prev => prev.filter(r => r.id !== id));
   };
 
