@@ -10,12 +10,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { validarFacto, formatarData, CERTEZA_LABELS } from '@/lib/utils-fkt';
 import { formatDatabaseError } from '@/lib/error-utils';
 import type { Facto, GrauCerteza } from '@/types';
+import { defaultLabels, type FKTLabels } from '@/config/fkt-labels';
 
-interface Props { processoId: string; }
+interface Props {
+  processoId: string;
+  labels?: FKTLabels;
+}
 
-const emptyForm = { descricao: '', data_facto: '', grau_certeza: 'medio' as GrauCerteza, observacoes: '' };
+const emptyForm = {
+  descricao: '',
+  data_facto: '',
+  grau_certeza: 'medio' as GrauCerteza,
+  observacoes: '',
+};
 
-export function FactosTab({ processoId }: Props) {
+export function FactosTab({ processoId, labels }: Props) {
+  const l = labels || defaultLabels;
+
   const [factos, setFactos] = useState<Facto[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -44,29 +55,54 @@ export function FactosTab({ processoId }: Props) {
     setLoading(false);
   };
 
-  useEffect(() => { fetch(); }, [processoId]);
+  useEffect(() => {
+    fetch();
+  }, [processoId]);
 
-  const openNew = () => { setEditing(null); setForm(emptyForm); setFormError(null); setDialogOpen(true); };
+  const openNew = () => {
+    setEditing(null);
+    setForm(emptyForm);
+    setFormError(null);
+    setDialogOpen(true);
+  };
+
   const openEdit = (f: Facto) => {
     setEditing(f);
-    setForm({ descricao: f.descricao, data_facto: f.data_facto || '', grau_certeza: f.grau_certeza, observacoes: f.observacoes || '' });
+    setForm({
+      descricao: f.descricao,
+      data_facto: f.data_facto || '',
+      grau_certeza: f.grau_certeza,
+      observacoes: f.observacoes || '',
+    });
     setFormError(null);
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     const err = validarFacto(form.descricao);
-    if (err) { setFormError(err); return; }
-    if (!form.descricao.trim()) { setFormError('A descrição é obrigatória.'); return; }
+    if (err) {
+      setFormError(err);
+      return;
+    }
+
+    if (!form.descricao.trim()) {
+      setFormError('A descrição é obrigatória.');
+      return;
+    }
+
     setSaving(true);
 
     if (editing) {
-      const { error } = await supabase.from('factos').update({
-        descricao: form.descricao.trim(),
-        data_facto: form.data_facto || null,
-        grau_certeza: form.grau_certeza,
-        observacoes: form.observacoes.trim() || null,
-      }).eq('id', editing.id);
+      const { error } = await supabase
+        .from('factos')
+        .update({
+          descricao: form.descricao.trim(),
+          data_facto: form.data_facto || null,
+          grau_certeza: form.grau_certeza,
+          observacoes: form.observacoes.trim() || null,
+        })
+        .eq('id', editing.id);
+
       if (error) {
         setFormError(formatDatabaseError(error));
         setSaving(false);
@@ -80,6 +116,7 @@ export function FactosTab({ processoId }: Props) {
         grau_certeza: form.grau_certeza,
         observacoes: form.observacoes.trim() || null,
       });
+
       if (error) {
         setFormError(formatDatabaseError(error));
         setSaving(false);
@@ -93,13 +130,16 @@ export function FactosTab({ processoId }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Eliminar este facto?')) return;
+    if (!confirm('Eliminar este registo?')) return;
+
     const { error } = await supabase.from('factos').delete().eq('id', id);
+
     if (error) {
       alert(formatDatabaseError(error));
       return;
     }
-    setFactos(prev => prev.filter(f => f.id !== id));
+
+    setFactos((prev) => prev.filter((f) => f.id !== id));
   };
 
   const certezaBadge = (c: string) => {
@@ -109,14 +149,24 @@ export function FactosTab({ processoId }: Props) {
       baixo: 'bg-muted text-muted-foreground border border-border',
       desconhecido: 'bg-muted/50 text-muted-foreground',
     };
-    return <span className={`text-xs px-2 py-0.5 rounded font-medium ${colors[c] || ''}`}>{CERTEZA_LABELS[c] || c}</span>;
+
+    return (
+      <span className={`text-xs px-2 py-0.5 rounded font-medium ${colors[c] || ''}`}>
+        {CERTEZA_LABELS[c] || c}
+      </span>
+    );
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{factos.length} facto{factos.length !== 1 ? 's' : ''} registado{factos.length !== 1 ? 's' : ''}</p>
-        <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" />Novo Facto</Button>
+        <p className="text-sm text-muted-foreground">
+          {factos.length} {l.factos.toLowerCase()}
+        </p>
+        <Button size="sm" onClick={openNew}>
+          <Plus className="h-4 w-4 mr-1" />
+          {l.novoFacto}
+        </Button>
       </div>
 
       {loadError && (
@@ -126,11 +176,17 @@ export function FactosTab({ processoId }: Props) {
       )}
 
       {loading ? (
-        <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded animate-pulse" />)}</div>
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-16 bg-muted rounded animate-pulse" />
+          ))}
+        </div>
       ) : factos.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-border rounded-lg">
-          <p className="text-muted-foreground text-sm">Nenhum facto registado</p>
-          <Button size="sm" className="mt-3" onClick={openNew}>Adicionar primeiro facto</Button>
+          <p className="text-muted-foreground text-sm">{l.nenhumFacto}</p>
+          <Button size="sm" className="mt-3" onClick={openNew}>
+            {l.novoFacto}
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -142,25 +198,39 @@ export function FactosTab({ processoId }: Props) {
                 </div>
                 {i < factos.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
               </div>
+
               <div className="flex-1 pb-4 border border-border rounded-lg p-4 bg-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <p className="text-sm text-foreground">{f.descricao}</p>
+
                     <div className="flex items-center gap-3 mt-2 flex-wrap">
                       {f.data_facto && (
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />{formatarData(f.data_facto)}
+                          <Calendar className="h-3 w-3" />
+                          {formatarData(f.data_facto)}
                         </span>
                       )}
                       {certezaBadge(f.grau_certeza)}
                     </div>
-                    {f.observacoes && <p className="text-xs text-muted-foreground mt-2 italic">{f.observacoes}</p>}
+
+                    {f.observacoes && (
+                      <p className="text-xs text-muted-foreground mt-2 italic">
+                        {f.observacoes}
+                      </p>
+                    )}
                   </div>
+
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(f)}>
                       <Pencil className="h-3 w-3" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(f.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(f.id)}
+                    >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
@@ -174,43 +244,79 @@ export function FactosTab({ processoId }: Props) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Editar Facto' : 'Novo Facto'}</DialogTitle>
+            <DialogTitle>{editing ? l.editarFacto : l.novoFacto}</DialogTitle>
           </DialogHeader>
+
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>Descrição *</Label>
+              <Label>{l.descricaoLabel}</Label>
               <Textarea
                 value={form.descricao}
-                onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                placeholder="Descreva o facto de forma objectiva e neutra..."
+                onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value }))}
+                placeholder={l.descricaoPlaceholder}
                 rows={3}
               />
-              <p className="text-xs text-muted-foreground">⚠️ Evite termos conclusivos como "erro", "culpa", "conforme".</p>
+              <p className="text-xs text-muted-foreground">⚠️ {l.avisoDescricao}</p>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Data do Facto</Label>
-                <Input type="date" value={form.data_facto} onChange={e => setForm(f => ({ ...f, data_facto: e.target.value }))} />
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={form.data_facto}
+                  onChange={(e) => setForm((f) => ({ ...f, data_facto: e.target.value }))}
+                />
               </div>
+
               <div className="space-y-2">
-                <Label>Grau de Certeza</Label>
-                <Select value={form.grau_certeza} onValueChange={v => setForm(f => ({ ...f, grau_certeza: v as GrauCerteza }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Label>Certeza</Label>
+                <Select
+                  value={form.grau_certeza}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, grau_certeza: v as GrauCerteza }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(CERTEZA_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                    {Object.entries(CERTEZA_LABELS).map(([v, l]) => (
+                      <SelectItem key={v} value={v}>
+                        {l}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
             <div className="space-y-2">
               <Label>Observações</Label>
-              <Textarea value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} placeholder="Notas adicionais..." rows={2} />
+              <Textarea
+                value={form.observacoes}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, observacoes: e.target.value }))
+                }
+                placeholder="Notas adicionais..."
+                rows={2}
+              />
             </div>
-            {formError && <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{formError}</p>}
+
+            {formError && (
+              <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                {formError}
+              </p>
+            )}
           </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving}>{saving ? 'A guardar...' : 'Guardar'}</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'A guardar...' : 'Guardar'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
