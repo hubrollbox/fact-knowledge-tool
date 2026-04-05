@@ -35,25 +35,51 @@ Deno.serve(async (req) => {
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=missing_params`, 302);
     }
 
-    // Decode state
-    let state: { userId: string; service: string; provider: string; serviceEmail?: string | null };
+    // Decode state — now only contains nonce
+    let state: { nonce: string };
     try {
       state = JSON.parse(atob(stateParam));
     } catch {
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=invalid_state`, 302);
     }
 
+    if (!state.nonce) {
+      return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=missing_nonce`, 302);
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Verify nonce exists, hasn't expired, and retrieve user info from it
+    const { data: nonceRecord, error: nonceError } = await supabase
+      .from("oauth_state_nonces")
+      .select("*")
+      .eq("nonce", state.nonce)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (nonceError || !nonceRecord) {
+      console.error("Invalid or expired nonce:", state.nonce);
+      return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=invalid_or_expired_state`, 302);
+    }
+
+    // Delete nonce immediately (single-use)
+    await supabase.from("oauth_state_nonces").delete().eq("id", nonceRecord.id);
+
+    // Use user_id from the verified nonce record — never from client
+    const userId = nonceRecord.user_id;
+    const service = nonceRecord.service;
+    const provider = nonceRecord.provider;
+    const serviceEmail = nonceRecord.service_email;
 
     const { data: creds, error: credsError } = await supabase
       .from("user_oauth_credentials")
       .select("client_id, client_secret")
-      .eq("user_id", state.userId)
-      .eq("provider", state.provider)
+      .eq("user_id", userId)
+      .eq("provider", provider)
       .maybeSingle();
 
     if (credsError || !creds) {
-      console.error("No OAuth credentials found for user:", state.userId);
+      console.error("No OAuth credentials found for user:", userId);
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=no_credentials`, 302);
     }
 
@@ -66,7 +92,7 @@ Deno.serve(async (req) => {
       grant_type: "authorization_code",
     });
 
-    const tokenRes = await fetch(PROVIDER_TOKEN_URLS[state.provider], {
+    const tokenRes = await fetch(PROVIDER_TOKEN_URLS[provider], {
       method: "POST",
       headers: { 
         "Content-Type": "application/x-www-form-urlencoded",
@@ -82,14 +108,14 @@ Deno.serve(async (req) => {
       return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=token_exchange_failed`, 302);
     }
 
-    if (state.serviceEmail && state.provider !== 'github') {
+    if (serviceEmail && provider !== 'github') {
       const idTokenEmail = tokenData.id_token
         ? (decodeJwtPayload(tokenData.id_token)?.email as string | undefined)?.toLowerCase()
         : null;
 
-      if (!idTokenEmail || idTokenEmail !== state.serviceEmail.toLowerCase()) {
+      if (!idTokenEmail || idTokenEmail !== serviceEmail.toLowerCase()) {
         console.error("OAuth email mismatch", {
-          expected: state.serviceEmail,
+          expected: serviceEmail,
           received: idTokenEmail,
         });
         return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=email_mismatch`, 302);
@@ -103,8 +129,8 @@ Deno.serve(async (req) => {
     // Upsert token
     const { error: upsertError } = await supabase.from("oauth_tokens").upsert(
       {
-        user_id: state.userId,
-        provider: state.service, // Use service as provider for token storage (gmail, onedrive, etc)
+        user_id: userId,
+        provider: service,
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token || null,
         expires_at: expiresAt,
@@ -121,15 +147,15 @@ Deno.serve(async (req) => {
     // Update user_services to mark as connected
     await supabase.from("user_services").upsert(
       {
-        user_id: state.userId,
-        service: state.service,
+        user_id: userId,
+        service,
         connected: true,
         connected_at: new Date().toISOString(),
       },
       { onConflict: "user_id,service" }
     );
 
-    return Response.redirect(`${APP_URL}/gestao/perfil?oauth=success&service=${state.service}`, 302);
+    return Response.redirect(`${APP_URL}/gestao/perfil?oauth=success&service=${service}`, 302);
   } catch (error) {
     console.error("Callback error:", error);
     return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=internal_error`, 302);

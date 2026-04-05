@@ -44,15 +44,16 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
-    if (userError || !user) {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = user.id;
+    const userId = claimsData.claims.sub as string;
 
     const { service, provider, serviceEmail } = await req.json();
     if (!service || !SERVICE_SCOPES[service]) {
@@ -77,15 +78,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    const scopes = SERVICE_SCOPES[service];
-    const normalizedEmail = typeof serviceEmail === "string" ? serviceEmail.trim().toLowerCase() : "";
-    const state = btoa(JSON.stringify({
-      userId,
-      service,
-      provider: provider || "google",
-      serviceEmail: normalizedEmail || null,
-    }));
+    // Generate cryptographic nonce and store in DB
+    const nonce = crypto.randomUUID();
+    const normalizedEmail = typeof serviceEmail === "string" ? serviceEmail.trim().toLowerCase() : null;
 
+    const { error: nonceError } = await supabaseAdmin
+      .from("oauth_state_nonces")
+      .insert({
+        nonce,
+        user_id: userId,
+        service,
+        provider: provider || "google",
+        service_email: normalizedEmail,
+      });
+
+    if (nonceError) {
+      console.error("Failed to store nonce:", nonceError);
+      return new Response(
+        JSON.stringify({ error: "Internal error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // State now only contains the nonce — no userId
+    const state = btoa(JSON.stringify({ nonce }));
+
+    const scopes = SERVICE_SCOPES[service];
     const params = new URLSearchParams({
       client_id: creds.client_id,
       redirect_uri: GOOGLE_REDIRECT_URI,
