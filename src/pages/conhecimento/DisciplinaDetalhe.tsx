@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, BookOpen, Search, MessageSquare, CheckCircle, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Plus, Mail, Phone } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,177 +10,102 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import type { Disciplina, Topico, Processo } from '@/types';
-
-interface TopicoExtended extends Topico {
-  completado?: boolean;
-  video_url?: string;
-}
-
-interface Quiz {
-  id: string;
-  topico_id: string;
-  pergunta: string;
-  opcoes: string[];
-  resposta_correta: number;
-}
-
-interface Discussao {
-  id: string;
-  topico_id: string;
-  comentario: string;
-  user_id: string;
-}
-
-interface Progresso {
-  topico_id: string;
-  completado: boolean;
-}
 
 export default function DisciplinaDetalhe() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [disciplina, setDisciplina] = useState<Disciplina | null>(null);
-  const [topicos, setTopicos] = useState<TopicoExtended[]>([]);
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [discussoes, setDiscussoes] = useState<Discussao[]>([]);
-  const [progressos, setProgressos] = useState<Progresso[]>([]);
+  const [topicos, setTopicos] = useState<Topico[]>([]);
   const [processosAssociados, setProcessosAssociados] = useState<Processo[]>([]);
   const [todosProcessos, setTodosProcessos] = useState<Processo[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [topicoDialog, setTopicoDialog] = useState(false);
-  const [editingTopico, setEditingTopico] = useState<TopicoExtended | null>(null);
-  const [topicoForm, setTopicoForm] = useState({ nome: '', conteudo: '', referencias: '', video_url: '' });
-  const [quizDialog, setQuizDialog] = useState(false);
-  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
-  const [quizForm, setQuizForm] = useState({ pergunta: '', opcoes: ['', '', '', ''], resposta_correta: 0, topico_id: '' });
-  const [discussaoDialog, setDiscussaoDialog] = useState(false);
-  const [discussaoForm, setDiscussaoForm] = useState({ comentario: '', topico_id: '' });
+  const [editingTopico, setEditingTopico] = useState<Topico | null>(null);
+  const [topicoForm, setTopicoForm] = useState({ nome: '', conteudo: '', referencias: '' });
   const [processDialog, setProcessDialog] = useState(false);
   const [selectedProcesso, setSelectedProcesso] = useState('');
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
-  const [quizResults, setQuizResults] = useState<Record<string, boolean>>({});
 
   const fetchAll = async () => {
     if (!id || !user) return;
-    const [dRes, tRes, qRes, discRes, progRes, dpRes, pRes] = await Promise.all([
-      supabase.from('disciplinas').select('*').eq('id', id).eq('user_id', user.id).single(),
-      supabase.from('topicos').select('*').eq('disciplina_id', id).order('nome'),
-      (supabase as any).from('quizzes').select('*').eq('disciplina_id', id),
-      (supabase as any).from('discussoes').select('*').eq('disciplina_id', id),
-      (supabase as any).from('progressos').select('*').eq('user_id', user.id).eq('disciplina_id', id),
-      supabase.from('disciplina_processos').select('*, processo:dossiers(id,titulo,tipo,estado,materia)').eq('disciplina_id', id),
-      supabase.from('dossiers').select('id,titulo,tipo').eq('user_id', user.id).eq('tipo', 'academico').order('titulo'),
-    ]);
-    setDisciplina(dRes.data as Disciplina);
-    setTopicos((tRes.data as TopicoExtended[]) || []);
-    setQuizzes((qRes.data as unknown as Quiz[]) || []);
-    setDiscussoes((discRes.data as unknown as Discussao[]) || []);
-    setProgressos((progRes.data as unknown as Progresso[]) || []);
-    setProcessosAssociados((dpRes.data || []).map((dp: any) => dp.processo));
-    setTodosProcessos((pRes.data as unknown as Processo[]) || []);
-    setLoading(false);
+    try {
+      const [dRes, tRes, dpRes, pRes] = await Promise.all([
+        supabase.from('disciplinas').select('*').eq('id', id).eq('user_id', user.id).single(),
+        supabase.from('topicos').select('*').eq('disciplina_id', id).order('nome'),
+        supabase.from('disciplina_processos').select('*, processo:dossiers(id,titulo,tipo,estado,materia)').eq('disciplina_id', id),
+        supabase.from('dossiers').select('id,titulo,tipo').eq('user_id', user.id).eq('tipo', 'academico').order('titulo'),
+      ]);
+      if (dRes.error) throw dRes.error;
+      setDisciplina(dRes.data as Disciplina);
+      setTopicos((tRes.data as Topico[]) || []);
+      setProcessosAssociados((dpRes.data || []).map((dp: any) => dp.processo));
+      setTodosProcessos((pRes.data as unknown as Processo[]) || []);
+    } catch {
+      toast.error('Erro ao carregar disciplina');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchAll(); }, [id, user]);
 
   const handleSaveTopico = async () => {
-    const updateData = {
-      nome: topicoForm.nome.trim(),
-      conteudo: topicoForm.conteudo.trim() || null,
-      referencias: topicoForm.referencias.trim() || null,
-      video_url: topicoForm.video_url.trim() || null,
-    };
-    if (editingTopico) {
-      await supabase.from('topicos').update(updateData).eq('id', editingTopico.id);
-    } else {
-      await supabase.from('topicos').insert({ ...updateData, disciplina_id: id });
+    if (!topicoForm.nome.trim()) return;
+    try {
+      const updateData = {
+        nome: topicoForm.nome.trim(),
+        conteudo: topicoForm.conteudo.trim() || null,
+        referencias: topicoForm.referencias.trim() || null,
+      };
+      if (editingTopico) {
+        const { error } = await supabase.from('topicos').update(updateData).eq('id', editingTopico.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('topicos').insert({ ...updateData, disciplina_id: id });
+        if (error) throw error;
+      }
+      await fetchAll();
+      setTopicoDialog(false);
+      setEditingTopico(null);
+      setTopicoForm({ nome: '', conteudo: '', referencias: '' });
+    } catch {
+      toast.error('Erro ao guardar tópico');
     }
-    await fetchAll();
-    setTopicoDialog(false);
-    setEditingTopico(null);
-    setTopicoForm({ nome: '', conteudo: '', referencias: '', video_url: '' });
   };
 
   const handleDeleteTopico = async (tid: string) => {
-    await supabase.from('topicos').delete().eq('id', tid);
-    await fetchAll();
-  };
-
-  const handleToggleCompletado = async (tid: string, completado: boolean) => {
-    await (supabase as any).from('progressos').upsert({ topico_id: tid, user_id: user?.id, completado, disciplina_id: id }, { onConflict: 'topico_id,user_id' });
-    await fetchAll();
-  };
-
-  const handleSaveQuiz = async () => {
-    const updateData = {
-      pergunta: quizForm.pergunta,
-      opcoes: quizForm.opcoes,
-      resposta_correta: quizForm.resposta_correta,
-      topico_id: quizForm.topico_id,
-      disciplina_id: id,
-    };
-    if (editingQuiz) {
-      await (supabase as any).from('quizzes').update(updateData).eq('id', editingQuiz.id);
-    } else {
-      await (supabase as any).from('quizzes').insert(updateData);
+    if (!confirm('Eliminar este tópico?')) return;
+    try {
+      const { error } = await supabase.from('topicos').delete().eq('id', tid);
+      if (error) throw error;
+      await fetchAll();
+    } catch {
+      toast.error('Erro ao eliminar tópico');
     }
-    await fetchAll();
-    setQuizDialog(false);
-    setEditingQuiz(null);
-    setQuizForm({ pergunta: '', opcoes: ['', '', '', ''], resposta_correta: 0, topico_id: '' });
-  };
-
-  const handleSaveDiscussao = async () => {
-    await (supabase as any).from('discussoes').insert({ comentario: discussaoForm.comentario, topico_id: discussaoForm.topico_id, user_id: user?.id, disciplina_id: id });
-    await fetchAll();
-    setDiscussaoDialog(false);
-    setDiscussaoForm({ comentario: '', topico_id: '' });
   };
 
   const handleAssociarProcesso = async () => {
     if (!selectedProcesso) return;
-    await supabase.from('disciplina_processos').insert({ disciplina_id: id, dossier_id: selectedProcesso });
-    await fetchAll();
-    setProcessDialog(false);
-    setSelectedProcesso('');
-  };
-
-  const handleQuizAnswer = (quizId: string, answerIdx: number) => {
-    setQuizAnswers(prev => ({ ...prev, [quizId]: answerIdx }));
-  };
-
-  const handleQuizSubmit = (quiz: Quiz) => {
-    const isCorrect = quizAnswers[quiz.id] === quiz.resposta_correta;
-    setQuizResults(prev => ({ ...prev, [quiz.id]: isCorrect }));
+    try {
+      const { error } = await supabase.from('disciplina_processos').insert({ disciplina_id: id, dossier_id: selectedProcesso });
+      if (error) throw error;
+      await fetchAll();
+      setProcessDialog(false);
+      setSelectedProcesso('');
+    } catch {
+      toast.error('Erro ao associar dossier');
+    }
   };
 
   const filteredTopicos = topicos.filter(t => t.nome.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredBibliografia = filteredTopicos.filter(t => t.referencias && t.referencias.trim());
-  const completedCount = progressos.filter(p => p.completado).length;
-  const progressPercent = topicos.length > 0 ? Math.round((completedCount / topicos.length) * 100) : 0;
-
-  const pessoasDisciplina = [
-    {
-      role: 'Docente',
-      nome: disciplina?.docente,
-      telm: disciplina?.docente_telm,
-      email: disciplina?.docente_email,
-    },
-    {
-      role: 'Regente',
-      nome: disciplina?.regente,
-      telm: disciplina?.regente_telm,
-      email: disciplina?.regente_email,
-    },
-  ].filter(pessoa => pessoa.nome || pessoa.telm || pessoa.email);
 
   if (loading) return <AppLayout><div className="p-6 max-w-6xl mx-auto"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
   if (!disciplina) return (
@@ -203,39 +128,11 @@ export default function DisciplinaDetalhe() {
               {disciplina.descricao && <p className="text-sm text-muted-foreground mt-0.5">{disciplina.descricao}</p>}
             </div>
           </div>
-          <div className="text-sm text-muted-foreground font-medium">
-            Progresso: {completedCount}/{topicos.length} ({progressPercent}%)
-          </div>
-        </div>
-
-        {pessoasDisciplina.length > 0 && (
-          <div className="grid sm:grid-cols-2 gap-3">
-            {pessoasDisciplina.map(pessoa => (
-              <Card key={pessoa.role} className="border-border">
-                <CardContent className="p-4 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pessoa.role}</p>
-                  {pessoa.nome && <p className="text-sm font-medium">{pessoa.nome}</p>}
-                  <div className="space-y-1 text-sm text-muted-foreground">
-                    {pessoa.telm && (
-                      <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" />{pessoa.telm}</p>
-                    )}
-                    {pessoa.email && (
-                      <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" />{pessoa.email}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Progress bar */}
-        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-          <div className="h-full bg-foreground rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+          <p className="text-sm text-muted-foreground font-medium">{topicos.length} tópicos</p>
         </div>
 
         <Input
-          placeholder="Buscar tópicos, quizzes, discussões..."
+          placeholder="Buscar tópicos..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="w-full max-w-md"
@@ -245,9 +142,7 @@ export default function DisciplinaDetalhe() {
           <TabsList className="h-auto border-b border-border rounded-none bg-transparent p-0 w-full justify-start overflow-x-auto">
             {[
               { value: 'topicos', label: 'Tópicos' },
-              { value: 'quizzes', label: 'Quizzes' },
-              { value: 'discussoes', label: 'Discussões' },
-              { value: 'processos', label: 'Processos' },
+              { value: 'processos', label: 'Dossiers' },
               { value: 'bibliografia', label: 'Bibliografia' },
             ].map(tab => (
               <TabsTrigger key={tab.value} value={tab.value} className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground px-4 py-2 text-sm min-w-max">
@@ -261,118 +156,36 @@ export default function DisciplinaDetalhe() {
             {filteredTopicos.length === 0 && (
               <p className="text-muted-foreground text-sm">Nenhum tópico encontrado.</p>
             )}
-            {filteredTopicos.map(t => {
-              const isCompleted = progressos.find(p => p.topico_id === t.id)?.completado;
-              return (
-                <Card key={t.id} className="border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <Checkbox
-                          checked={!!isCompleted}
-                          onCheckedChange={(checked) => handleToggleCompletado(t.id, !!checked)}
-                        />
-                        <div className="flex-1">
-                          <h3 className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>{t.nome}</h3>
-                          {t.conteudo && <p className="text-sm text-muted-foreground mt-1">{t.conteudo}</p>}
-                          {t.referencias && <p className="text-xs text-muted-foreground mt-1 italic">{t.referencias}</p>}
-                          {t.video_url && (
-                            <a href={t.video_url} target="_blank" rel="noopener noreferrer" className="text-xs underline mt-1 block">
-                              Ver vídeo
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => {
-                          setEditingTopico(t);
-                          setTopicoForm({ nome: t.nome, conteudo: t.conteudo || '', referencias: t.referencias || '', video_url: t.video_url || '' });
-                          setTopicoDialog(true);
-                        }}>Editar</Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTopico(t.id)}>Remover</Button>
-                      </div>
+            {filteredTopicos.map(t => (
+              <Card key={t.id} className="border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-medium">{t.nome}</h3>
+                      {t.conteudo && <p className="text-sm text-muted-foreground mt-1">{t.conteudo}</p>}
+                      {t.referencias && <p className="text-xs text-muted-foreground mt-1 italic">{t.referencias}</p>}
                     </div>
-                    <div className="flex gap-1 mt-3 border-t border-border pt-2">
-                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => {
-                        setDiscussaoForm({ comentario: '', topico_id: t.id });
-                        setDiscussaoDialog(true);
-                      }}>
-                        <MessageSquare className="h-3 w-3 mr-1" /> Comentar
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => {
-                        setQuizForm({ pergunta: '', opcoes: ['', '', '', ''], resposta_correta: 0, topico_id: t.id });
-                        setQuizDialog(true);
-                      }}>
-                        <BookOpen className="h-3 w-3 mr-1" /> Adicionar Quiz
-                      </Button>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setEditingTopico(t);
+                        setTopicoForm({ nome: t.nome, conteudo: t.conteudo || '', referencias: t.referencias || '' });
+                        setTopicoDialog(true);
+                      }}>Editar</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTopico(t.id)}>Remover</Button>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-            <Button onClick={() => { setEditingTopico(null); setTopicoForm({ nome: '', conteudo: '', referencias: '', video_url: '' }); setTopicoDialog(true); }}>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Button onClick={() => { setEditingTopico(null); setTopicoForm({ nome: '', conteudo: '', referencias: '' }); setTopicoDialog(true); }}>
               <Plus className="h-4 w-4 mr-1" /> Novo Tópico
             </Button>
           </TabsContent>
 
-          {/* QUIZZES */}
-          <TabsContent value="quizzes" className="mt-6 space-y-4">
-            {quizzes.filter(q => q.pergunta.toLowerCase().includes(searchQuery.toLowerCase())).map(q => (
-              <Card key={q.id}>
-                <CardContent className="p-4 space-y-3">
-                  <h3 className="font-medium">{q.pergunta}</h3>
-                  <div className="space-y-2">
-                    {q.opcoes.map((op, idx) => (
-                      <label key={idx} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name={q.id}
-                          checked={quizAnswers[q.id] === idx}
-                          onChange={() => handleQuizAnswer(q.id, idx)}
-                          className="accent-foreground"
-                        />
-                        <span className={`text-sm ${quizResults[q.id] !== undefined ? (idx === q.resposta_correta ? 'text-green-600 dark:text-green-400 font-medium' : quizAnswers[q.id] === idx ? 'text-red-500 line-through' : '') : ''}`}>
-                          {op}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {quizResults[q.id] !== undefined && (
-                    <p className={`text-sm font-medium ${quizResults[q.id] ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
-                      {quizResults[q.id] ? '✓ Correto!' : '✗ Incorreto'}
-                    </p>
-                  )}
-                  <Button size="sm" variant="outline" onClick={() => handleQuizSubmit(q)}>Verificar</Button>
-                </CardContent>
-              </Card>
-            ))}
-            <Button onClick={() => { setEditingQuiz(null); setQuizForm({ pergunta: '', opcoes: ['', '', '', ''], resposta_correta: 0, topico_id: '' }); setQuizDialog(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Novo Quiz
-            </Button>
-          </TabsContent>
-
-          {/* DISCUSSÕES */}
-          <TabsContent value="discussoes" className="mt-6 space-y-4">
-            {discussoes.filter(d => d.comentario.toLowerCase().includes(searchQuery.toLowerCase())).map(d => (
-              <Card key={d.id}>
-                <CardContent className="p-4">
-                  <p className="text-sm">{d.comentario}</p>
-                  {(() => {
-                    const t = topicos.find(t => t.id === d.topico_id);
-                    return t ? <Badge variant="outline" className="mt-2 text-xs">{t.nome}</Badge> : null;
-                  })()}
-                </CardContent>
-              </Card>
-            ))}
-            <Button onClick={() => { setDiscussaoForm({ comentario: '', topico_id: '' }); setDiscussaoDialog(true); }}>
-              <Plus className="h-4 w-4 mr-1" /> Novo Comentário
-            </Button>
-          </TabsContent>
-
-          {/* PROCESSOS */}
+          {/* DOSSIERS */}
           <TabsContent value="processos" className="mt-6 space-y-4">
             {processosAssociados.length === 0 && (
-              <p className="text-muted-foreground text-sm">Nenhum processo associado.</p>
+              <p className="text-muted-foreground text-sm">Nenhum dossier associado.</p>
             )}
             {processosAssociados.map(p => (
               <Card key={p.id}>
@@ -386,21 +199,20 @@ export default function DisciplinaDetalhe() {
               </Card>
             ))}
             <Button onClick={() => setProcessDialog(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Associar Processo
+              <Plus className="h-4 w-4 mr-1" /> Associar Dossier
             </Button>
           </TabsContent>
+
           {/* BIBLIOGRAFIA */}
           <TabsContent value="bibliografia" className="mt-6 space-y-4">
             {filteredBibliografia.length === 0 && (
-              <p className="text-muted-foreground text-sm">Sem referências bibliográficas cadastradas nesta disciplina.</p>
+              <p className="text-muted-foreground text-sm">Sem referências bibliográficas nesta disciplina.</p>
             )}
             {filteredBibliografia.map(t => (
               <Card key={t.id}>
                 <CardContent className="p-4 space-y-2">
-                  <div>
-                    <h3 className="font-medium">{t.nome}</h3>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{t.referencias}</p>
-                  </div>
+                  <h3 className="font-medium">{t.nome}</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{t.referencias}</p>
                 </CardContent>
               </Card>
             ))}
@@ -418,88 +230,22 @@ export default function DisciplinaDetalhe() {
             <div><Label>Nome *</Label><Input value={topicoForm.nome} onChange={e => setTopicoForm(f => ({ ...f, nome: e.target.value }))} /></div>
             <div><Label>Conteúdo</Label><Textarea value={topicoForm.conteudo} onChange={e => setTopicoForm(f => ({ ...f, conteudo: e.target.value }))} rows={4} /></div>
             <div><Label>Referências</Label><Input value={topicoForm.referencias} onChange={e => setTopicoForm(f => ({ ...f, referencias: e.target.value }))} /></div>
-            <div><Label>URL do Vídeo</Label><Input value={topicoForm.video_url} onChange={e => setTopicoForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://youtube.com/..." /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTopicoDialog(false)}>Cancelar</Button>
-            <Button onClick={handleSaveTopico} disabled={!topicoForm.nome.trim()}>Salvar</Button>
+            <Button onClick={handleSaveTopico} disabled={!topicoForm.nome.trim()}>Guardar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: Quiz */}
-      <Dialog open={quizDialog} onOpenChange={setQuizDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingQuiz ? 'Editar Quiz' : 'Novo Quiz'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Pergunta *</Label><Input value={quizForm.pergunta} onChange={e => setQuizForm(f => ({ ...f, pergunta: e.target.value }))} /></div>
-            {quizForm.opcoes.map((op, idx) => (
-              <div key={idx}>
-                <Label>Opção {idx + 1}</Label>
-                <Input value={op} onChange={e => {
-                  const newOpcoes = [...quizForm.opcoes];
-                  newOpcoes[idx] = e.target.value;
-                  setQuizForm(f => ({ ...f, opcoes: newOpcoes }));
-                }} />
-              </div>
-            ))}
-            <div>
-              <Label>Resposta Correta</Label>
-              <Select value={quizForm.resposta_correta.toString()} onValueChange={v => setQuizForm(f => ({ ...f, resposta_correta: parseInt(v) }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{[0, 1, 2, 3].map(i => <SelectItem key={i} value={i.toString()}>Opção {i + 1}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            {topicos.length > 0 && (
-              <div>
-                <Label>Tópico</Label>
-                <Select value={quizForm.topico_id} onValueChange={v => setQuizForm(f => ({ ...f, topico_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar tópico" /></SelectTrigger>
-                  <SelectContent>{topicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setQuizDialog(false)}>Cancelar</Button>
-            <Button onClick={handleSaveQuiz} disabled={!quizForm.pergunta.trim()}>Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog: Discussão */}
-      <Dialog open={discussaoDialog} onOpenChange={setDiscussaoDialog}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Novo Comentário</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            {topicos.length > 0 && (
-              <div>
-                <Label>Tópico</Label>
-                <Select value={discussaoForm.topico_id} onValueChange={v => setDiscussaoForm(f => ({ ...f, topico_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar tópico" /></SelectTrigger>
-                  <SelectContent>{topicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-            )}
-            <div><Label>Comentário *</Label><Textarea value={discussaoForm.comentario} onChange={e => setDiscussaoForm(f => ({ ...f, comentario: e.target.value }))} rows={4} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDiscussaoDialog(false)}>Cancelar</Button>
-            <Button onClick={handleSaveDiscussao} disabled={!discussaoForm.comentario.trim()}>Postar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog: Associar Processo */}
+      {/* Dialog: Associar Dossier */}
       <Dialog open={processDialog} onOpenChange={setProcessDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Associar Processo Académico</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Associar Dossier Académico</DialogTitle></DialogHeader>
           <div>
-            <Label>Processo</Label>
+            <Label>Dossier</Label>
             <Select value={selectedProcesso} onValueChange={setSelectedProcesso}>
-              <SelectTrigger><SelectValue placeholder="Selecionar processo" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecionar dossier" /></SelectTrigger>
               <SelectContent>
                 {todosProcessos.filter(p => !processosAssociados.find(pa => pa.id === p.id)).map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.titulo}</SelectItem>
