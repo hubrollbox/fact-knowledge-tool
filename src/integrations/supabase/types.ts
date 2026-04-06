@@ -727,11 +727,47 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspaces: {
         Row: {
           created_at: string
           id: string
           modulo: string
+          name: string | null
           updated_at: string
           user_id: string
         }
@@ -739,6 +775,7 @@ export type Database = {
           created_at?: string
           id?: string
           modulo?: string
+          name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -746,6 +783,7 @@ export type Database = {
           created_at?: string
           id?: string
           modulo?: string
+          name?: string | null
           updated_at?: string
           user_id?: string
         }
