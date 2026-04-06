@@ -480,6 +480,236 @@ export type Database = {
           },
         ]
       }
+      juridico_documentos: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          data_documento: string | null
+          ficheiro_url: string | null
+          id: string
+          nome: string
+          notas: string | null
+          processo_id: string
+          updated_at: string
+          versao: number
+          workspace_id: string
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          data_documento?: string | null
+          ficheiro_url?: string | null
+          id?: string
+          nome: string
+          notas?: string | null
+          processo_id: string
+          updated_at?: string
+          versao?: number
+          workspace_id: string
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          data_documento?: string | null
+          ficheiro_url?: string | null
+          id?: string
+          nome?: string
+          notas?: string | null
+          processo_id?: string
+          updated_at?: string
+          versao?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_documentos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_documentos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_partes: {
+        Row: {
+          contacto: string | null
+          created_at: string
+          id: string
+          mandatario: string | null
+          nif: string | null
+          nome: string
+          notas: string | null
+          processo_id: string
+          tipo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          contacto?: string | null
+          created_at?: string
+          id?: string
+          mandatario?: string | null
+          nif?: string | null
+          nome: string
+          notas?: string | null
+          processo_id: string
+          tipo?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          contacto?: string | null
+          created_at?: string
+          id?: string
+          mandatario?: string | null
+          nif?: string | null
+          nome?: string
+          notas?: string | null
+          processo_id?: string
+          tipo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_partes_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_partes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_prazos: {
+        Row: {
+          antecedencia_alerta: number
+          created_at: string
+          data_limite: string
+          descricao: string
+          estado: string
+          id: string
+          notas: string | null
+          processo_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          antecedencia_alerta?: number
+          created_at?: string
+          data_limite: string
+          descricao: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          processo_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          antecedencia_alerta?: number
+          created_at?: string
+          data_limite?: string
+          descricao?: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          processo_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_prazos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_prazos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_processos: {
+        Row: {
+          analise: string | null
+          conclusao: string | null
+          contexto: string | null
+          created_at: string
+          estado: string
+          id: string
+          numero_processo: string | null
+          questao: string | null
+          referencia: string | null
+          referencias: string | null
+          tipo: string | null
+          titulo: string
+          tribunal: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          analise?: string | null
+          conclusao?: string | null
+          contexto?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          numero_processo?: string | null
+          questao?: string | null
+          referencia?: string | null
+          referencias?: string | null
+          tipo?: string | null
+          titulo: string
+          tribunal?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          analise?: string | null
+          conclusao?: string | null
+          contexto?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          numero_processo?: string | null
+          questao?: string | null
+          referencia?: string | null
+          referencias?: string | null
+          tipo?: string | null
+          titulo?: string
+          tribunal?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_processos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimentos: {
         Row: {
           created_at: string | null
