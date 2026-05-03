@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
@@ -35,6 +35,12 @@ import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
 
 const queryClient = new QueryClient();
 
+function ProcessoDetailRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  return <ProcessoDetail processoId={id!} onBack={() => navigate('/juridico')} />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -59,7 +65,7 @@ const App = () => (
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
             <Route path="/juridico" element={<ProtectedRoute><JuridicoDashboard /></ProtectedRoute>} />
-            <Route path="/juridico/:id" element={<ProtectedRoute><ProcessoDetail /></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute><ProcessoDetailRoute /></ProtectedRoute>} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />
