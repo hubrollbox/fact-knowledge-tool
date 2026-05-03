@@ -2,9 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -30,7 +31,16 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import Licenca from "./pages/Licenca";
 
+import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
+import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
+
 const queryClient = new QueryClient();
+
+function ProcessoDetailRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  return <ProcessoDetail processoId={id!} onBack={() => navigate('/juridico')} />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -55,6 +65,8 @@ const App = () => (
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />
