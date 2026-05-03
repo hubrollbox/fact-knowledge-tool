@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -64,8 +65,8 @@ const App = () => (
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-            <Route path="/juridico" element={<ProtectedRoute><JuridicoDashboard /></ProtectedRoute>} />
-            <Route path="/juridico/:id" element={<ProtectedRoute><ProcessoDetailRoute /></ProtectedRoute>} />
+            <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />
