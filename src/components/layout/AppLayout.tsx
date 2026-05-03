@@ -6,6 +6,7 @@ import {
   LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useModuloActivo } from '@/hooks/useModuloActivo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CountdownFab } from '@/components/dashboard/CountdownFab';
@@ -144,6 +145,13 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut } = useAuth();
+  const { moduloSlug } = useModuloActivo();
+  const dynamicNavItems: NavItem[] = [
+    ...navItems,
+    ...(moduloSlug === 'juridico'
+      ? [{ label: 'Jurídico', href: '/juridico', icon: Scale } as NavItem]
+      : []),
+  ];
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -189,7 +197,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {navItems.map(item => (
+        {dynamicNavItems.map(item => (
           <NavItemComponent key={item.label} item={item} collapsed={collapsed} />
         ))}
       </nav>

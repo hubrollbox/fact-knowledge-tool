@@ -30,6 +30,9 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import Licenca from "./pages/Licenca";
 
+import JuridicoDashboard from "./modules/juridico/pages/JuridicoDashboard";
+import ProcessoDetail from "./modules/juridico/pages/ProcessoDetail";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -55,6 +58,8 @@ const App = () => (
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/juridico" element={<ProtectedRoute><JuridicoDashboard /></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute><ProcessoDetail /></ProtectedRoute>} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />
