@@ -30,8 +30,8 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import Licenca from "./pages/Licenca";
 
-import JuridicoDashboard from "./modules/juridico/pages/JuridicoDashboard";
-import ProcessoDetail from "./modules/juridico/pages/ProcessoDetail";
+import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
+import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
 
 const queryClient = new QueryClient();
 
