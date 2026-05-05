@@ -48,6 +48,12 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
   const { data: prazos } = usePrazos(processoId);
   const { data: documentos } = useDocumentos(processoId);
   const update = useUpdateProcesso();
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (onBack) onBack();
+    else navigate('/juridico');
+  };
 
   if (isLoading || !processo) {
     return (
@@ -59,13 +65,33 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/dashboard">Dashboard</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/juridico">Jurídico</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="max-w-[240px] truncate">{processo.titulo}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       {/* Header */}
       <div className="flex items-start gap-3">
-        {onBack && (
-          <Button variant="ghost" size="icon" onClick={onBack} className="mt-0.5">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        )}
+        <Button variant="outline" size="sm" onClick={handleBack}>
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          Voltar
+        </Button>
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold">{processo.titulo}</h1>
@@ -76,6 +102,7 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
           )}
         </div>
       </div>
+
 
       <Tabs defaultValue="resumo">
         <TabsList className="w-full justify-start overflow-x-auto">
