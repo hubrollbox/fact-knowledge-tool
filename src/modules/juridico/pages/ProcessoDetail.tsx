@@ -14,6 +14,15 @@ import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const tipos = ['cível', 'penal', 'administrativo', 'laboral', 'outro'];
 const estados = ['activo', 'suspenso', 'concluido', 'arquivado'];
