@@ -140,6 +140,274 @@ export type Database = {
           },
         ]
       }
+      canil_animais: {
+        Row: {
+          activo: boolean
+          created_at: string
+          data_nascimento: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          numero_chip: string | null
+          numero_lop: string | null
+          observacoes: string | null
+          proprietario_contacto: string | null
+          proprietario_nome: string | null
+          raca: string | null
+          sexo: string | null
+          workspace_id: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          numero_chip?: string | null
+          numero_lop?: string | null
+          observacoes?: string | null
+          proprietario_contacto?: string | null
+          proprietario_nome?: string | null
+          raca?: string | null
+          sexo?: string | null
+          workspace_id: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          numero_chip?: string | null
+          numero_lop?: string | null
+          observacoes?: string | null
+          proprietario_contacto?: string | null
+          proprietario_nome?: string | null
+          raca?: string | null
+          sexo?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
+      canil_cachorros: {
+        Row: {
+          animal_id: string | null
+          comprador_contacto: string | null
+          comprador_nome: string | null
+          cor: string | null
+          created_at: string
+          data_saida: string | null
+          estado: string
+          id: string
+          ninhada_id: string
+          preco_venda: number | null
+          sexo: string | null
+        }
+        Insert: {
+          animal_id?: string | null
+          comprador_contacto?: string | null
+          comprador_nome?: string | null
+          cor?: string | null
+          created_at?: string
+          data_saida?: string | null
+          estado?: string
+          id?: string
+          ninhada_id: string
+          preco_venda?: number | null
+          sexo?: string | null
+        }
+        Update: {
+          animal_id?: string | null
+          comprador_contacto?: string | null
+          comprador_nome?: string | null
+          cor?: string | null
+          created_at?: string
+          data_saida?: string | null
+          estado?: string
+          id?: string
+          ninhada_id?: string
+          preco_venda?: number | null
+          sexo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_cachorros_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canil_cachorros_ninhada_id_fkey"
+            columns: ["ninhada_id"]
+            isOneToOne: false
+            referencedRelation: "canil_ninhadas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_ninhadas: {
+        Row: {
+          created_at: string
+          data_cobertura: string | null
+          data_parto: string | null
+          id: string
+          mae_id: string | null
+          numero_cachorros: number | null
+          numero_sobreviventes: number | null
+          observacoes: string | null
+          pai_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_cobertura?: string | null
+          data_parto?: string | null
+          id?: string
+          mae_id?: string | null
+          numero_cachorros?: number | null
+          numero_sobreviventes?: number | null
+          observacoes?: string | null
+          pai_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          data_cobertura?: string | null
+          data_parto?: string | null
+          id?: string
+          mae_id?: string | null
+          numero_cachorros?: number | null
+          numero_sobreviventes?: number | null
+          observacoes?: string | null
+          pai_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_ninhadas_mae_id_fkey"
+            columns: ["mae_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canil_ninhadas_pai_id_fkey"
+            columns: ["pai_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_registos_clinicos: {
+        Row: {
+          animal_id: string
+          created_at: string
+          custo: number | null
+          data_proxima: string | null
+          data_registo: string
+          descricao: string | null
+          id: string
+          produto: string | null
+          tipo: string
+          veterinario: string | null
+          workspace_id: string
+        }
+        Insert: {
+          animal_id: string
+          created_at?: string
+          custo?: number | null
+          data_proxima?: string | null
+          data_registo: string
+          descricao?: string | null
+          id?: string
+          produto?: string | null
+          tipo: string
+          veterinario?: string | null
+          workspace_id: string
+        }
+        Update: {
+          animal_id?: string
+          created_at?: string
+          custo?: number | null
+          data_proxima?: string | null
+          data_registo?: string
+          descricao?: string | null
+          id?: string
+          produto?: string | null
+          tipo?: string
+          veterinario?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_registos_clinicos_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_reservas: {
+        Row: {
+          animal_id: string
+          box: string | null
+          created_at: string
+          data_entrada: string
+          data_saida: string
+          estado: string
+          id: string
+          instrucoes: string | null
+          observacoes_estadia: string | null
+          pago: boolean
+          preco_dia: number | null
+          total: number | null
+          workspace_id: string
+        }
+        Insert: {
+          animal_id: string
+          box?: string | null
+          created_at?: string
+          data_entrada: string
+          data_saida: string
+          estado?: string
+          id?: string
+          instrucoes?: string | null
+          observacoes_estadia?: string | null
+          pago?: boolean
+          preco_dia?: number | null
+          total?: number | null
+          workspace_id: string
+        }
+        Update: {
+          animal_id?: string
+          box?: string | null
+          created_at?: string
+          data_entrada?: string
+          data_saida?: string
+          estado?: string
+          id?: string
+          instrucoes?: string | null
+          observacoes_estadia?: string | null
+          pago?: boolean
+          preco_dia?: number | null
+          total?: number | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_reservas_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           created_at: string | null
