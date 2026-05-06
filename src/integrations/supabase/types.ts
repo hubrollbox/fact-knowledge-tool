@@ -509,6 +509,161 @@ export type Database = {
         }
         Relationships: []
       }
+      dev_adrs: {
+        Row: {
+          alternativas: string | null
+          analise: string | null
+          contexto: string | null
+          created_at: string
+          decisao: string | null
+          estado: string
+          id: string
+          numero: number
+          problema: string | null
+          projecto_id: string
+          substitui_id: string | null
+          titulo: string
+          workspace_id: string
+        }
+        Insert: {
+          alternativas?: string | null
+          analise?: string | null
+          contexto?: string | null
+          created_at?: string
+          decisao?: string | null
+          estado?: string
+          id?: string
+          numero?: number
+          problema?: string | null
+          projecto_id: string
+          substitui_id?: string | null
+          titulo: string
+          workspace_id: string
+        }
+        Update: {
+          alternativas?: string | null
+          analise?: string | null
+          contexto?: string | null
+          created_at?: string
+          decisao?: string | null
+          estado?: string
+          id?: string
+          numero?: number
+          problema?: string | null
+          projecto_id?: string
+          substitui_id?: string | null
+          titulo?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dev_adrs_projecto_id_fkey"
+            columns: ["projecto_id"]
+            isOneToOne: false
+            referencedRelation: "dev_projectos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dev_adrs_substitui_id_fkey"
+            columns: ["substitui_id"]
+            isOneToOne: false
+            referencedRelation: "dev_adrs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dev_issues: {
+        Row: {
+          assignee: string | null
+          created_at: string
+          descricao: string | null
+          estado: string
+          id: string
+          milestone: string | null
+          prioridade: string
+          projecto_id: string
+          tipo: string
+          titulo: string
+          workspace_id: string
+        }
+        Insert: {
+          assignee?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          milestone?: string | null
+          prioridade?: string
+          projecto_id: string
+          tipo?: string
+          titulo: string
+          workspace_id: string
+        }
+        Update: {
+          assignee?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          milestone?: string | null
+          prioridade?: string
+          projecto_id?: string
+          tipo?: string
+          titulo?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dev_issues_projecto_id_fkey"
+            columns: ["projecto_id"]
+            isOneToOne: false
+            referencedRelation: "dev_projectos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dev_projectos: {
+        Row: {
+          created_at: string
+          deploy_url: string | null
+          descricao: string | null
+          docs_url: string | null
+          estado: string
+          id: string
+          nome: string
+          repo_url: string | null
+          stack: string[]
+          versao_actual: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          deploy_url?: string | null
+          descricao?: string | null
+          docs_url?: string | null
+          estado?: string
+          id?: string
+          nome: string
+          repo_url?: string | null
+          stack?: string[]
+          versao_actual?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          deploy_url?: string | null
+          descricao?: string | null
+          docs_url?: string | null
+          estado?: string
+          id?: string
+          nome?: string
+          repo_url?: string | null
+          stack?: string[]
+          versao_actual?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       disciplina_processos: {
         Row: {
           disciplina_id: string
