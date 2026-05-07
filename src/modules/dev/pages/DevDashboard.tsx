@@ -34,7 +34,7 @@ export function DevDashboard() {
             {activos.map((p) => {
               const open = issuesCount?.[p.id] ?? 0;
               return (
-                <Link key={p.id} to={`/dev/${p.id}`}>
+                <Link key={p.id} to={`/dev/projecto/${p.id}`}>
                   <Card className="hover:border-primary/50 transition-colors h-full">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
@@ -84,7 +84,7 @@ export function DevDashboard() {
           <Card>
             <CardContent className="p-0 divide-y">
               {adrs.map((a) => (
-                <Link key={a.id} to={`/dev/${a.projecto_id}`} className="block p-3 hover:bg-muted/30">
+                <Link key={a.id} to={`/dev/projecto/${a.projecto_id}`} className="block p-3 hover:bg-muted/30">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 min-w-0">
                       <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
