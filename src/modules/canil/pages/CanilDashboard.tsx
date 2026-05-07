@@ -78,7 +78,7 @@ export function CanilDashboard() {
               alertas.map((a: any) => (
                 <div
                   key={a.id}
-                  onClick={() => a.animal && navigate(`/canil/${a.animal.id}`)}
+                  onClick={() => a.animal && navigate(`/canil/animal/${a.animal.id}`)}
                   className="flex cursor-pointer items-center justify-between rounded-md border p-2 text-sm hover:bg-accent"
                 >
                   <div>
@@ -116,7 +116,7 @@ export function CanilDashboard() {
               <AnimalCard
                 key={a.id}
                 animal={a}
-                onClick={() => navigate(`/canil/${a.id}`)}
+                onClick={() => navigate(`/canil/animal/${a.id}`)}
               />
             ))}
           </div>
