@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +22,18 @@ const PRIORIDADE_VARIANT: Record<IssuePrioridade, 'destructive' | 'default' | 's
 export function ProjectoDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') ?? 'projecto';
   const { data: projecto, isLoading } = useProjecto(id);
   const { data: issues } = useIssues(id);
   const { data: adrs } = useAdrs(id);
   const [adrOpen, setAdrOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('novo') === '1' && searchParams.get('tab') === 'adrs') {
+      setAdrOpen(true);
+    }
+  }, [searchParams]);
 
   const [fTipo, setFTipo] = useState<string>('all');
   const [fPrio, setFPrio] = useState<string>('all');
@@ -64,7 +72,7 @@ export function ProjectoDetail() {
         {projecto.descricao && <p className="text-sm text-muted-foreground">{projecto.descricao}</p>}
       </div>
 
-      <Tabs defaultValue="projecto">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="projecto">Projecto</TabsTrigger>
           <TabsTrigger value="issues">Issues</TabsTrigger>

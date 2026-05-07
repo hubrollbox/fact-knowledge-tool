@@ -34,6 +34,17 @@ import Licenca from "./pages/Licenca";
 import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
 import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
 
+import { CanilDashboard } from "./modules/canil/pages/CanilDashboard";
+import { AnimalDetail } from "./modules/canil/pages/AnimalDetail";
+import { AgendaDiaria } from "./modules/canil/pages/AgendaDiaria";
+import { NovoAnimal } from "./modules/canil/pages/NovoAnimal";
+import { NovaReserva } from "./modules/canil/pages/NovaReserva";
+
+import { DevDashboard } from "./modules/dev/pages/DevDashboard";
+import { ProjectoDetail } from "./modules/dev/pages/ProjectoDetail";
+import { NovoProjecto } from "./modules/dev/pages/NovoProjecto";
+import { NovoADR } from "./modules/dev/pages/NovoADR";
+
 const queryClient = new QueryClient();
 
 function ProcessoDetailRoute() {
@@ -67,6 +78,15 @@ const App = () => (
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
             <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil" element={<ProtectedRoute><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/agenda" element={<ProtectedRoute><AppLayout><AgendaDiaria /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/novo" element={<ProtectedRoute><AppLayout><NovoAnimal /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/:id" element={<ProtectedRoute><AppLayout><AnimalDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/reserva/nova" element={<ProtectedRoute><AppLayout><NovaReserva /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev" element={<ProtectedRoute><AppLayout><DevDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/novo" element={<ProtectedRoute><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/:id" element={<ProtectedRoute><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/adr/novo" element={<ProtectedRoute><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />
