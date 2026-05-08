@@ -52,6 +52,51 @@ export type Database = {
           },
         ]
       }
+      alertas: {
+        Row: {
+          created_at: string
+          data_alerta: string | null
+          descricao: string | null
+          id: string
+          lido: boolean
+          modulo: string
+          referencia_id: string | null
+          referencia_tipo: string | null
+          tipo: string
+          titulo: string
+          user_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_alerta?: string | null
+          descricao?: string | null
+          id?: string
+          lido?: boolean
+          modulo: string
+          referencia_id?: string | null
+          referencia_tipo?: string | null
+          tipo: string
+          titulo: string
+          user_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          data_alerta?: string | null
+          descricao?: string | null
+          id?: string
+          lido?: boolean
+          modulo?: string
+          referencia_id?: string | null
+          referencia_tipo?: string | null
+          tipo?: string
+          titulo?: string
+          user_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       application_factos: {
         Row: {
           application_id: string
