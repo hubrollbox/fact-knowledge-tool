@@ -10,6 +10,7 @@ import { useModuloActivo } from '@/hooks/useModuloActivo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CountdownFab } from '@/components/dashboard/CountdownFab';
+import { AlertasBadge } from '@/components/AlertasBadge';
 import { Footer } from '@/components/layout/Footer';
 
 interface NavItem {
@@ -288,6 +289,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <div className="flex-1" />
 
+          <AlertasBadge />
           <CountdownFab contentSide="bottom" />
 
           <Button
