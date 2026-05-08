@@ -169,15 +169,25 @@ export function ProjectoDetail() {
   );
 }
 
+function isSafeHttpUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value.trim());
+}
+
 function Field({ label, value, link }: { label: string; value: string | null | undefined; link?: boolean }) {
   return (
     <div>
       <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
       {value ? (
         link ? (
-          <a href={value} target="_blank" rel="noreferrer" className="text-primary hover:underline break-all">
-            {value}
-          </a>
+          isSafeHttpUrl(value) ? (
+            <a href={value} target="_blank" rel="noreferrer" className="text-primary hover:underline break-all">
+              {value}
+            </a>
+          ) : (
+            <p className="break-all text-muted-foreground" title="URL inválido (deve começar por http:// ou https://)">
+              {value}
+            </p>
+          )
         ) : <p className="break-all">{value}</p>
       ) : <p className="text-muted-foreground">—</p>}
     </div>
