@@ -29,6 +29,15 @@ export function NovoProjecto() {
       toast({ title: 'Nome obrigatório', variant: 'destructive' });
       return;
     }
+    const urlFields: Array<['repo_url' | 'docs_url' | 'deploy_url', string]> = [
+      ['repo_url', form.repo_url], ['docs_url', form.docs_url], ['deploy_url', form.deploy_url],
+    ];
+    for (const [k, v] of urlFields) {
+      if (v.trim() && !/^https?:\/\//i.test(v.trim())) {
+        toast({ title: 'URL inválido', description: `${k} deve começar por http:// ou https://`, variant: 'destructive' });
+        return;
+      }
+    }
     try {
       const created = await create.mutateAsync({
         nome: form.nome.trim(),

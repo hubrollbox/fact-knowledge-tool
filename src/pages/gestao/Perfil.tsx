@@ -87,7 +87,7 @@ export default function Perfil() {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('user_oauth_credentials')
+        .from('user_oauth_credentials_safe')
         .select('provider, client_id, client_secret')
         .eq('user_id', user.id);
 
@@ -97,8 +97,9 @@ export default function Perfil() {
         const newCreds = { ...credentials };
         const newSaved = { ...savedCredentials };
         data.forEach(c => {
-          if (newCreds[c.provider]) {
-            newCreds[c.provider] = { client_id: c.client_id, client_secret: c.client_secret };
+          if (c.provider && newCreds[c.provider]) {
+            // client_secret comes back masked ('••••••••') from the safe view; never store it
+            newCreds[c.provider] = { client_id: c.client_id ?? '', client_secret: '' };
             newSaved[c.provider] = true;
           }
         });
