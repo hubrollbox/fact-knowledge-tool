@@ -18,6 +18,10 @@ import { RulesTab } from '@/components/processos/RulesTab';
 import { ApplicationsTab } from '@/components/processos/ApplicationsTab';
 import { ConclusoesTab } from '@/components/processos/ConclusoesTab';
 import { DocumentosTab } from '@/components/processos/DocumentosTab';
+import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
+import { EditDossierDialog } from '@/components/dossiers/EditDossierDialog';
+import { DisciplinasSection } from '@/components/dossiers/DisciplinasSection';
+import { toast } from 'sonner';
 
 interface RecentDoc {
   id: string;
@@ -51,6 +55,8 @@ export default function DossierDetalhe() {
   const [newActionTitle, setNewActionTitle] = useState('');
   const [newActionDate, setNewActionDate] = useState('');
   const [showNewAction, setShowNewAction] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -76,8 +82,10 @@ export default function DossierDetalhe() {
   };
 
   const handleDelete = async () => {
-    if (!id || !user || !confirm('Tem a certeza que quer eliminar este dossier? Esta acção é irreversível.')) return;
-    await supabase.from('dossiers').delete().eq('id', id).eq('user_id', user.id);
+    if (!id || !user) return;
+    const { error } = await supabase.from('dossiers').delete().eq('id', id).eq('user_id', user.id);
+    if (error) { toast.error('Erro ao eliminar dossier'); return; }
+    toast.success('Dossier eliminado');
     navigate('/dossiers');
   };
 
@@ -153,7 +161,10 @@ export default function DossierDetalhe() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleDelete}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setEditOpen(true)} aria-label="Editar dossier">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => setDeleteOpen(true)} aria-label="Eliminar dossier">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
