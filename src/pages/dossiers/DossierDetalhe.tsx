@@ -327,7 +327,8 @@ export default function DossierDetalhe() {
           )}
         </div>
 
-        {/* Documentos (full) */}
+        <DisciplinasSection dossierId={dossier.id} />
+
         <Collapsible open={openSections['documentos']} onOpenChange={() => toggleSection('documentos')}>
           <CollapsibleTrigger asChild>
             <button className="flex items-center justify-between w-full p-4 border border-border rounded-lg bg-card hover:bg-accent/50 transition-colors">
@@ -368,6 +369,17 @@ export default function DossierDetalhe() {
           ))}
         </div>
       </div>
+
+      <EditDossierDialog open={editOpen} onOpenChange={setEditOpen} dossier={dossier} onSaved={refetch} />
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Eliminar dossier"
+        description={`Vais eliminar "${dossier.titulo}" e todos os factos, issues, regras e conclusões associadas. Esta acção é irreversível.`}
+        confirmWord="ELIMINAR"
+        onConfirm={handleDelete}
+      />
     </AppLayout>
   );
+
 }
