@@ -30,6 +30,7 @@ import Tesouraria from "./pages/gestao/Tesouraria";
 import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import Licenca from "./pages/Licenca";
+import Analytics from "./pages/Analytics";
 
 import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
 import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/dossiers" element={<ProtectedRoute><DossiersList /></ProtectedRoute>} />
             <Route path="/dossiers/novo" element={<ProtectedRoute><DossierNovo /></ProtectedRoute>} />
             <Route path="/dossiers/cronologia" element={<ProtectedRoute><Cronologia /></ProtectedRoute>} />
