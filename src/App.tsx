@@ -31,6 +31,8 @@ import Termos from "./pages/Termos";
 import Privacidade from "./pages/Privacidade";
 import Licenca from "./pages/Licenca";
 import Analytics from "./pages/Analytics";
+import ModulosHub from "./pages/modulos/ModulosHub";
+import ModuloDetalhe from "./pages/modulos/ModuloDetalhe";
 
 import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
 import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
@@ -89,6 +91,8 @@ const App = () => (
             <Route path="/dev/projecto/novo" element={<ProtectedRoute><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
             <Route path="/dev/projecto/:id" element={<ProtectedRoute><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/dev/adr/novo" element={<ProtectedRoute><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
+            <Route path="/modulos" element={<ModulosHub />} />
+            <Route path="/modulos/:slug" element={<ModuloDetalhe />} />
             <Route path="/termos" element={<Termos />} />
             <Route path="/privacidade" element={<Privacidade />} />
             <Route path="/licenca" element={<Licenca />} />

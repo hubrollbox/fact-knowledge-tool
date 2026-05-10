@@ -1,5 +1,6 @@
 import { Scale, Dog, Code, LucideIcon } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { modulos } from '@/data/modulos';
 import { ModuloSlug } from '@/types/modulos';
 
@@ -40,6 +41,15 @@ export default function ModuleSelector({ onSelect, activeSlug }: ModuleSelectorP
                 <CardTitle className="text-lg">{mod.nome}</CardTitle>
                 <CardDescription>{mod.descricao}</CardDescription>
               </CardHeader>
+              <CardContent className="text-center pb-4">
+                <Link
+                  to={`/modulos/${mod.slug}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                >
+                  Saber mais →
+                </Link>
+              </CardContent>
             </Card>
           );
         })}
