@@ -101,12 +101,20 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
             <p className="text-sm text-muted-foreground mt-0.5">FKT</p>
           </div>
-          <Button asChild>
-            <Link to="/dossiers/novo">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Dossier
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link to="/modulos">
+                Explorar módulos
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/dossiers/novo">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Dossier
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Planner — destaque principal */}
