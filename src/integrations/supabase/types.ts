@@ -1834,8 +1834,6 @@ export type Database = {
         Returns: string
       }
       get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
-      obras_can_read: { Args: { _ws: string }; Returns: boolean }
-      obras_can_write: { Args: { _ws: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
