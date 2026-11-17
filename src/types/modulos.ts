@@ -1,4 +1,4 @@
-export type ModuloSlug = 'juridico' | 'canil' | 'dev';
+export type ModuloSlug = 'juridico' | 'canil' | 'dev' | 'obras';
 
 export interface ModuloFeature {
   icone: string;
@@ -27,4 +27,8 @@ export interface Modulo {
   fluxo?: ModuloFluxoPasso[];
   faq?: ModuloFAQ[];
   rotaPrincipal?: string;
+  /** Destaque comercial (ex.: 'MVP'). */
+  destaque?: string;
+  /** Ainda não pode ser activado num workspace. */
+  emPreparacao?: boolean;
 }

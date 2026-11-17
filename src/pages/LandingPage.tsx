@@ -55,7 +55,7 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            Processos organizados.
+            Factos registados.
             <br />
             Nada perdido.
             <br />
@@ -63,7 +63,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Sistema para organizar dossiers, estruturar informação e tomar decisões com base em dados claros.
+            Regista o que observas, fundamenta cada decisão e acompanha as ações até ao fim. Começando pelas obras: do terreno ao relatório em minutos.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
@@ -78,6 +78,48 @@ export default function LandingPage() {
               <a href="#como-funciona">Como funciona</a>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* FKT OBRAS */}
+      <section className="border-t border-border px-6 py-20 md:py-24">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-5">
+            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
+              Primeiro módulo · Em piloto
+            </span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">FKT Obras</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Em vez de reconstruir uma visita a partir de fotografias, WhatsApp e Word, o técnico regista os factos no momento,
+              organiza a análise e gera um relatório partilhável com ações, responsáveis e prazos.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Não é um ERP nem gere toda a obra. É uma camada simples de evidência, decisão e seguimento.
+            </p>
+            <Button asChild variant="outline">
+              <Link to="/modulos/obras">
+                Conhecer o FKT Obras
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+          <ol className="border border-border rounded-lg bg-card divide-y divide-border text-sm">
+            {[
+              ['Obra', 'Cliente, morada e responsável'],
+              ['Visita', 'Data, hora e notas gerais'],
+              ['Ocorrência', 'Fotografia e descrição curta'],
+              ['Análise', 'Referências e fundamentação'],
+              ['Decisão', 'Orientação técnica'],
+              ['Ação', 'Responsável e prazo'],
+              ['Relatório', 'PDF pronto a partilhar'],
+            ].map(([t, d], i) => (
+              <li key={t} className="flex items-center gap-4 px-5 py-3">
+                <span className="h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{i + 1}</span>
+                <span className="font-medium">{t}</span>
+                <span className="text-muted-foreground ml-auto text-right">{d}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 

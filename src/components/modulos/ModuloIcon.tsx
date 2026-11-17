@@ -1,13 +1,13 @@
 import {
   Scale, Dog, Code, FolderKanban, Clock, FileText, GitBranch, Users, Printer,
   CalendarDays, Heart, BedDouble, Syringe, FolderGit2, GitPullRequest,
-  BookOpen, ListChecks, BarChart3, LucideIcon,
+  BookOpen, ListChecks, BarChart3, HardHat, Building2, ClipboardList, Camera, LucideIcon,
 } from 'lucide-react';
 
 const map: Record<string, LucideIcon> = {
   Scale, Dog, Code, FolderKanban, Clock, FileText, GitBranch, Users, Printer,
   CalendarDays, Heart, BedDouble, Syringe, FolderGit2, GitPullRequest,
-  BookOpen, ListChecks, BarChart3,
+  BookOpen, ListChecks, BarChart3, HardHat, Building2, ClipboardList, Camera,
 };
 
 export function ModuloIcon({ name, className }: { name: string; className?: string }) {

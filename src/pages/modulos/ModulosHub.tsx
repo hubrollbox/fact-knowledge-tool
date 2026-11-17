@@ -10,7 +10,7 @@ export default function ModulosHub() {
   useEffect(() => {
     document.title = 'Módulos — FKT';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Conhece os módulos disponíveis no FKT: Jurídico, Canil & Vet e Desenvolvimento.');
+    if (meta) meta.setAttribute('content', 'Conhece os módulos disponíveis no FKT: Obras, Jurídico, Canil & Vet e Desenvolvimento.');
   }, []);
 
   return (
@@ -33,12 +33,17 @@ export default function ModulosHub() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {modulos.map((mod) => (
             <Link key={mod.slug} to={`/modulos/${mod.slug}`} className="group">
               <Card className="h-full transition-all group-hover:shadow-md group-hover:border-primary/40">
                 <CardHeader className="space-y-3">
-                  <ModuloIcon name={mod.icone} className="h-8 w-8 text-primary" />
+                  <div className="flex items-center justify-between">
+                    <ModuloIcon name={mod.icone} className="h-8 w-8 text-primary" />
+                    {mod.destaque && (
+                      <span className="text-[10px] uppercase tracking-wider border border-border rounded-full px-2 py-0.5 text-muted-foreground">{mod.destaque}</span>
+                    )}
+                  </div>
                   <CardTitle className="flex items-center justify-between">
                     {mod.nome}
                     <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />

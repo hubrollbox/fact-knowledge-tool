@@ -19,6 +19,14 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
   const { moduloSlug, setModulo, isChanging, isLoading } = useModuloActivo();
   const { role } = useWorkspaceRole();
 
+  if (modulo.emPreparacao) {
+    return (
+      <Button size={size} variant="outline" onClick={() => navigate(user ? '/dashboard' : '/login')}>
+        Em piloto — disponível em breve
+      </Button>
+    );
+  }
+
   if (loading || isLoading) {
     return (
       <Button size={size} disabled>

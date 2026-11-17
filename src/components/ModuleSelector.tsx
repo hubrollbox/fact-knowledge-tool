@@ -1,4 +1,4 @@
-import { Scale, Dog, Code, LucideIcon } from 'lucide-react';
+import { Scale, Dog, Code, HardHat, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { modulos } from '@/data/modulos';
@@ -8,6 +8,7 @@ const iconMap: Record<string, LucideIcon> = {
   Scale,
   Dog,
   Code,
+  HardHat,
 };
 
 interface ModuleSelectorProps {
@@ -23,7 +24,7 @@ export default function ModuleSelector({ onSelect, activeSlug }: ModuleSelectorP
         <p className="text-muted-foreground text-sm">Selecciona o contexto de trabalho para este workspace.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
         {modulos.map((mod) => {
           const Icon = iconMap[mod.icone];
           const isActive = activeSlug === mod.slug;
@@ -31,14 +32,20 @@ export default function ModuleSelector({ onSelect, activeSlug }: ModuleSelectorP
           return (
             <Card
               key={mod.slug}
-              onClick={() => onSelect(mod.slug)}
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${
+              onClick={() => !mod.emPreparacao && onSelect(mod.slug)}
+              aria-disabled={mod.emPreparacao}
+              className={`transition-all ${mod.emPreparacao ? 'opacity-70 cursor-default' : 'cursor-pointer hover:shadow-md hover:border-primary/50'} ${
                 isActive ? 'border-primary ring-2 ring-primary/20' : ''
               }`}
             >
               <CardHeader className="items-center text-center gap-2">
                 {Icon && <Icon className="h-8 w-8 text-primary" />}
                 <CardTitle className="text-lg">{mod.nome}</CardTitle>
+                {mod.destaque && (
+                  <span className="text-[10px] uppercase tracking-wider border border-border rounded-full px-2 py-0.5 text-muted-foreground">
+                    {mod.emPreparacao ? 'Em piloto' : mod.destaque}
+                  </span>
+                )}
                 <CardDescription>{mod.descricao}</CardDescription>
               </CardHeader>
               <CardContent className="text-center pb-4">

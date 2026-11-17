@@ -2,6 +2,42 @@ import { Modulo } from '@/types/modulos';
 
 export const modulos: Modulo[] = [
   {
+    slug: 'obras',
+    nome: 'Obras',
+    descricao: 'Visitas, ocorrências e relatórios de obra',
+    icone: 'HardHat',
+    destaque: 'MVP · Piloto',
+    emPreparacao: true,
+    tagline: 'Do terreno ao relatório em minutos. Evidência, decisão e acompanhamento de obra.',
+    rotaPrincipal: '/obras',
+    descricaoLonga: [
+      'Em vez de reconstruir uma visita a partir de fotografias, mensagens de WhatsApp e notas em papel, o técnico regista os factos no momento, organiza a análise e gera um relatório partilhável com ações, responsáveis e prazos.',
+      'Pensado para fiscais de obra independentes e pequenas empresas de fiscalização. Não é um ERP nem gere toda a obra: é uma camada simples de evidência, decisão e seguimento.',
+    ],
+    funcionalidades: [
+      { icone: 'Building2', titulo: 'Obras', descricao: 'Nome, morada, cliente e responsável, com histórico de visitas.' },
+      { icone: 'ClipboardList', titulo: 'Visitas de obra', descricao: 'Data, hora, notas gerais e localização quando autorizada.' },
+      { icone: 'Camera', titulo: 'Ocorrências com fotografia', descricao: 'Captura rápida no telemóvel: foto, nota curta e prioridade.' },
+      { icone: 'GitBranch', titulo: 'Análise estruturada', descricao: 'Contexto, problema, referências, análise e decisão — completáveis no escritório.' },
+      { icone: 'ListChecks', titulo: 'Ações e prazos', descricao: 'Correções com responsável, prazo e estado até ao fecho.' },
+      { icone: 'FileText', titulo: 'Relatório PDF', descricao: 'Relatório de visita profissional, pronto a partilhar por email ou WhatsApp.' },
+    ],
+    fluxo: [
+      { titulo: 'Cria a obra', descricao: 'Identifica a obra, o cliente e a morada.' },
+      { titulo: 'Regista a visita', descricao: 'Data e hora guardadas automaticamente.' },
+      { titulo: 'Adiciona ocorrências', descricao: 'Fotografia, descrição curta, prioridade e estado.' },
+      { titulo: 'Completa a decisão', descricao: 'Referências, análise e ação corretiva com prazo.' },
+      { titulo: 'Gera e partilha', descricao: 'Relatório PDF com fotografias, decisões e ações pendentes.' },
+    ],
+    faq: [
+      { q: 'Para quem é?', a: 'Fiscais de obra, diretores de obra, técnicos de qualidade e empresas de remodelação.' },
+      { q: 'Tenho de preencher tudo em obra?', a: 'Não. No terreno basta a fotografia e uma nota; a análise pode ser completada mais tarde.' },
+      { q: 'A localização é certificada?', a: 'Não. É um registo de localização e hora, guardado apenas com a tua autorização.' },
+      { q: 'O relatório tem valor jurídico?', a: 'O relatório inclui data de geração e versão, mas não é certificado nem substitui assinatura digital.' },
+      { q: 'Já posso usar?', a: 'O módulo está em fase de piloto com um grupo restrito de utilizadores.' },
+    ],
+  },
+  {
     slug: 'juridico',
     nome: 'Jurídico',
     descricao: 'Processos, documentos e prazos',
