@@ -1280,6 +1280,299 @@ export type Database = {
         }
         Relationships: []
       }
+      obras: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          data_inicio: string | null
+          data_prevista_fim: string | null
+          dono_obra: string | null
+          estado: string
+          id: string
+          morada: string | null
+          nome: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prevista_fim?: string | null
+          dono_obra?: string | null
+          estado?: string
+          id?: string
+          morada?: string | null
+          nome: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prevista_fim?: string | null
+          dono_obra?: string | null
+          estado?: string
+          id?: string
+          morada?: string | null
+          nome?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_acoes: {
+        Row: {
+          created_at: string
+          descricao: string
+          estado: string
+          id: string
+          obra_id: string
+          ocorrencia_id: string | null
+          prazo: string | null
+          responsavel: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          estado?: string
+          id?: string
+          obra_id: string
+          ocorrencia_id?: string | null
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          estado?: string
+          id?: string
+          obra_id?: string
+          ocorrencia_id?: string | null
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_acoes_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_ocorrencia_id_fkey"
+            columns: ["ocorrencia_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_fotos: {
+        Row: {
+          capturada_em: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          legenda: string | null
+          longitude: number | null
+          ocorrencia_id: string | null
+          storage_path: string
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          capturada_em?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          legenda?: string | null
+          longitude?: number | null
+          ocorrencia_id?: string | null
+          storage_path: string
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          capturada_em?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          legenda?: string | null
+          longitude?: number | null
+          ocorrencia_id?: string | null
+          storage_path?: string
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_fotos_ocorrencia_id_fkey"
+            columns: ["ocorrencia_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_fotos_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_fotos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencias: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          estado: string
+          gravidade: string
+          id: string
+          localizacao: string | null
+          obra_id: string
+          titulo: string
+          updated_at: string
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          gravidade?: string
+          id?: string
+          localizacao?: string | null
+          obra_id: string
+          titulo: string
+          updated_at?: string
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          gravidade?: string
+          id?: string
+          localizacao?: string | null
+          obra_id?: string
+          titulo?: string
+          updated_at?: string
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencias_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_visitas: {
+        Row: {
+          condicoes_meteo: string | null
+          created_at: string
+          data_visita: string
+          hora_fim: string | null
+          hora_inicio: string | null
+          id: string
+          notas: string | null
+          obra_id: string
+          tecnico: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          condicoes_meteo?: string | null
+          created_at?: string
+          data_visita?: string
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          notas?: string | null
+          obra_id: string
+          tecnico?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          condicoes_meteo?: string | null
+          created_at?: string
+          data_visita?: string
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          notas?: string | null
+          obra_id?: string
+          tecnico?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_visitas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_visitas_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rules: {
         Row: {
           created_at: string | null
@@ -1541,6 +1834,8 @@ export type Database = {
         Returns: string
       }
       get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
+      obras_can_read: { Args: { _ws: string }; Returns: boolean }
+      obras_can_write: { Args: { _ws: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
