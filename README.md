@@ -1,111 +1,61 @@
 # FKT — Fact Knowledge Tool
 
-Sistema para organização de informação, análise estruturada e apoio à decisão.
+Plataforma modular que transforma informação dispersa em decisões claras, justificadas e acompanhadas.
 
-O FKT operacionaliza um método formal que impõe a separação rigorosa entre:
-- Contexto (factos)
-- Problema
-- Referências
-- Análise
-- Decisão
+O FKT organiza factos, documentos e referências, ajuda a fundamentar decisões e acompanha as ações até ao fim.
 
-O sistema garante que qualquer conclusão seja rastreável, reconstruível e estruturalmente validada.
+## Como funciona
 
-MVP funcional em produção.  
-Repositório: https://github.com/hubrollbox/fact-knowledge-tool
+O FKT tem um **Core** transversal e **módulos** especializados por domínio.
 
----
+### Core
+Capacidades comuns a todos os módulos:
+- Organizações e workspaces
+- Documentos e evidências
+- Fontes e referências
+- Histórico e rastreabilidade
+- Ações, responsáveis e prazos
+- Exportação e auditoria
 
-## Propósito
+### Módulos
 
-O FKT não é software de aconselhamento.
+| Módulo | Estado | Foco principal |
+|--------|--------|----------------|
+| **FKT Obras** | Piloto / Validação comercial | Visitas, ocorrências, evidência, decisão e relatório |
+| FKT Jurídico | Em preparação | Processos, referências e análise estruturada (FIRAC) |
+| FKT Vet | Em preparação | Histórico, cuidados e operações em pecuária |
+| FKT Desenvolvimento | Em preparação | Decisões técnicas, incidentes e documentação |
 
-É uma infraestrutura metodológica que impõe:
-
-- Registo factual explícito  
-- Referenciação verificável  
-- Estrutura obrigatória de raciocínio  
-- Cadeia analítica rastreável  
-
-O objetivo é impedir a confusão entre informação, interpretação e conclusão.
-
----
-
-## Como Funciona
-
-O FKT organiza o trabalho em dois domínios distintos:
-
-### Base de Conhecimento
-Espaço dedicado ao estudo, organização de referências e estruturação de informação.
-
-### Dossiers (Processos)
-Análise estruturada de situações concretas segundo um método formal obrigatório.
-
-Os dois domínios são logicamente separados.
-
----
+O **FKT Obras** é o primeiro módulo selecionado para validação comercial e lançamento controlado.
 
 ## Método
 
-Cada dossier segue obrigatoriamente uma estrutura:
+Todos os módulos partilham a mesma lógica de trabalho:
 
-- Contexto  
-- Problema  
-- Referências  
-- Análise  
-- Decisão  
+1. **Organizar** — reunir o assunto num contexto
+2. **Registar** — separar factos e evidência
+3. **Referenciar** — ligar a regras, normas ou fontes
+4. **Decidir** — registar análise e decisão de forma explícita
+5. **Agir** — atribuir ações, responsáveis e prazos
 
-### Regras do sistema:
+No módulo Jurídico esta lógica é aplicada através do método **FIRAC** (Factos, Issue, Rules, Application, Conclusion).
 
-- O contexto é registado separadamente da interpretação  
-- As referências exigem identificação explícita  
-- A análise liga contexto e referências  
-- A decisão tem de ser justificável  
-- Um dossier só pode ser considerado concluído se cumprir os requisitos estruturais  
-
----
-
-## Aplicação
-
-O sistema pode ser utilizado em qualquer área que exija decisão estruturada baseada em informação verificável, incluindo:
-
-- Jurídico  
-- Gestão e administração  
-- Saúde (humana e veterinária)  
-- Engenharia e qualidade  
-- Tecnologia e análise de incidentes  
-- Educação e investigação  
-
----
-
-## Funcionalidades Atuais (MVP)
-
-- Autenticação de utilizadores  
-- Criação estruturada de dossiers  
-- Modelo formal para:
-  - Contexto  
-  - Referências  
-  - Análise  
-- Separação entre Base de Conhecimento e Dossiers  
-- Estrutura obrigatória de análise  
-- Organização cronológica de informação  
-
----
-
-## Estado do Projeto
+## Estado do projeto
 
 MVP funcional em produção.  
-Em desenvolvimento contínuo.
+Foco comercial atual: **FKT Obras** (piloto controlado).
 
----
+## Stack
+
+- React + TypeScript + Vite
+- Tailwind + shadcn/ui
+- Supabase (Auth, Database, Storage, RLS)
+- Vercel
 
 ## Propriedade Intelectual
 
-Não é concedida licença open source.  
-Todos os direitos reservados.
-
----
+Todos os direitos reservados. Não é concedida licença open source.
 
 ## Configuração de autenticação (Supabase)
 
-Para o login funcionar em ambiente local, copie `.env.example` para `.env.local` e preencha as credenciais:
+Para o login funcionar em ambiente local, copie `.env.example` para `.env.local` e preencha as credenciais.
