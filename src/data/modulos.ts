@@ -7,7 +7,6 @@ export const modulos: Modulo[] = [
     descricao: 'Visitas, ocorrências e relatórios de obra',
     icone: 'HardHat',
     destaque: 'MVP · Piloto',
-    emPreparacao: true,
     tagline: 'Do terreno ao relatório em minutos. Evidência, decisão e acompanhamento de obra.',
     rotaPrincipal: '/obras',
     descricaoLonga: [
