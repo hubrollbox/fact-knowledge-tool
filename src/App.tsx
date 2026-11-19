@@ -52,6 +52,7 @@ import { ObrasDashboard } from "./modules/obras/pages/ObrasDashboard";
 import { NovaObra } from "./modules/obras/pages/NovaObra";
 import { ObraDetail } from "./modules/obras/pages/ObraDetail";
 import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
+import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => (
             <Route path="/obras" element={<ProtectedRoute><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/nova" element={<ProtectedRoute><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id" element={<ProtectedRoute><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute><RelatorioVisita /></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/modulos" element={<ModulosHub />} />
             <Route path="/modulos/:slug" element={<ModuloDetalhe />} />
