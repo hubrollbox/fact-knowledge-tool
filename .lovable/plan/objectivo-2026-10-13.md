@@ -1,5 +1,5 @@
 ## Objectivo
-Criar uma página dedicada por módulo (Jurídico, Canil & Vet, Desenvolvimento) que funcione como vitrine + ponto de entrada — explica o que o módulo faz e permite activar/aceder em um clique.
+Criar uma página dedicada por módulo (FKT Lex, FKT Vet, FKT Dev) que funcione como vitrine + ponto de entrada — explica o que o módulo faz e permite activar/aceder em um clique.
 
 ## Arquitectura proposta
 
