@@ -2270,6 +2270,17 @@ export type Database = {
         }
         Returns: string
       }
+      create_obras_documento_versao: {
+        Args: {
+          _documento_id: string
+          _mime_type: string
+          _nome_ficheiro: string
+          _notas?: string
+          _storage_path: string
+          _tamanho_bytes: number
+        }
+        Returns: string
+      }
       get_disciplina_user_id: {
         Args: { _disciplina_id: string }
         Returns: string
