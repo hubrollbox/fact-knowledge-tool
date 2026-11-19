@@ -5,20 +5,50 @@ export default function Privacidade() {
     <div className="min-h-screen flex flex-col bg-background">
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 space-y-6">
         <h1 className="text-2xl font-bold text-foreground">Política de Privacidade</h1>
-        <p className="text-sm text-muted-foreground">Última atualização: Novembro 2026</p>
+        <p className="text-sm text-muted-foreground">Última atualização: 19 de novembro de 2026</p>
+
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 text-sm">
+          <strong>Informação por completar antes da abertura pública.</strong>
+          <p className="mt-1">A identificação jurídica do responsável pelo tratamento, a morada e o contacto para assuntos de privacidade ainda têm de ser inseridos nesta política. Esta informação não deve ser substituída por dados presumidos.</p>
+        </div>
+
         <div className="prose prose-sm text-foreground space-y-4">
-          <p>A sua privacidade é importante para nós. Esta política descreve como recolhemos, utilizamos e protegemos os seus dados pessoais.</p>
-          <h2 className="text-lg font-semibold">1. Dados recolhidos</h2>
-          <p>Consoante a utilização da plataforma, podem ser tratados dados de conta, informação e documentos introduzidos nos módulos e, no formulário do piloto, os dados de contacto indicados nesta política.</p>
-          <h2 className="text-lg font-semibold">2. Finalidade</h2>
-          <p>Os dados da plataforma são utilizados para disponibilizar as funcionalidades solicitadas. Os dados do formulário do piloto são utilizados para analisar o pedido e, quando adequado, contactar a pessoa interessada.</p>
-          <h2 className="text-lg font-semibold">3. Armazenamento</h2>
-          <p>Os dados do formulário são armazenados na base de dados Supabase associada ao FKT. O acesso público está limitado à submissão de pedidos; a consulta dos registos não é disponibilizada através da API pública.</p>
-          <h2 className="text-lg font-semibold">4. Pedidos de acesso ao piloto</h2>
-          <p>Quando solicita acesso ao piloto FKT Obras, recolhemos o nome, endereço de email, função ou empresa e número aproximado de obras acompanhadas. Recolhemos também a confirmação de consentimento e a data em que foi prestada.</p>
-          <p>Estes dados são utilizados para analisar o pedido e, quando adequado, contactar a pessoa interessada sobre o piloto. O envio do formulário não cria uma conta nem garante a participação. Os pedidos são mantidos enquanto forem necessários para gerir o processo de selecção e contacto do piloto.</p>
-          <h2 className="text-lg font-semibold">5. Direitos do titular dos dados</h2>
-          <p>Pode solicitar o acesso, a rectificação ou o apagamento dos dados, bem como retirar o consentimento. A identificação do responsável pelo tratamento e o respectivo contacto devem ser consultados junto da entidade que opera o FKT.</p>
+          <h2 className="text-lg font-semibold">1. Responsável pelo tratamento</h2>
+          <p><strong>Entidade ou pessoa responsável:</strong> [INSERIR NOME COMPLETO OU DENOMINAÇÃO SOCIAL].</p>
+          <p><strong>Morada:</strong> [INSERIR MORADA POSTAL].</p>
+          <p><strong>Contacto para assuntos de privacidade e exercício de direitos:</strong> [INSERIR ENDEREÇO DE EMAIL].</p>
+          <p>Quando exista Encarregado da Proteção de Dados formalmente designado, os respetivos contactos serão indicados aqui: [INSERIR CONTACTO, SE APLICÁVEL].</p>
+
+          <h2 className="text-lg font-semibold">2. Dados pessoais tratados</h2>
+          <p>Consoante a utilização da plataforma, podem ser tratados dados de identificação e contacto associados à conta, dados introduzidos pelo utilizador nos módulos do FKT, documentos e ficheiros carregados e informação técnica necessária ao funcionamento e à segurança do serviço.</p>
+          <p>No formulário de pedido de acesso ao piloto FKT Obras são recolhidos o nome, endereço de email, função ou empresa, número aproximado de obras acompanhadas, bem como a confirmação e a data do consentimento.</p>
+
+          <h2 className="text-lg font-semibold">3. Finalidades e fundamentos do tratamento</h2>
+          <ul>
+            <li>Gerir contas e disponibilizar as funcionalidades da plataforma solicitadas pelo utilizador;</li>
+            <li>Guardar e organizar a informação que o utilizador introduz nos módulos que utiliza;</li>
+            <li>Analisar pedidos de acesso ao piloto FKT Obras e, quando adequado, contactar os interessados — com fundamento no consentimento prestado no formulário;</li>
+            <li>Assegurar a segurança, prevenir utilizações abusivas e manter o funcionamento técnico do serviço, com fundamento que deverá ser determinado e documentado pelo responsável antes da abertura pública.</li>
+          </ul>
+          <p>O consentimento para o pedido de acesso ao piloto pode ser retirado a qualquer momento, sem afetar a licitude do tratamento realizado antes da retirada. A retirada pode impedir a continuação da análise do pedido ou do contacto associado.</p>
+
+          <h2 className="text-lg font-semibold">4. Destinatários e infraestrutura</h2>
+          <p>Os dados do formulário de acesso ao piloto são armazenados na base de dados Supabase associada ao FKT. O projeto está alojado na região eu-west-1. O acesso público à tabela de pedidos está limitado à submissão de registos; a consulta não é disponibilizada através da API pública.</p>
+          <p>Os dados poderão ser tratados por prestadores de serviços técnicos que assegurem alojamento, armazenamento, manutenção ou segurança, apenas na medida necessária à prestação desses serviços e mediante as garantias contratuais aplicáveis. O responsável pelo tratamento deve manter identificados os prestadores e avaliar eventuais transferências de dados para fora do Espaço Económico Europeu.</p>
+
+          <h2 className="text-lg font-semibold">5. Prazo de conservação</h2>
+          <p>Os dados são conservados apenas durante o período necessário às finalidades para que foram recolhidos. Os pedidos de acesso ao piloto serão revistos durante o processo de selecção e contacto e apagados ou anonimizados quando deixarem de ser necessários, salvo obrigação legal que imponha conservação adicional.</p>
+          <p>O prazo concreto ou os critérios operacionais de revisão e eliminação têm de ser definidos e documentados pelo responsável pelo tratamento antes da abertura pública do formulário.</p>
+
+          <h2 className="text-lg font-semibold">6. Direitos dos titulares</h2>
+          <p>Nos termos da legislação aplicável, pode solicitar o acesso aos seus dados, a sua retificação ou apagamento, a limitação do tratamento e, quando aplicável, a portabilidade ou oposição. Quando o tratamento se baseie no consentimento, pode retirá-lo a qualquer momento.</p>
+          <p>Para exercer estes direitos, utilize o contacto indicado na secção 1. Pode também apresentar reclamação à Comissão Nacional de Proteção de Dados (CNPD), em <a href="https://www.cnpd.pt/" target="_blank" rel="noreferrer">www.cnpd.pt</a>.</p>
+
+          <h2 className="text-lg font-semibold">7. Segurança</h2>
+          <p>O FKT utiliza controlos técnicos de acesso e políticas de segurança na base de dados. O acesso aos dados deve ser limitado às pessoas que necessitem deles para as finalidades indicadas. Nenhum sistema de transmissão ou armazenamento pode ser apresentado como absolutamente seguro.</p>
+
+          <h2 className="text-lg font-semibold">8. Alterações a esta política</h2>
+          <p>Esta política pode ser atualizada para refletir alterações no serviço ou nas operações de tratamento. A versão em vigor será disponibilizada nesta página, com a respetiva data de atualização.</p>
         </div>
       </main>
       <Footer />
