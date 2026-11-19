@@ -48,11 +48,12 @@ BEGIN
   row_data := COALESCE(new_data, old_data);
   ws_id := NULLIF(row_data->>'workspace_id', '')::uuid;
   entity_id := NULLIF(row_data->>'id', '')::uuid;
-  parent_id := COALESCE(
-    NULLIF(row_data->>'ocorrencia_id', '')::uuid,
-    NULLIF(row_data->>'obra_id', '')::uuid,
-    entity_id
-  );
+  parent_id := CASE WHEN TG_TABLE_NAME = 'obras_ocorrencias' THEN entity_id
+    ELSE COALESCE(
+      NULLIF(row_data->>'ocorrencia_id', '')::uuid,
+      NULLIF(row_data->>'obra_id', '')::uuid,
+      entity_id
+    ) END;
 
   IF ws_id IS NULL OR entity_id IS NULL THEN
     RAISE EXCEPTION 'Não foi possível determinar workspace e registo para auditoria';
@@ -63,7 +64,7 @@ BEGIN
     operacao, actor_id, dados_anteriores, dados_novos
   ) VALUES (
     ws_id, TG_TABLE_NAME, entity_id,
-    CASE WHEN row_data ? 'ocorrencia_id' THEN 'obras_ocorrencias'
+    CASE WHEN TG_TABLE_NAME = 'obras_ocorrencias' OR row_data ? 'ocorrencia_id' THEN 'obras_ocorrencias'
          WHEN row_data ? 'obra_id' THEN 'obras'
          ELSE TG_TABLE_NAME END,
     parent_id,
