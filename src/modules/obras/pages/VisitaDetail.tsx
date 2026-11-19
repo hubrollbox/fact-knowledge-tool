@@ -7,6 +7,7 @@ import { useObra, useOcorrencias, useVisita } from '../hooks/useObras';
 import { OcorrenciaDialog } from '../components/OcorrenciaDialog';
 import { OcorrenciaItem } from '../components/OcorrenciaItem';
 import { FotosGaleria } from '../components/FotosGaleria';
+import { DocumentosAssociados } from '../components/DocumentosAssociados';
 
 export function VisitaDetail() {
   const { id, visitaId } = useParams();
@@ -38,6 +39,10 @@ export function VisitaDetail() {
       <Card>
         <CardHeader><CardTitle className="text-base">Fotos da visita</CardTitle></CardHeader>
         <CardContent><FotosGaleria visitaId={visita.id} canWrite={canWrite} /></CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Documentos associados</CardTitle></CardHeader>
+        <CardContent><DocumentosAssociados obraId={visita.obra_id} visitaId={visita.id} /></CardContent>
       </Card>
     </div>
   );
