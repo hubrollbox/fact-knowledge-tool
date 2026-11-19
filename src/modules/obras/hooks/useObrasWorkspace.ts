@@ -9,7 +9,7 @@ export function useObrasWorkspace() {
     queryFn: async () => {
       const { data: owned, error: ownerError } = await supabase
         .from('workspaces')
-        .select('id')
+        .select('*')
         .eq('user_id', user!.id)
         .maybeSingle();
       if (ownerError) throw ownerError;
@@ -23,7 +23,14 @@ export function useObrasWorkspace() {
         .limit(1)
         .maybeSingle();
       if (memberError) throw memberError;
-      return membership ? { id: membership.workspace_id } : null;
+      if (!membership) return null;
+      const { data: memberWorkspace, error: memberWorkspaceError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', membership.workspace_id)
+        .maybeSingle();
+      if (memberWorkspaceError) throw memberWorkspaceError;
+      return memberWorkspace;
     },
     enabled: !!user,
   });
