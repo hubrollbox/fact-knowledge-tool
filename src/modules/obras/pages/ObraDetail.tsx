@@ -11,6 +11,7 @@ import { VisitaDialog } from '../components/VisitaDialog';
 import { OcorrenciaDialog } from '../components/OcorrenciaDialog';
 import { OcorrenciaItem } from '../components/OcorrenciaItem';
 import { AcaoDialog } from '../components/AcaoDialog';
+import { DocumentosObra } from '../components/DocumentosObra';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -45,6 +46,7 @@ export function ObraDetail() {
           <TabsTrigger value="visitas">Visitas ({visitas?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="documentos">Documentos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visitas" className="space-y-3">
@@ -60,6 +62,10 @@ export function ObraDetail() {
         <TabsContent value="ocorrencias" className="space-y-3">
           {canWrite && <OcorrenciaDialog obraId={obra.id} />}
           {!ocorrencias?.length ? <p className="text-sm text-muted-foreground">Ainda não há ocorrências.</p> : ocorrencias.map((o) => <OcorrenciaItem key={o.id} o={o} canWrite={canWrite} />)}
+        </TabsContent>
+
+        <TabsContent value="documentos" className="space-y-3">
+          <DocumentosObra obraId={obra.id} canWrite={canWrite} />
         </TabsContent>
 
         <TabsContent value="acoes" className="space-y-3">
