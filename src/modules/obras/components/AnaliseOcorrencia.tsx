@@ -68,10 +68,14 @@ export function AnaliseOcorrencia({
         .from('obras_ocorrencias').select('obra_id').eq('id', ocorrenciaId).single();
       if (ocorrenciaError) throw ocorrenciaError;
       const { data, error } = await supabase.from('obras_documento_versoes')
-        .select('id, documento_id, numero_versao, nome_ficheiro')
+        .select('id, documento_id, numero_versao, nome_ficheiro, storage_path')
         .eq('obra_id', ocorrencia.obra_id).order('numero_versao', { ascending: false });
       if (error) throw error;
-      return data;
+      const paths = (data ?? []).map((version) => version.storage_path);
+      const signed = paths.length ? await supabase.storage.from('obras-documentos').createSignedUrls(paths, 900) : { data: [], error: null };
+      if (signed.error) throw signed.error;
+      const urls = new Map((signed.data ?? []).map((item) => [item.path, item.signedUrl]));
+      return (data ?? []).map((version) => ({ ...version, signedUrl: urls.get(version.storage_path) ?? null }));
     },
   });
   const guardar = useGuardarAnaliseOcorrencia();
@@ -409,7 +413,10 @@ export function AnaliseOcorrencia({
                     </p>
                     {ref.url && <a className="break-all text-xs text-primary underline" href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}
                     {ref.notas && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{ref.notas}</p>}
-                    {ref.documento_versao_id && <p className="text-xs text-muted-foreground">Versão arquivada: {versoesDocumentais?.find((v) => v.id === ref.documento_versao_id)?.nome_ficheiro ?? 'Documento arquivado'}</p>}
+                    {ref.documento_versao_id && (() => {
+                      const versaoArquivada = versoesDocumentais?.find((v) => v.id === ref.documento_versao_id);
+                      return <p className="text-xs text-muted-foreground">Versão arquivada: {versaoArquivada?.nome_ficheiro ?? 'Documento arquivado'} {versaoArquivada?.signedUrl && <a className="ml-1 text-primary underline" href={versaoArquivada.signedUrl} target="_blank" rel="noreferrer">Abrir</a>}</p>;
+                    })()}
                   </div>
                   {canWrite && (
                     <div className="flex shrink-0">
