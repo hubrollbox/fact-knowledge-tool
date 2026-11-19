@@ -7,7 +7,7 @@ CREATE TABLE public.obras_historico_eventos (
   entidade_pai text,
   entidade_pai_id uuid,
   operacao text NOT NULL CHECK (operacao IN ('INSERT','UPDATE','DELETE')),
-  actor_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  actor_id uuid,
   ocorrido_em timestamptz NOT NULL DEFAULT clock_timestamp(),
   dados_anteriores jsonb,
   dados_novos jsonb
@@ -64,7 +64,7 @@ BEGIN
     operacao, actor_id, dados_anteriores, dados_novos
   ) VALUES (
     ws_id, TG_TABLE_NAME, entity_id,
-    CASE WHEN TG_TABLE_NAME = 'obras_ocorrencias' OR row_data ? 'ocorrencia_id' THEN 'obras_ocorrencias'
+    CASE WHEN TG_TABLE_NAME = 'obras_ocorrencias' OR NULLIF(row_data->>'ocorrencia_id', '') IS NOT NULL THEN 'obras_ocorrencias'
          WHEN row_data ? 'obra_id' THEN 'obras'
          ELSE TG_TABLE_NAME END,
     parent_id,
