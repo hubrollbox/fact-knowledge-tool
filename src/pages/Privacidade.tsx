@@ -12,7 +12,6 @@ export default function Privacidade() {
           <p><strong>Entidade ou pessoa responsável:</strong> Bruno Miguel Pinto.</p>
           <p><strong>Morada:</strong> Rua Brito Capelo, Edifício Diplomata, 4450-075 Matosinhos, Portugal.</p>
           <p><strong>Contacto para assuntos de privacidade e exercício de direitos:</strong> brunomiguelpinto@icloud.com.</p>
-          <p>Quando exista Encarregado da Proteção de Dados formalmente designado, os respetivos contactos serão indicados aqui: [INSERIR CONTACTO, SE APLICÁVEL].</p>
 
           <h2 className="text-lg font-semibold">2. Dados pessoais tratados</h2>
           <p>Consoante a utilização da plataforma, podem ser tratados dados de identificação e contacto associados à conta, dados introduzidos pelo utilizador nos módulos do FKT, documentos e ficheiros carregados e informação técnica necessária ao funcionamento e à segurança do serviço.</p>
