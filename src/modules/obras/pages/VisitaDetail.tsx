@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Loader2 } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useObra, useOcorrencias, useVisita } from '../hooks/useObras';
 import { OcorrenciaDialog } from '../components/OcorrenciaDialog';
@@ -21,10 +21,13 @@ export function VisitaDetail() {
   return (
     <div className="space-y-5">
       <Button variant="ghost" size="sm" asChild><Link to={`/obras/${id}`}><ArrowLeft className="h-4 w-4 mr-1" />{obra?.nome ?? 'Obra'}</Link></Button>
-      <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
         <h1 className="text-2xl font-bold tracking-tight">Visita de {new Date(visita.data_visita).toLocaleDateString('pt-PT')}</h1>
         <p className="text-sm text-muted-foreground">{[visita.hora_inicio?.slice(0, 5), visita.tecnico, visita.condicoes_meteo].filter(Boolean).join(' · ')}</p>
         {visita.notas && <p className="text-sm mt-2 whitespace-pre-wrap">{visita.notas}</p>}
+        </div>
+        <Button asChild size="sm"><Link to={`/obras/${id}/visita/${visita.id}/relatorio`}><FileText className="h-4 w-4 mr-2" />Gerar relatório PDF</Link></Button>
       </div>
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0"><CardTitle className="text-base">Ocorrências</CardTitle>{canWrite && <OcorrenciaDialog obraId={id!} visitaId={visita.id} />}</CardHeader>
