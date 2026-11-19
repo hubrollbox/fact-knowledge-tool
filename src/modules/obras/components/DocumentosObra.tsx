@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileText, Loader2, Plus, Upload, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Upload, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useObrasWorkspace } from '../hooks/useObrasWorkspace';
 import { useVisitas, useOcorrencias } from '../hooks/useObras';
