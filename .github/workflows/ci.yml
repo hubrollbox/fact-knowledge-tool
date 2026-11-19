@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -20,9 +20,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Regenerate npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Regenerate Bun lockfile
+        run: bun install
+      - name: Verify clean npm install
         run: npm ci
       - name: Build
         run: npm run build
       - name: Tests
         run: npm test
+      - name: Commit synchronized lockfiles
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(deps): synchronize lockfiles"
+          file_pattern: package-lock.json bun.lock
