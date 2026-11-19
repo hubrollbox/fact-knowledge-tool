@@ -25,7 +25,7 @@ jobs:
       - name: Regenerate npm lockfile
         run: npm install --package-lock-only --ignore-scripts
       - name: Apply compatible security fixes
-        run: npm audit fix
+        run: npm audit fix --omit=dev
       - name: Regenerate Bun lockfile
         run: bun install
       - name: Verify clean npm install
