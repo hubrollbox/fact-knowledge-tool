@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, type FormEvent } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { validatePilotAccessRequest } from '@/lib/pilotAccessValidation';
 import { FileText, BookOpen, Timer, Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
@@ -39,13 +40,27 @@ export default function LandingPage() {
     setFormError('');
     setSubmitting(true);
     const form = new FormData(formElement);
+    const request = {
+      name: String(form.get('name') ?? '').trim(),
+      email: String(form.get('email') ?? '').trim().toLowerCase(),
+      roleCompany: String(form.get('role_company') ?? '').trim(),
+      worksCount: Number(form.get('works_count')),
+      privacyConsent: form.get('privacy_consent') === 'on',
+    };
+    const validationError = validatePilotAccessRequest(request);
+    if (validationError) {
+      setFormError(validationError);
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.from('pilot_access_requests').insert({
-        name: String(form.get('name') ?? '').trim(),
-        email: String(form.get('email') ?? '').trim().toLowerCase(),
-        role_company: String(form.get('role_company') ?? '').trim(),
-        works_count: Number(form.get('works_count')),
-        privacy_consent: form.get('privacy_consent') === 'on',
+        name: request.name,
+        email: request.email,
+        role_company: request.roleCompany,
+        works_count: request.worksCount,
+        privacy_consent: request.privacyConsent,
         privacy_consent_at: new Date().toISOString(),
       });
       if (error) {
