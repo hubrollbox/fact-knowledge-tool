@@ -16,6 +16,7 @@ type SupportTicket = {
   created_at: string; updated_at: string;
 };
 type SupportMessage = { id: string; ticket_id: string; author_id: string; body: string; created_at: string };
+type TicketEvent = { id: string; ticket_id: string; actor_id: string | null; event_type: 'created' | 'status_changed'; old_status: TicketStatus | null; new_status: TicketStatus; created_at: string };
 
 const db = supabase as any;
 const modules: { value: ModuleKey; label: string }[] = [
@@ -53,6 +54,7 @@ export default function AjudaSuporte() {
   const [moduleFilter, setModuleFilter] = useState<ModuleKey | 'all'>('all');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
+  const [ticketEvents, setTicketEvents] = useState<TicketEvent[]>([]);
   const [reply, setReply] = useState('');
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [ticketForm, setTicketForm] = useState({ module: 'core' as ModuleKey, category: 'Dúvida', subject: '', description: '' });
@@ -98,9 +100,14 @@ export default function AjudaSuporte() {
 
   const openTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
-    const { data, error } = await db.from('fkt_support_messages').select('*').eq('ticket_id', ticket.id).order('created_at');
+    const [{ data, error }, events] = await Promise.all([
+      db.from('fkt_support_messages').select('*').eq('ticket_id', ticket.id).order('created_at'),
+      db.from('fkt_support_ticket_events').select('*').eq('ticket_id', ticket.id).order('created_at'),
+    ]);
     if (error) { toast.error('Não foi possível carregar as mensagens.'); return; }
+    if (events.error) { toast.error('Não foi possível carregar o histórico do pedido.'); return; }
     setMessages((data ?? []) as SupportMessage[]);
+    setTicketEvents((events.data ?? []) as TicketEvent[]);
   };
 
   const submitTicket = async (event: React.FormEvent) => {
@@ -241,6 +248,10 @@ export default function AjudaSuporte() {
                 {isAdmin && <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4"><label htmlFor="ticket-status" className="text-sm font-medium">Estado:</label><select id="ticket-status" className={inputClass + ' max-w-xs'} value={selectedTicket.status} onChange={event => void changeStatus(event.target.value as TicketStatus)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>}
               </div>
               <div className="space-y-3">
+                <h3 className="font-semibold">Histórico do pedido</h3>
+                <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+                  {ticketEvents.map(event => <div key={event.id} className="flex flex-wrap items-center justify-between gap-2 text-sm"><span>{event.event_type === 'created' ? 'Pedido submetido' : 'Estado alterado: ' + (event.old_status ? statusLabels[event.old_status] : '—') + ' → ' + statusLabels[event.new_status]}</span><span className="text-xs text-muted-foreground">{formatDate(event.created_at)}</span></div>)}
+                </div>
                 <h3 className="font-semibold">Conversação</h3>
                 {messages.map(message => <div key={message.id} className={`max-w-3xl rounded-lg border border-border p-4 ${message.author_id === selectedTicket.created_by ? 'bg-card' : 'bg-muted/60'}`}><div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground"><span>{message.author_id === selectedTicket.created_by ? 'Utilizador' : 'Suporte FKT'}</span><span>{formatDate(message.created_at)}</span></div><p className="whitespace-pre-wrap text-sm leading-6">{message.body}</p></div>)}
                 {messages.length === 0 && <p className="text-sm text-muted-foreground">Ainda não existem respostas neste pedido.</p>}
