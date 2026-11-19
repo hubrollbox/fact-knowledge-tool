@@ -13,14 +13,37 @@ export function useModuloActivo() {
     queryKey: ['workspace', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
+
+      // First look for a workspace owned by this user.
+      const { data: ownWorkspace, error: ownError } = await supabase
         .from('workspaces')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
-      return data;
+      if (ownError) throw ownError;
+      if (ownWorkspace) return ownWorkspace;
+
+      // If the user is a member, use that workspace instead of creating a second one.
+      const { data: membership, error: membershipError } = await supabase
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (membershipError) throw membershipError;
+      if (membership) {
+        const { data: memberWorkspace, error: memberWorkspaceError } = await supabase
+          .from('workspaces')
+          .select('*')
+          .eq('id', membership.workspace_id)
+          .maybeSingle();
+
+        if (memberWorkspaceError) throw memberWorkspaceError;
+        return memberWorkspace;
+      }
+
+      return null;
     },
     enabled: !!user,
   });
