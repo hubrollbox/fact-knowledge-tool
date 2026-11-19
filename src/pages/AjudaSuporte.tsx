@@ -59,6 +59,9 @@ export default function AjudaSuporte() {
   const [newTicketOpen, setNewTicketOpen] = useState(false);
   const [ticketForm, setTicketForm] = useState({ module: 'core' as ModuleKey, category: 'Dúvida', subject: '', description: '' });
   const [saving, setSaving] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<Array<{id:string;file_name:string;storage_path:string;file_size:number}>>([]);
+  const [attachmentUrls, setAttachmentUrls] = useState<Record<string,string>>({});
   const [faqForm, setFaqForm] = useState({ id: '', module: 'core' as ModuleKey, category: 'Utilização', question: '', answer: '', is_published: false });
   const [editingFaq, setEditingFaq] = useState(false);
 
@@ -108,18 +111,40 @@ export default function AjudaSuporte() {
     if (events.error) { toast.error('Não foi possível carregar o histórico do pedido.'); return; }
     setMessages((data ?? []) as SupportMessage[]);
     setTicketEvents((events.data ?? []) as TicketEvent[]);
+    const { data: fileRows, error: fileError } = await db.from('fkt_support_attachments').select('*').eq('ticket_id', ticket.id).order('created_at');
+    if (fileError) { toast.error('Não foi possível carregar os anexos.'); return; }
+    const storedFiles = (fileRows ?? []) as Array<{id:string;file_name:string;storage_path:string;file_size:number}>;
+    setAttachments(storedFiles);
+    const urls: Record<string,string> = {};
+    await Promise.all(storedFiles.map(async file => {
+      const result = await db.storage.from('fkt-support-attachments').createSignedUrl(file.storage_path, 3600);
+      if (result.data?.signedUrl) urls[file.id] = result.data.signedUrl;
+    }));
+    setAttachmentUrls(urls);
   };
 
   const submitTicket = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!user || !ticketForm.subject.trim() || !ticketForm.description.trim()) return;
+    if (selectedFiles.some(file => file.size > 10 * 1024 * 1024)) { toast.error('Cada anexo deve ter no máximo 10 MB.'); return; }
     setSaving(true);
     const { data, error } = await db.from('fkt_support_tickets').insert({
       created_by: user.id, module: ticketForm.module, category: ticketForm.category,
       subject: ticketForm.subject.trim(), description: ticketForm.description.trim(),
     }).select('*').single();
+    if (!error && data && selectedFiles.length) {
+      for (const file of selectedFiles) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const storagePath = user.id + '/' + data.id + '/' + crypto.randomUUID() + '-' + safeName;
+        const upload = await db.storage.from('fkt-support-attachments').upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
+        if (upload.error) { toast.error('Pedido criado, mas o anexo ' + file.name + ' não foi enviado.'); continue; }
+        const record = await db.from('fkt_support_attachments').insert({ ticket_id: data.id, uploaded_by: user.id, file_name: file.name, storage_path: storagePath, content_type: file.type || null, file_size: file.size });
+        if (record.error) toast.error('Pedido criado, mas não foi possível registar o anexo ' + file.name + '.');
+      }
+    }
     setSaving(false);
     if (error) { toast.error(error.message || 'Não foi possível enviar o pedido.'); return; }
+    setSelectedFiles([]);
     setTicketForm({ module: 'core', category: 'Dúvida', subject: '', description: '' });
     setNewTicketOpen(false);
     await loadTickets();
@@ -245,6 +270,7 @@ export default function AjudaSuporte() {
                 </div>
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-6">{selectedTicket.description}</p>
                 <p className="mt-3 text-xs text-muted-foreground">Criado em {formatDate(selectedTicket.created_at)}</p>
+                {attachments.length > 0 && <div className="mt-4 border-t border-border pt-4"><h3 className="mb-2 text-sm font-medium">Anexos</h3><ul className="space-y-2">{attachments.map(file => <li key={file.id} className="text-sm">{attachmentUrls[file.id] ? <a className="text-primary underline" href={attachmentUrls[file.id]} target="_blank" rel="noreferrer">{file.file_name}</a> : <span>{file.file_name}</span>} <span className="text-xs text-muted-foreground">({(file.file_size / 1024).toFixed(0)} KB)</span></li>)}</ul></div>}
                 {isAdmin && <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4"><label htmlFor="ticket-status" className="text-sm font-medium">Estado:</label><select id="ticket-status" className={inputClass + ' max-w-xs'} value={selectedTicket.status} onChange={event => void changeStatus(event.target.value as TicketStatus)}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>}
               </div>
               <div className="space-y-3">
@@ -272,6 +298,7 @@ export default function AjudaSuporte() {
                 </div>
                 <label className="block space-y-1 text-sm">Assunto<input className={inputClass} value={ticketForm.subject} onChange={event => setTicketForm({ ...ticketForm, subject: event.target.value })} maxLength={160} required /></label>
                 <label className="block space-y-1 text-sm">Descrição<textarea className={inputClass} rows={5} value={ticketForm.description} onChange={event => setTicketForm({ ...ticketForm, description: event.target.value })} required /></label>
+                <label className="block space-y-1 text-sm">Anexos (PDF, JPG, PNG, WEBP ou TXT; até 10 MB por ficheiro)<input className={inputClass} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,application/pdf,image/jpeg,image/png,image/webp,text/plain" onChange={event => setSelectedFiles(Array.from(event.target.files ?? []))} />{selectedFiles.length > 0 && <span className="block text-xs text-muted-foreground">{selectedFiles.map(file => file.name).join(', ')}</span>}</label>
                 <button className={buttonClass} disabled={saving}><Send className="h-4 w-4" /> Submeter pedido</button>
               </form>}
               <div className="space-y-2">
