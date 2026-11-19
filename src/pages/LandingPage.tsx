@@ -8,8 +8,8 @@ import { Footer } from '@/components/layout/Footer';
 const sections = [
   {
     icon: FileText,
-    title: 'Dossiers',
-    description: 'Cada assunto é organizado num dossier com toda a informação relevante num único lugar.',
+    title: 'Registo',
+    description: 'Visitas, ocorrências e informação relevante ficam registadas no contexto da obra.',
   },
   {
     icon: BookOpen,
@@ -18,13 +18,13 @@ const sections = [
   },
   {
     icon: Timer,
-    title: 'Ações e controlo',
-    description: 'Cada dossier tem ações associadas para garantir execução e controlo de prazos.',
+    title: 'Acompanhamento',
+    description: 'As ações registadas ficam associadas a responsáveis, prazos e estados.',
   },
   {
     icon: Shield,
-    title: 'Decisão',
-    description: 'Toda a informação converge para uma decisão clara e fundamentada.',
+    title: 'Organização',
+    description: 'A informação recolhida no terreno pode ser organizada e completada posteriormente.',
   },
 ];
 
@@ -212,7 +212,7 @@ export default function LandingPage() {
               Como funciona
             </h2>
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Um fluxo de trabalho para registar informação, estruturar decisões e acompanhar ações.
+              Um fluxo de trabalho para registar visitas, organizar ocorrências e acompanhar ações de fiscalização.
             </p>
           </div>
 
@@ -238,11 +238,11 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center space-y-6">
 
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Estrutura do sistema
+            Uma estrutura adaptada a cada módulo
           </h2>
 
           <p className="text-muted-foreground">
-            A estrutura adapta-se ao tipo de trabalho. No módulo Jurídico, por exemplo, a análise pode seguir cinco elementos:
+            Cada módulo tem a sua própria estrutura. No módulo Jurídico, por exemplo, a análise pode ser organizada em cinco elementos:
           </p>
 
           <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
@@ -269,15 +269,18 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-muted-foreground">
-            Processo de compra de equipamento:
+            O trabalho de fiscalização decorre em dois momentos:
           </p>
 
-          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
-            <p><strong>Contexto:</strong> necessidade de equipamento com orçamento limitado</p>
-            <p><strong>Problema:</strong> escolher fornecedor adequado</p>
-            <p><strong>Referências:</strong> orçamento disponível, propostas recebidas</p>
-            <p><strong>Análise:</strong> comparação entre preço, prazo e qualidade</p>
-            <p><strong>Decisão:</strong> selecionar fornecedor com melhor equilíbrio custo-benefício</p>
+          <div className="grid sm:grid-cols-2 gap-4 text-left">
+            <div className="border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
+              <h3 className="font-semibold">No terreno</h3>
+              <p>Regista a visita, acrescenta fotografias e descreve as ocorrências identificadas.</p>
+            </div>
+            <div className="border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
+              <h3 className="font-semibold">No escritório</h3>
+              <p>Completa a informação, organiza a análise e acompanha as ações, os responsáveis e os prazos.</p>
+            </div>
           </div>
 
         </div>
@@ -288,20 +291,18 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center space-y-6">
 
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Uma plataforma modular
+            Uma base comum, módulos especializados
           </h2>
 
           <p className="text-muted-foreground">
-            O núcleo comum organiza informação, evidência, decisões e acompanhamento. Cada módulo mantém os seus próprios fluxos e linguagem.
+            O FKT partilha uma base de organização, evidência e rastreabilidade. Cada módulo adapta essa base às necessidades concretas do seu domínio.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4 text-sm text-left">
-            <div className="border border-border rounded-lg p-4 bg-card">Jurídico, compliance e auditoria</div>
-            <div className="border border-border rounded-lg p-4 bg-card">Saúde humana e veterinária</div>
-            <div className="border border-border rounded-lg p-4 bg-card">Gestão, estratégia e operações</div>
-            <div className="border border-border rounded-lg p-4 bg-card">Engenharia, qualidade e indústria</div>
-            <div className="border border-border rounded-lg p-4 bg-card">Tecnologia e análise de incidentes</div>
-            <div className="border border-border rounded-lg p-4 bg-card">Educação, investigação e estudo</div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>Obras</strong><p className="text-muted-foreground mt-1">Primeiro módulo em piloto fechado.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>Jurídico</strong><p className="text-muted-foreground mt-1">Processos, factos, documentos e prazos.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>Canil & Vet</strong><p className="text-muted-foreground mt-1">Animais, registos e ninhadas.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>Desenvolvimento</strong><p className="text-muted-foreground mt-1">Projectos, issues e decisões técnicas.</p></div>
           </div>
 
         </div>
@@ -318,13 +319,13 @@ export default function LandingPage() {
           <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
             <p>• Separa informação de interpretação</p>
             <p>• Obriga a definir claramente o problema</p>
-            <p>• Baseia decisões em referências objetivas</p>
-            <p>• Regista o raciocínio de forma estruturada</p>
+            <p>• Mantém evidência e decisões ligadas ao respetivo contexto</p>
+            <p>• Regista o acompanhamento e o estado das ações</p>
             <p>• Permite justificar e rever decisões</p>
           </div>
 
           <p className="text-muted-foreground">
-            O resultado é um sistema de decisão claro, consistente e rastreável.
+            O objetivo é reduzir a dispersão da informação e facilitar o acompanhamento do trabalho.
           </p>
 
         </div>
