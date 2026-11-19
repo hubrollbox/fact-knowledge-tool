@@ -59,12 +59,12 @@ export function RelatorioVisita() {
   const { id, visitaId } = useParams();
   const { data: obra, isLoading: obraLoading } = useObra(id);
   const { data: visita, isLoading: visitaLoading } = useVisita(visitaId);
-  const { data: ocorrencias } = useOcorrencias(id);
-  const { data: acoes } = useAcoes(id);
+  const { data: ocorrencias, isLoading: ocorrenciasLoading } = useOcorrencias(id);
+  const { data: acoes, isLoading: acoesLoading } = useAcoes(id);
   const { data: fotosVisita, isLoading: fotosLoading } = useFotos({ visitaId });
   const geradoEm = new Date();
 
-  if (obraLoading || visitaLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
+  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
   if (!obra || !visita || visita.obra_id !== obra.id) {
     return <div className="p-8 space-y-3"><p className="text-sm text-muted-foreground">Não foi possível localizar esta visita e a respectiva obra.</p><Button asChild variant="outline"><Link to={id ? `/obras/${id}` : '/obras'}>Voltar</Link></Button></div>;
   }
