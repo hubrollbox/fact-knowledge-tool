@@ -7,9 +7,30 @@ export function useObrasWorkspace() {
   const { data } = useQuery({
     queryKey: ['workspace', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('workspaces').select('*').eq('user_id', user!.id).maybeSingle();
-      if (error) throw error;
-      return data;
+      const { data: owned, error: ownerError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+      if (ownerError) throw ownerError;
+      if (owned) return owned;
+
+      const { data: membership, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (memberError) throw memberError;
+      if (!membership) return null;
+      const { data: memberWorkspace, error: memberWorkspaceError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', membership.workspace_id)
+        .maybeSingle();
+      if (memberWorkspaceError) throw memberWorkspaceError;
+      return memberWorkspace;
     },
     enabled: !!user,
   });

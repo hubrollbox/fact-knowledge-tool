@@ -146,7 +146,7 @@ export function useEliminarFactoOcorrencia() {
 
 type ReferenciaValues = Pick<
   ReferenciaOcorrenciaInsert,
-  'tipo' | 'titulo' | 'entidade_origem' | 'identificador' | 'versao' | 'data_documento' | 'url' | 'notas'
+  'tipo' | 'titulo' | 'entidade_origem' | 'identificador' | 'versao' | 'data_documento' | 'url' | 'notas' | 'documento_versao_id'
 >;
 
 export function useGuardarReferenciaOcorrencia() {

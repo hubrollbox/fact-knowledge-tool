@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,7 @@ type ReferenciaForm = {
   data_documento: string;
   url: string;
   notas: string;
+  documento_versao_id: string;
 };
 
 const REFERENCIA_VAZIA: ReferenciaForm = {
@@ -45,6 +48,7 @@ const REFERENCIA_VAZIA: ReferenciaForm = {
   data_documento: '',
   url: '',
   notas: '',
+  documento_versao_id: 'none',
 };
 
 export function AnaliseOcorrencia({
@@ -56,6 +60,24 @@ export function AnaliseOcorrencia({
 }) {
   const { data, isLoading, isError } = useAnaliseOcorrencia(ocorrenciaId);
   const { data: fotos } = useFotos({ ocorrenciaId });
+  const { data: versoesDocumentais } = useQuery({
+    queryKey: ['obras-documento-versoes-ocorrencia', ocorrenciaId],
+    enabled: !!ocorrenciaId,
+    queryFn: async () => {
+      const { data: ocorrencia, error: ocorrenciaError } = await supabase
+        .from('obras_ocorrencias').select('obra_id').eq('id', ocorrenciaId).single();
+      if (ocorrenciaError) throw ocorrenciaError;
+      const { data, error } = await supabase.from('obras_documento_versoes')
+        .select('id, documento_id, numero_versao, nome_ficheiro, storage_path')
+        .eq('obra_id', ocorrencia.obra_id).order('numero_versao', { ascending: false });
+      if (error) throw error;
+      const paths = (data ?? []).map((version) => version.storage_path);
+      const signed = paths.length ? await supabase.storage.from('obras-documentos').createSignedUrls(paths, 900) : { data: [], error: null };
+      if (signed.error) throw signed.error;
+      const urls = new Map((signed.data ?? []).map((item) => [item.path, item.signedUrl]));
+      return (data ?? []).map((version) => ({ ...version, signedUrl: urls.get(version.storage_path) ?? null }));
+    },
+  });
   const guardar = useGuardarAnaliseOcorrencia();
   const adicionar = useAdicionarFactoOcorrencia();
   const actualizarFacto = useActualizarFactoOcorrencia();
@@ -180,6 +202,7 @@ export function AnaliseOcorrencia({
         data_documento: referenciaForm.data_documento || null,
         url: referenciaForm.url.trim() || null,
         notas: referenciaForm.notas.trim() || null,
+        documento_versao_id: referenciaForm.documento_versao_id === 'none' ? null : referenciaForm.documento_versao_id,
       },
     });
     setReferenciaForm(REFERENCIA_VAZIA);
@@ -197,6 +220,7 @@ export function AnaliseOcorrencia({
       data_documento: referencia.data_documento ?? '',
       url: referencia.url ?? '',
       notas: referencia.notas ?? '',
+      documento_versao_id: referencia.documento_versao_id ?? 'none',
     });
   };
 
@@ -389,6 +413,10 @@ export function AnaliseOcorrencia({
                     </p>
                     {ref.url && <a className="break-all text-xs text-primary underline" href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}
                     {ref.notas && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{ref.notas}</p>}
+                    {ref.documento_versao_id && (() => {
+                      const versaoArquivada = versoesDocumentais?.find((v) => v.id === ref.documento_versao_id);
+                      return <p className="text-xs text-muted-foreground">Versão arquivada: {versaoArquivada?.nome_ficheiro ?? 'Documento arquivado'} {versaoArquivada?.signedUrl && <a className="ml-1 text-primary underline" href={versaoArquivada.signedUrl} target="_blank" rel="noreferrer">Abrir</a>}</p>;
+                    })()}
                   </div>
                   {canWrite && (
                     <div className="flex shrink-0">
@@ -427,6 +455,16 @@ export function AnaliseOcorrencia({
               <div className="space-y-1"><Label>Número / identificador</Label><Input value={referenciaForm.identificador} onChange={(event) => setReferenciaForm({ ...referenciaForm, identificador: event.target.value })} /></div>
               <div className="space-y-1"><Label>Versão / edição</Label><Input value={referenciaForm.versao} onChange={(event) => setReferenciaForm({ ...referenciaForm, versao: event.target.value })} /></div>
               <div className="space-y-1"><Label>Data do documento</Label><Input type="date" value={referenciaForm.data_documento} onChange={(event) => setReferenciaForm({ ...referenciaForm, data_documento: event.target.value })} /></div>
+              <div className="space-y-1">
+                <Label>Versão exacta do arquivo (opcional)</Label>
+                <Select value={referenciaForm.documento_versao_id} onValueChange={(value) => setReferenciaForm({ ...referenciaForm, documento_versao_id: value })}>
+                  <SelectTrigger><SelectValue placeholder="Sem ficheiro arquivado" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem ficheiro arquivado</SelectItem>
+                    {(versoesDocumentais ?? []).map((versao) => <SelectItem key={versao.id} value={versao.id}>V{versao.numero_versao} · {versao.nome_ficheiro}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-1"><Label>URL da fonte (opcional)</Label><Input type="url" value={referenciaForm.url} onChange={(event) => setReferenciaForm({ ...referenciaForm, url: event.target.value })} placeholder="https://" /></div>
             <div className="space-y-1"><Label>Notas / localização no documento</Label><Textarea rows={2} value={referenciaForm.notas} onChange={(event) => setReferenciaForm({ ...referenciaForm, notas: event.target.value })} placeholder="Página, artigo, cláusula, desenho ou observações." /></div>

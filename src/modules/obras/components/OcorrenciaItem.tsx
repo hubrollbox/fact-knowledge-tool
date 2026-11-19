@@ -8,6 +8,7 @@ import { useActualizarEstado } from '../hooks/useObras';
 import { ESTADOS_OCORRENCIA,GRAVIDADES,gravidadeVariant,type Ocorrencia } from '../types/obras';
 import { FotosGaleria } from './FotosGaleria';
 import { AnaliseOcorrencia } from './AnaliseOcorrencia';
+import { DocumentosAssociados } from './DocumentosAssociados';
 
 export function OcorrenciaItem({o,canWrite}:{o:Ocorrencia;canWrite:boolean}) {
  const [aberto,setAberto]=useState(false), upd=useActualizarEstado();
@@ -22,6 +23,7 @@ export function OcorrenciaItem({o,canWrite}:{o:Ocorrencia;canWrite:boolean}) {
   </div>
   {aberto&&<div className="space-y-4 pt-1">{o.descricao&&<p className="text-sm text-muted-foreground whitespace-pre-wrap">{o.descricao}</p>}
    <FotosGaleria ocorrenciaId={o.id} canWrite={canWrite}/>
+   <section className="space-y-2"><h4 className="text-sm font-semibold">Documentos associados</h4><DocumentosAssociados obraId={o.obra_id} ocorrenciaId={o.id}/></section>
    <Accordion type="single" collapsible><AccordionItem value="analise" className="border rounded-md px-3">
     <AccordionTrigger className="min-h-11 text-sm text-left">Análise técnica de escritório</AccordionTrigger>
     <AccordionContent><AnaliseOcorrencia ocorrenciaId={o.id} canWrite={canWrite}/></AccordionContent>
