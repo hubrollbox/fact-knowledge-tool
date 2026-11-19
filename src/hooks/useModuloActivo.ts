@@ -81,7 +81,7 @@ export function useModuloActivo() {
     moduloActivo,
     moduloSlug: (workspace?.modulo as ModuloSlug) ?? null,
     isLoading,
-    setModulo: setModulo.mutate,
+    setModulo: setModulo.mutateAsync,
     isChanging: setModulo.isPending,
   };
 }
