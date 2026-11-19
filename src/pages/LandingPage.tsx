@@ -14,7 +14,7 @@ const sections = [
   {
     icon: BookOpen,
     title: 'Estrutura',
-    description: 'A informação é organizada em contexto, problema, referências, análise e decisão.',
+    description: 'A informação é organizada de acordo com o contexto e o fluxo de cada módulo.',
   },
   {
     icon: Timer,
@@ -35,9 +35,10 @@ export default function LandingPage() {
 
   async function handlePilotRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setFormError('');
     setSubmitting(true);
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const { error } = await supabase.from('pilot_access_requests').insert({
       name: String(form.get('name') ?? '').trim(),
       email: String(form.get('email') ?? '').trim().toLowerCase(),
@@ -52,7 +53,7 @@ export default function LandingPage() {
       return;
     }
     setSubmitted(true);
-    event.currentTarget.reset();
+    formElement.reset();
   }
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -118,7 +119,7 @@ export default function LandingPage() {
               organiza a análise e gera um relatório partilhável com ações, responsáveis e prazos.
             </p>
             <p className="text-sm text-muted-foreground">
-              Não é um ERP nem gere toda a obra. É uma camada simples de evidência, decisão e seguimento.
+              Não é um ERP nem gere toda a obra. É uma ferramenta de apoio ao registo, à análise e ao acompanhamento da fiscalização.
             </p>
             <Button asChild variant="outline">
               <Link to="/modulos/obras">
@@ -132,10 +133,9 @@ export default function LandingPage() {
               ['Obra', 'Cliente, morada e responsável'],
               ['Visita', 'Data, hora e notas gerais'],
               ['Ocorrência', 'Fotografia e descrição curta'],
-              ['Análise', 'Referências e fundamentação'],
-              ['Decisão', 'Orientação técnica'],
+              ['Análise', 'Organização da informação'],
+              ['Decisão', 'Registo da orientação técnica'],
               ['Ação', 'Responsável e prazo'],
-              ['Acompanhamento', 'Ações, responsáveis e prazos'],
             ].map(([t, d], i) => (
               <li key={t} className="flex items-center gap-4 px-5 py-3">
                 <span className="h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{i + 1}</span>
@@ -237,7 +237,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-muted-foreground">
-            Cada dossier é organizado em cinco elementos fundamentais:
+            A estrutura adapta-se ao tipo de trabalho. No módulo Jurídico, por exemplo, a análise pode seguir cinco elementos:
           </p>
 
           <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
@@ -283,11 +283,11 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center space-y-6">
 
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Aplicável a qualquer área
+            Uma plataforma modular
           </h2>
 
           <p className="text-muted-foreground">
-            Pode ser utilizado em qualquer contexto onde exista necessidade de organizar informação e tomar decisões com base em regras ou evidência.
+            O núcleo comum organiza informação, evidência, decisões e acompanhamento. Cada módulo mantém os seus próprios fluxos e linguagem.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4 text-sm text-left">
@@ -334,7 +334,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-muted-foreground">
-            O FKT está em desenvolvimento e em uso real. Esta página serve para explicar o conceito e a estrutura do sistema.
+            O FKT está a preparar o seu primeiro piloto operacional: o módulo Obras. Os restantes módulos encontram-se em diferentes fases de preparação.
           </p>
 
           <Button asChild size="lg">
