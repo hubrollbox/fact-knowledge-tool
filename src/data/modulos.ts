@@ -4,9 +4,9 @@ export const modulos: Modulo[] = [
   {
     slug: 'obras',
     nome: 'Obras',
-    descricao: 'Visitas, ocorrências e relatórios de obra',
+    descricao: 'Visitas, ocorrências e ações de fiscalização',
     icone: 'HardHat',
-    destaque: 'MVP · Piloto',
+    destaque: 'Piloto fechado',
     tagline: 'Registo de visitas, ocorrências e acompanhamento de ações de fiscalização.',
     rotaPrincipal: '/obras',
     descricaoLonga: [
