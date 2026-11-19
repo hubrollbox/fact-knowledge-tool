@@ -10,7 +10,7 @@ export default function ModulosHub() {
   useEffect(() => {
     document.title = 'Módulos — FKT';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Conhece os módulos disponíveis no FKT: Obras, Jurídico, Canil & Vet e Desenvolvimento.');
+    if (meta) meta.setAttribute('content', 'Conhece os módulos disponíveis no FKT: FKT Works, FKT Lex, FKT Vet e FKT Dev.');
   }, []);
 
   return (
