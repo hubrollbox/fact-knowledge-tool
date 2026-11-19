@@ -48,6 +48,11 @@ import { ProjectoDetail } from "./modules/dev/pages/ProjectoDetail";
 import { NovoProjecto } from "./modules/dev/pages/NovoProjecto";
 import { NovoADR } from "./modules/dev/pages/NovoADR";
 
+import { ObrasDashboard } from "./modules/obras/pages/ObrasDashboard";
+import { NovaObra } from "./modules/obras/pages/NovaObra";
+import { ObraDetail } from "./modules/obras/pages/ObraDetail";
+import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
+
 const queryClient = new QueryClient();
 
 function ProcessoDetailRoute() {
@@ -91,6 +96,10 @@ const App = () => (
             <Route path="/dev/projecto/novo" element={<ProtectedRoute><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
             <Route path="/dev/projecto/:id" element={<ProtectedRoute><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/dev/adr/novo" element={<ProtectedRoute><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras" element={<ProtectedRoute><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/nova" element={<ProtectedRoute><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id" element={<ProtectedRoute><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/modulos" element={<ModulosHub />} />
             <Route path="/modulos/:slug" element={<ModuloDetalhe />} />
             <Route path="/termos" element={<Termos />} />

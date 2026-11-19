@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3
+  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3, HardHat
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
@@ -159,6 +159,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             { label: 'Agenda', href: '/canil/agenda', icon: Calendar },
           ],
         } as NavItem]
+      : []),
+    ...(moduloSlug === 'obras'
+      ? [{ label: 'Obras', href: '/obras', icon: HardHat } as NavItem]
       : []),
     ...(moduloSlug === 'dev'
       ? [{ label: 'Dev', href: '/dev', icon: Code } as NavItem]

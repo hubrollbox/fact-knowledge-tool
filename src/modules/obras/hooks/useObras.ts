@@ -31,20 +31,24 @@ export function useObra(id?: string) {
   });
 }
 
-function useByObra<K extends 'obras_visitas' | 'obras_ocorrencias' | 'obras_acoes'>(table: K, obraId?: string, order = 'created_at') {
-  return useQuery({
-    queryKey: [table, obraId],
-    enabled: !!obraId,
-    queryFn: async () => {
-      const { data, error } = await supabase.from(table).select('*').eq('obra_id', obraId!).order(order, { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
+export function useVisitas(obraId?: string) {
+  return useQuery({ queryKey: ['obras_visitas', obraId], enabled: !!obraId, queryFn: async () => {
+    const { data, error } = await supabase.from('obras_visitas').select('*').eq('obra_id', obraId!).order('data_visita', { ascending: false });
+    if (error) throw error; return data;
+  } });
 }
-export const useVisitas = (obraId?: string) => useByObra('obras_visitas', obraId, 'data_visita');
-export const useOcorrencias = (obraId?: string) => useByObra('obras_ocorrencias', obraId);
-export const useAcoes = (obraId?: string) => useByObra('obras_acoes', obraId);
+export function useOcorrencias(obraId?: string) {
+  return useQuery({ queryKey: ['obras_ocorrencias', obraId], enabled: !!obraId, queryFn: async () => {
+    const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+    if (error) throw error; return data;
+  } });
+}
+export function useAcoes(obraId?: string) {
+  return useQuery({ queryKey: ['obras_acoes', obraId], enabled: !!obraId, queryFn: async () => {
+    const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+    if (error) throw error; return data;
+  } });
+}
 
 export function useVisita(id?: string) {
   return useQuery({
