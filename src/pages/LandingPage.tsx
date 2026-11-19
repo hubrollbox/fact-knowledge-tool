@@ -207,7 +207,7 @@ export default function LandingPage() {
               Como funciona
             </h2>
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Um sistema simples baseado em dossiers, estrutura e ação.
+              Um fluxo de trabalho para registar informação, estruturar decisões e acompanhar ações.
             </p>
           </div>
 
@@ -338,10 +338,10 @@ export default function LandingPage() {
           </p>
 
           <Button asChild size="lg">
-            <Link to="/login">
-              Entrar no sistema
+            <a href="#pedido-piloto">
+              Pedir acesso ao piloto
               <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
+            </a>
           </Button>
 
         </div>
