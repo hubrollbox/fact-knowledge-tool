@@ -133,7 +133,7 @@ export default function LandingPage() {
             <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
               Primeiro módulo · Piloto fechado
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">FKT Obras</h2>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">FKT Works</h2>
             <p className="text-muted-foreground leading-relaxed">
               Em vez de reconstruir uma visita a partir de fotografias, WhatsApp e Word, o técnico regista os factos no momento,
               organiza a análise e gera um relatório partilhável com ações, responsáveis e prazos.
@@ -143,7 +143,7 @@ export default function LandingPage() {
             </p>
             <Button asChild variant="outline">
               <Link to="/modulos/obras">
-                Conhecer o FKT Obras
+                Conhecer o FKT Works
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
@@ -171,7 +171,7 @@ export default function LandingPage() {
       <section id="pedido-piloto" className="border-t border-border px-6 py-20 md:py-24">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center space-y-3">
-            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">FKT Obras · Piloto fechado</span>
+            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">FKT Works · Piloto fechado</span>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pedir acesso ao piloto</h2>
             <p className="text-muted-foreground">Estamos a reunir fiscais e equipas de fiscalização para testar o fluxo de registo de visitas, ocorrências e acompanhamento de ações.</p>
           </div>
@@ -257,7 +257,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-muted-foreground">
-            Cada módulo tem a sua própria estrutura. No módulo Jurídico, por exemplo, a análise pode ser organizada em cinco elementos:
+            Cada módulo tem a sua própria estrutura. No FKT Lex, por exemplo, a análise pode ser organizada em cinco elementos:
           </p>
 
           <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
@@ -314,10 +314,10 @@ export default function LandingPage() {
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4 text-sm text-left">
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>Obras</strong><p className="text-muted-foreground mt-1">Primeiro módulo em piloto fechado.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>Jurídico</strong><p className="text-muted-foreground mt-1">Processos, factos, documentos e prazos.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>Canil & Vet</strong><p className="text-muted-foreground mt-1">Animais, registos e ninhadas.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>Desenvolvimento</strong><p className="text-muted-foreground mt-1">Projectos, issues e decisões técnicas.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Works</strong><p className="text-muted-foreground mt-1">Primeiro módulo em piloto fechado.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Lex</strong><p className="text-muted-foreground mt-1">Processos, factos, documentos e prazos.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Vet</strong><p className="text-muted-foreground mt-1">Animais, registos e ninhadas.</p></div>
+            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Dev</strong><p className="text-muted-foreground mt-1">Projectos, issues e decisões técnicas.</p></div>
           </div>
 
         </div>
@@ -355,7 +355,7 @@ export default function LandingPage() {
           </h2>
 
           <p className="text-muted-foreground">
-            O FKT está a preparar o seu primeiro piloto operacional: o módulo Obras. Os restantes módulos encontram-se em diferentes fases de preparação.
+            O FKT está a preparar o seu primeiro piloto operacional: o FKT Works. Os restantes módulos encontram-se em diferentes fases de preparação.
           </p>
 
           <Button asChild size="lg">
