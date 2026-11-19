@@ -3,8 +3,8 @@
 -- reentrar nas próprias policies RLS.
 
 CREATE OR REPLACE FUNCTION public.workspace_is_owner(
-  _workspace_id uuid,
-  _user_id uuid
+  _ws uuid,
+  _uid uuid
 )
 RETURNS boolean
 LANGUAGE sql
@@ -15,13 +15,13 @@ AS $$
   SELECT EXISTS (
     SELECT 1
     FROM public.workspaces w
-    WHERE w.id = _workspace_id
-      AND w.user_id = _user_id
+    WHERE w.id = _ws
+      AND w.user_id = _uid
   );
 $$;
 
 CREATE OR REPLACE FUNCTION public.workspace_owner_id(
-  _workspace_id uuid
+  _ws uuid
 )
 RETURNS uuid
 LANGUAGE sql
@@ -31,12 +31,12 @@ SET search_path = public
 AS $$
   SELECT w.user_id
   FROM public.workspaces w
-  WHERE w.id = _workspace_id;
+  WHERE w.id = _ws;
 $$;
 
 CREATE OR REPLACE FUNCTION public.workspace_role_for_user(
-  _workspace_id uuid,
-  _user_id uuid
+  _ws uuid,
+  _uid uuid
 )
 RETURNS text
 LANGUAGE sql
@@ -45,20 +45,20 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
   SELECT CASE
-    WHEN public.workspace_is_owner(_workspace_id, _user_id) THEN 'owner'
+    WHEN public.workspace_is_owner(_ws, _uid) THEN 'owner'
     ELSE (
       SELECT wm.role
       FROM public.workspace_members wm
-      WHERE wm.workspace_id = _workspace_id
-        AND wm.user_id = _user_id
+      WHERE wm.workspace_id = _ws
+        AND wm.user_id = _uid
       LIMIT 1
     )
   END;
 $$;
 
 CREATE OR REPLACE FUNCTION public.workspace_can_read(
-  _workspace_id uuid,
-  _user_id uuid
+  _ws uuid,
+  _uid uuid
 )
 RETURNS boolean
 LANGUAGE sql
@@ -66,12 +66,12 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT public.workspace_role_for_user(_workspace_id, _user_id) IS NOT NULL;
+  SELECT public.workspace_role_for_user(_ws, _uid) IS NOT NULL;
 $$;
 
 CREATE OR REPLACE FUNCTION public.workspace_can_write(
-  _workspace_id uuid,
-  _user_id uuid
+  _ws uuid,
+  _uid uuid
 )
 RETURNS boolean
 LANGUAGE sql
@@ -79,13 +79,13 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT public.workspace_role_for_user(_workspace_id, _user_id)
+  SELECT public.workspace_role_for_user(_ws, _uid)
     IN ('owner', 'admin', 'editor');
 $$;
 
 CREATE OR REPLACE FUNCTION public.workspace_can_manage_members(
-  _workspace_id uuid,
-  _user_id uuid
+  _ws uuid,
+  _uid uuid
 )
 RETURNS boolean
 LANGUAGE sql
@@ -93,7 +93,7 @@ STABLE
 SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT public.workspace_is_owner(_workspace_id, _user_id);
+  SELECT public.workspace_is_owner(_ws, _uid);
 $$;
 
 REVOKE ALL ON FUNCTION public.workspace_is_owner(uuid, uuid) FROM PUBLIC, anon, authenticated;
