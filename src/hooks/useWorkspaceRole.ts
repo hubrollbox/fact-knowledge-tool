@@ -11,11 +11,18 @@ export function useWorkspaceRole() {
     queryKey: ['workspace-role', user?.id],
     queryFn: async (): Promise<WorkspaceRole> => {
       if (!user) return null;
-      const { data: ws } = await supabase
+      const { data: ws, error: workspaceError } = await supabase
         .from('workspaces').select('id, user_id').eq('user_id', user.id).maybeSingle();
+      if (workspaceError) throw workspaceError;
       if (ws) return 'owner';
-      const { data: m } = await supabase
-        .from('workspace_members').select('role').eq('user_id', user.id).maybeSingle();
+      const { data: m, error: membershipError } = await supabase
+        .from('workspace_members')
+        .select('workspace_id, role')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (membershipError) throw membershipError;
       return (m?.role as WorkspaceRole) ?? null;
     },
     enabled: !!user,
