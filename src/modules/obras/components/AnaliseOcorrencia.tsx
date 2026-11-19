@@ -19,7 +19,7 @@ export function AnaliseOcorrencia({ocorrenciaId,canWrite}:{ocorrenciaId:string;c
  useEffect(()=>{
   setInterpretacao(analise?.interpretacao??'');setReferencias(analise?.referencias_gerais??'');
   setConclusao(analise?.conclusao??'');setRecomendacao(analise?.recomendacao??'');setFalta(analise?.informacao_em_falta??'');
- },[analise?.id,analise?.updated_at]);
+ },[analise]);
  if(isLoading) return <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/>A carregar análise técnica…</div>;
  if(isError) return <p className="text-sm text-destructive">Não foi possível carregar a análise técnica.</p>;
  const onSave=async(e:React.FormEvent)=>{e.preventDefault();await guardar.mutateAsync({ocorrenciaId,analiseId:analise?.id,values:{interpretacao:interpretacao.trim()||null,referencias_gerais:referencias.trim()||null,conclusao:conclusao.trim()||null,recomendacao:recomendacao.trim()||null,informacao_em_falta:falta.trim()||null}});};
