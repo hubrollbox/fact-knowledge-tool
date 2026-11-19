@@ -1,0 +1,195 @@
+-- Corrige a autorização de workspaces sem policies recursivas.
+-- As funções SECURITY DEFINER consultam as tabelas de autorização sem
+-- reentrar nas próprias policies RLS.
+
+CREATE OR REPLACE FUNCTION public.workspace_is_owner(
+  _workspace_id uuid,
+  _user_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.workspaces w
+    WHERE w.id = _workspace_id
+      AND w.user_id = _user_id
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.workspace_owner_id(
+  _workspace_id uuid
+)
+RETURNS uuid
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT w.user_id
+  FROM public.workspaces w
+  WHERE w.id = _workspace_id;
+$$;
+
+CREATE OR REPLACE FUNCTION public.workspace_role_for_user(
+  _workspace_id uuid,
+  _user_id uuid
+)
+RETURNS text
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT CASE
+    WHEN public.workspace_is_owner(_workspace_id, _user_id) THEN 'owner'
+    ELSE (
+      SELECT wm.role
+      FROM public.workspace_members wm
+      WHERE wm.workspace_id = _workspace_id
+        AND wm.user_id = _user_id
+      LIMIT 1
+    )
+  END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.workspace_can_read(
+  _workspace_id uuid,
+  _user_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.workspace_role_for_user(_workspace_id, _user_id) IS NOT NULL;
+$$;
+
+CREATE OR REPLACE FUNCTION public.workspace_can_write(
+  _workspace_id uuid,
+  _user_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.workspace_role_for_user(_workspace_id, _user_id)
+    IN ('owner', 'admin', 'editor');
+$$;
+
+CREATE OR REPLACE FUNCTION public.workspace_can_manage_members(
+  _workspace_id uuid,
+  _user_id uuid
+)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.workspace_is_owner(_workspace_id, _user_id);
+$$;
+
+REVOKE ALL ON FUNCTION public.workspace_is_owner(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.workspace_owner_id(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.workspace_role_for_user(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.workspace_can_read(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.workspace_can_write(uuid, uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.workspace_can_manage_members(uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_is_owner(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_owner_id(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_role_for_user(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_can_read(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_can_write(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.workspace_can_manage_members(uuid, uuid) TO authenticated;
+
+-- O schema inicial não aceitava admin, embora o frontend e as policies o usem.
+ALTER TABLE public.workspace_members
+  DROP CONSTRAINT IF EXISTS workspace_members_role_check;
+
+ALTER TABLE public.workspace_members
+  ADD CONSTRAINT workspace_members_role_check
+  CHECK (role IN ('owner', 'admin', 'editor', 'viewer'));
+
+-- Remover as policies antigas destas duas tabelas. Isto também corrige um
+-- ambiente onde as policies tenham sido editadas fora das migrations e tenham
+-- nomes diferentes dos nomes originalmente versionados.
+DO $$
+DECLARE
+  p record;
+BEGIN
+  FOR p IN
+    SELECT schemaname, tablename, policyname
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename IN ('workspaces', 'workspace_members')
+  LOOP
+    EXECUTE format(
+      'DROP POLICY IF EXISTS %I ON %I.%I',
+      p.policyname,
+      p.schemaname,
+      p.tablename
+    );
+  END LOOP;
+END $$;
+
+-- Workspaces: owners podem gerir; membros podem ler o workspace ao qual estão associados.
+CREATE POLICY "workspaces_select_authorized"
+  ON public.workspaces
+  FOR SELECT
+  TO authenticated
+  USING (public.workspace_can_read(id, auth.uid()));
+
+CREATE POLICY "workspaces_insert_owner"
+  ON public.workspaces
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "workspaces_update_owner"
+  ON public.workspaces
+  FOR UPDATE
+  TO authenticated
+  USING (public.workspace_can_write(id, auth.uid()))
+  WITH CHECK (user_id = public.workspace_owner_id(id));
+
+CREATE POLICY "workspaces_delete_owner"
+  ON public.workspaces
+  FOR DELETE
+  TO authenticated
+  USING (public.workspace_is_owner(id, auth.uid()));
+
+-- Membros: cada utilizador pode ler a sua associação; o owner pode gerir a lista.
+CREATE POLICY "workspace_members_select_authorized"
+  ON public.workspace_members
+  FOR SELECT
+  TO authenticated
+  USING (
+    user_id = auth.uid()
+    OR public.workspace_can_manage_members(workspace_id, auth.uid())
+  );
+
+CREATE POLICY "workspace_members_insert_owner"
+  ON public.workspace_members
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (public.workspace_can_manage_members(workspace_id, auth.uid()));
+
+CREATE POLICY "workspace_members_update_owner"
+  ON public.workspace_members
+  FOR UPDATE
+  TO authenticated
+  USING (public.workspace_can_manage_members(workspace_id, auth.uid()))
+  WITH CHECK (public.workspace_can_manage_members(workspace_id, auth.uid()));
+
+CREATE POLICY "workspace_members_delete_owner"
+  ON public.workspace_members
+  FOR DELETE
+  TO authenticated
+  USING (public.workspace_can_manage_members(workspace_id, auth.uid()));
