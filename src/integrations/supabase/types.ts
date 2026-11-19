@@ -1488,6 +1488,25 @@ export type Database = {
           },
         ]
       }
+      obras_ocorrencia_analises: {
+        Row: { conclusao:string|null; created_at:string; created_by:string|null; id:string; informacao_em_falta:string|null; interpretacao:string|null; ocorrencia_id:string; recomendacao:string|null; referencias_gerais:string|null; updated_at:string; updated_by:string|null; workspace_id:string }
+        Insert: { conclusao?:string|null; created_at?:string; created_by?:string|null; id?:string; informacao_em_falta?:string|null; interpretacao?:string|null; ocorrencia_id:string; recomendacao?:string|null; referencias_gerais?:string|null; updated_at?:string; updated_by?:string|null; workspace_id:string }
+        Update: { conclusao?:string|null; created_at?:string; created_by?:string|null; id?:string; informacao_em_falta?:string|null; interpretacao?:string|null; ocorrencia_id?:string; recomendacao?:string|null; referencias_gerais?:string|null; updated_at?:string; updated_by?:string|null; workspace_id?:string }
+        Relationships: [
+          { foreignKeyName:"obras_ocorrencia_analises_ocorrencia_id_fkey"; columns:["ocorrencia_id"]; isOneToOne:true; referencedRelation:"obras_ocorrencias"; referencedColumns:["id"] },
+          { foreignKeyName:"obras_ocorrencia_analises_workspace_id_fkey"; columns:["workspace_id"]; isOneToOne:false; referencedRelation:"workspaces"; referencedColumns:["id"] }
+        ]
+      }
+      obras_ocorrencia_factos: {
+        Row: { analise_id:string; created_at:string; created_by:string|null; descricao:string; estado:string; evidencia_foto_id:string|null; id:string; referencia:string|null; workspace_id:string }
+        Insert: { analise_id:string; created_at?:string; created_by?:string|null; descricao:string; estado?:string; evidencia_foto_id?:string|null; id?:string; referencia?:string|null; workspace_id:string }
+        Update: { analise_id?:string; created_at?:string; created_by?:string|null; descricao?:string; estado?:string; evidencia_foto_id?:string|null; id?:string; referencia?:string|null; workspace_id?:string }
+        Relationships: [
+          { foreignKeyName:"obras_ocorrencia_factos_analise_workspace_fkey"; columns:["analise_id","workspace_id"]; isOneToOne:false; referencedRelation:"obras_ocorrencia_analises"; referencedColumns:["id","workspace_id"] },
+          { foreignKeyName:"obras_ocorrencia_factos_evidencia_foto_id_fkey"; columns:["evidencia_foto_id"]; isOneToOne:false; referencedRelation:"obras_fotos"; referencedColumns:["id"] },
+          { foreignKeyName:"obras_ocorrencia_factos_workspace_id_fkey"; columns:["workspace_id"]; isOneToOne:false; referencedRelation:"workspaces"; referencedColumns:["id"] }
+        ]
+      }
       obras_ocorrencias: {
         Row: {
           created_at: string
