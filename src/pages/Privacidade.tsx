@@ -15,13 +15,13 @@ export default function Privacidade() {
 
           <h2 className="text-lg font-semibold">2. Dados pessoais tratados</h2>
           <p>Consoante a utilização da plataforma, podem ser tratados dados de identificação e contacto associados à conta, dados introduzidos pelo utilizador nos módulos do FKT, documentos e ficheiros carregados e informação técnica necessária ao funcionamento e à segurança do serviço.</p>
-          <p>No formulário de pedido de acesso ao piloto FKT Obras são recolhidos o nome, endereço de email, função ou empresa, número aproximado de obras acompanhadas, bem como a confirmação e a data do consentimento.</p>
+          <p>No formulário de pedido de acesso ao piloto FKT Works são recolhidos o nome, endereço de email, função ou empresa, número aproximado de obras acompanhadas, bem como a confirmação e a data do consentimento.</p>
 
           <h2 className="text-lg font-semibold">3. Finalidades e fundamentos do tratamento</h2>
           <ul>
             <li>Gerir contas e disponibilizar as funcionalidades da plataforma solicitadas pelo utilizador;</li>
             <li>Guardar e organizar a informação que o utilizador introduz nos módulos que utiliza;</li>
-            <li>Analisar pedidos de acesso ao piloto FKT Obras e, quando adequado, contactar os interessados — com fundamento no consentimento prestado no formulário;</li>
+            <li>Analisar pedidos de acesso ao piloto FKT Works e, quando adequado, contactar os interessados — com fundamento no consentimento prestado no formulário;</li>
             <li>Assegurar a segurança, prevenir utilizações abusivas e manter o funcionamento técnico do serviço, com fundamento que deverá ser determinado e documentado pelo responsável antes da abertura pública.</li>
           </ul>
           <p>O consentimento para o pedido de acesso ao piloto pode ser retirado a qualquer momento, sem afetar a licitude do tratamento realizado antes da retirada. A retirada pode impedir a continuação da análise do pedido ou do contacto associado.</p>
