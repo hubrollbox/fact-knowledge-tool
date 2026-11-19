@@ -114,7 +114,6 @@ export function useActualizarFactoOcorrencia() {
   return useMutation({
     mutationFn: async ({
       id,
-      ocorrenciaId: _ocorrenciaId,
       values,
     }: { id: string; ocorrenciaId: string; values: Partial<FactoValues> }) => {
       const { data, error } = await supabase
