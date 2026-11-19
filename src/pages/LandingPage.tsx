@@ -39,21 +39,26 @@ export default function LandingPage() {
     setFormError('');
     setSubmitting(true);
     const form = new FormData(formElement);
-    const { error } = await supabase.from('pilot_access_requests').insert({
-      name: String(form.get('name') ?? '').trim(),
-      email: String(form.get('email') ?? '').trim().toLowerCase(),
-      role_company: String(form.get('role_company') ?? '').trim(),
-      works_count: Number(form.get('works_count')),
-      privacy_consent: form.get('privacy_consent') === 'on',
-      privacy_consent_at: new Date().toISOString(),
-    });
-    setSubmitting(false);
-    if (error) {
-      setFormError('Não foi possível enviar o pedido. Verifica os dados e tenta novamente.');
-      return;
+    try {
+      const { error } = await supabase.from('pilot_access_requests').insert({
+        name: String(form.get('name') ?? '').trim(),
+        email: String(form.get('email') ?? '').trim().toLowerCase(),
+        role_company: String(form.get('role_company') ?? '').trim(),
+        works_count: Number(form.get('works_count')),
+        privacy_consent: form.get('privacy_consent') === 'on',
+        privacy_consent_at: new Date().toISOString(),
+      });
+      if (error) {
+        setFormError('Não foi possível enviar o pedido. Verifica os dados e tenta novamente.');
+        return;
+      }
+      setSubmitted(true);
+      formElement.reset();
+    } catch {
+      setFormError('Não foi possível enviar o pedido. Verifica a ligação à internet e tenta novamente.');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitted(true);
-    formElement.reset();
   }
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
