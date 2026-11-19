@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useState, type FormEvent } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { FileText, BookOpen, Timer, Shield, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
@@ -27,6 +29,31 @@ const sections = [
 ];
 
 export default function LandingPage() {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  async function handlePilotRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError('');
+    setSubmitting(true);
+    const form = new FormData(event.currentTarget);
+    const { error } = await supabase.from('pilot_access_requests').insert({
+      name: String(form.get('name') ?? '').trim(),
+      email: String(form.get('email') ?? '').trim().toLowerCase(),
+      role_company: String(form.get('role_company') ?? '').trim(),
+      works_count: Number(form.get('works_count')),
+      privacy_consent: form.get('privacy_consent') === 'on',
+      privacy_consent_at: new Date().toISOString(),
+    });
+    setSubmitting(false);
+    if (error) {
+      setFormError('Não foi possível enviar o pedido. Verifica os dados e tenta novamente.');
+      return;
+    }
+    setSubmitted(true);
+    event.currentTarget.reset();
+  }
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
 
@@ -63,15 +90,12 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Regista o que observas, fundamenta cada decisão e acompanha as ações até ao fim. Começando pelas obras: do terreno ao relatório em minutos.
+            Regista a visita no terreno, organiza a análise e acompanha as decisões. O primeiro módulo do FKT é dedicado à fiscalização de obras.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link to="/login">
-                Entrar
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
+              <a href="#pedido-piloto">Pedir acesso ao piloto <ArrowRight className="h-4 w-4 ml-2" /></a>
             </Button>
 
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
@@ -86,7 +110,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div className="space-y-5">
             <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
-              Primeiro módulo · Em piloto
+              Primeiro módulo · Piloto fechado
             </span>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight">FKT Obras</h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -111,7 +135,7 @@ export default function LandingPage() {
               ['Análise', 'Referências e fundamentação'],
               ['Decisão', 'Orientação técnica'],
               ['Ação', 'Responsável e prazo'],
-              ['Relatório', 'PDF pronto a partilhar'],
+              ['Acompanhamento', 'Ações, responsáveis e prazos'],
             ].map(([t, d], i) => (
               <li key={t} className="flex items-center gap-4 px-5 py-3">
                 <span className="h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{i + 1}</span>
@@ -120,6 +144,57 @@ export default function LandingPage() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      {/* PEDIDO DE ACESSO AO PILOTO */}
+      <section id="pedido-piloto" className="border-t border-border px-6 py-20 md:py-24">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="text-center space-y-3">
+            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">FKT Obras · Piloto fechado</span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pedir acesso ao piloto</h2>
+            <p className="text-muted-foreground">Estamos a reunir fiscais e equipas de fiscalização para testar o fluxo de registo de visitas, ocorrências e acompanhamento de ações.</p>
+          </div>
+          {submitted ? (
+            <div className="rounded-lg border border-border bg-card p-6 text-center space-y-2" role="status">
+              <h3 className="font-semibold">Pedido recebido</h3>
+              <p className="text-sm text-muted-foreground">Obrigado pelo interesse. Os dados foram registados para análise e eventual contacto.</p>
+            </div>
+          ) : (
+            <form onSubmit={handlePilotRequest} className="rounded-lg border border-border bg-card p-6 space-y-4">
+              <div className="space-y-1">
+                <label htmlFor="pilot-name" className="text-sm font-medium">Nome</label>
+                <input id="pilot-name" name="name" required minLength={2} maxLength={120} autoComplete="name" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="pilot-email" className="text-sm font-medium">Email</label>
+                <input id="pilot-email" name="email" type="email" required maxLength={254} autoComplete="email" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="pilot-role" className="text-sm font-medium">Função / Empresa</label>
+                <input id="pilot-role" name="role_company" required minLength={2} maxLength={180} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Ex.: Fiscal de obra independente" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="pilot-works" className="text-sm font-medium">Quantas obras acompanha habitualmente?</label>
+                <select id="pilot-works" name="works_count" required defaultValue="" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  <option value="" disabled>Selecciona uma opção</option>
+                  <option value="0">Ainda não acompanho obras</option>
+                  <option value="1">1</option>
+                  <option value="3">2 a 3</option>
+                  <option value="5">4 a 5</option>
+                  <option value="10">6 a 10</option>
+                  <option value="11">Mais de 10</option>
+                </select>
+              </div>
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input type="checkbox" name="privacy_consent" required className="mt-0.5" />
+                <span>Autorizo o tratamento destes dados para análise do pedido e eventual contacto sobre o piloto. Consulte a <Link to="/privacidade" className="underline">Política de Privacidade</Link>.</span>
+              </label>
+              {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
+              <Button type="submit" size="lg" className="w-full" disabled={submitting}>{submitting ? 'A enviar…' : 'Enviar pedido'}</Button>
+              <p className="text-xs text-muted-foreground">O envio do pedido não garante acesso ao piloto nem cria uma conta.</p>
+            </form>
+          )}
         </div>
       </section>
 
