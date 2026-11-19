@@ -11,6 +11,7 @@ export type AcaoInsert = T['obras_acoes']['Insert'];
 export type Foto = T['obras_fotos']['Row'];
 export type AnaliseOcorrenciaInsert = T['obras_ocorrencia_analises']['Insert'];
 export type FactoOcorrenciaInsert = T['obras_ocorrencia_factos']['Insert'];
+export type ReferenciaOcorrenciaInsert = T['obras_ocorrencia_referencias']['Insert'];
 
 export const ESTADOS_OBRA = { ativa:'Ativa', suspensa:'Suspensa', concluida:'Concluída' } as const;
 export const GRAVIDADES = { baixa:'Baixa', media:'Média', alta:'Alta', critica:'Crítica' } as const;
