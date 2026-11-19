@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      pilot_access_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          privacy_consent: boolean
+          privacy_consent_at: string
+          role_company: string
+          status: string
+          works_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          privacy_consent: boolean
+          privacy_consent_at?: string
+          role_company: string
+          status?: string
+          works_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          privacy_consent?: boolean
+          privacy_consent_at?: string
+          role_company?: string
+          status?: string
+          works_count?: number | null
+        }
+        Relationships: []
+      }
       actions: {
         Row: {
           created_at: string
