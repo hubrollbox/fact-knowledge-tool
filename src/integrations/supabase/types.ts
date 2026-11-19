@@ -1409,6 +1409,174 @@ export type Database = {
           },
         ]
       }
+      obras_documento_versoes: {
+        Row: {
+          created_at: string
+          documento_id: string
+          id: string
+          mime_type: string
+          nome_ficheiro: string
+          notas: string | null
+          numero_versao: number
+          obra_id: string
+          storage_path: string
+          tamanho_bytes: number
+          uploaded_by: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          documento_id: string
+          id?: string
+          mime_type: string
+          nome_ficheiro: string
+          notas?: string | null
+          numero_versao: number
+          obra_id: string
+          storage_path: string
+          tamanho_bytes: number
+          uploaded_by?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          documento_id?: string
+          id?: string
+          mime_type?: string
+          nome_ficheiro?: string
+          notas?: string | null
+          numero_versao?: number
+          obra_id?: string
+          storage_path?: string
+          tamanho_bytes?: number
+          uploaded_by?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documento_versoes_doc_workspace_obra_fkey"
+            columns: ["documento_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documentos"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+        ]
+      }
+      obras_documentos: {
+        Row: {
+          categoria: string
+          created_at: string
+          created_by: string
+          data_documento: string | null
+          entidade_origem: string | null
+          id: string
+          identificador: string | null
+          notas: string | null
+          obra_id: string
+          titulo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          categoria?: string
+          created_at?: string
+          created_by?: string
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          obra_id: string
+          titulo: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          created_by?: string
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          obra_id?: string
+          titulo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documentos_obra_workspace_fkey"
+            columns: ["obra_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_workspace_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_documentos_ligacoes: {
+        Row: {
+          created_at: string
+          created_by: string
+          documento_id: string
+          id: string
+          obra_id: string
+          ocorrencia_id: string | null
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          documento_id: string
+          id?: string
+          obra_id: string
+          ocorrencia_id?: string | null
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          documento_id?: string
+          id?: string
+          obra_id?: string
+          ocorrencia_id?: string | null
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documentos_ligacoes_documento_fkey"
+            columns: ["documento_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documentos"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_ligacoes_ocorrencia_fkey"
+            columns: ["ocorrencia_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_ligacoes_visita_fkey"
+            columns: ["visita_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+        ]
+      }
       obras_fotos: {
         Row: {
           capturada_em: string | null
@@ -1617,6 +1785,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           data_documento: string | null
+          documento_versao_id: string | null
           entidade_origem: string | null
           id: string
           identificador: string | null
@@ -1635,6 +1804,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_documento?: string | null
+          documento_versao_id?: string | null
           entidade_origem?: string | null
           id?: string
           identificador?: string | null
@@ -1653,6 +1823,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_documento?: string | null
+          documento_versao_id?: string | null
           entidade_origem?: string | null
           id?: string
           identificador?: string | null
@@ -1673,6 +1844,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "obras_ocorrencia_analises"
             referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_documento_versao_fkey"
+            columns: ["documento_versao_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documento_versoes"
+            referencedColumns: ["id", "workspace_id"]
           },
           {
             foreignKeyName: "obras_ocorrencia_referencias_workspace_id_fkey"
@@ -2101,6 +2279,27 @@ export type Database = {
         Returns: string
       }
       get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
+      workspace_can_manage_members: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_can_read: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_can_write: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_is_owner: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_owner_id: { Args: { _ws: string }; Returns: string }
+      workspace_role_for_user: {
+        Args: { _uid: string; _ws: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
