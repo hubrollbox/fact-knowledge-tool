@@ -265,7 +265,7 @@ export function AnaliseOcorrencia({
                       <Textarea required rows={2} value={factoEditado.descricao}
                         onChange={(event) => setFactoEditado({ ...factoEditado, descricao: event.target.value })} />
                       <div className="grid gap-2 md:grid-cols-3">
-                        <Select value={factoEditado.estado} onValueChange={(value: 'confirmado' | 'por_confirmar') => setFactoEditado({ ...factoEditado, estado: value })}>
+                        <Select value={factoEditado.estado} onValueChange={(value) => setFactoEditado({ ...factoEditado, estado: value as 'confirmado' | 'por_confirmar' })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="confirmado">Confirmado</SelectItem>
@@ -332,7 +332,7 @@ export function AnaliseOcorrencia({
             <Textarea id={`facto-${ocorrenciaId}`} required rows={2} value={descricao} onChange={(event) => setDescricao(event.target.value)}
               placeholder="Descreva uma observação concreta." />
             <div className="grid gap-2 md:grid-cols-3">
-              <Select value={estado} onValueChange={(value: 'confirmado' | 'por_confirmar') => setEstado(value)}>
+              <Select value={estado} onValueChange={(value) => setEstado(value as 'confirmado' | 'por_confirmar')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="confirmado">Confirmado</SelectItem>
