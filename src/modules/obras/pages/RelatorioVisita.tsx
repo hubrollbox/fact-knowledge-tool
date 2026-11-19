@@ -84,7 +84,7 @@ export function RelatorioVisita() {
 
       <header className="report-header">
         <div>
-          <p className="report-eyebrow">FKT OBRAS · FISCALIZAÇÃO</p>
+          <p className="report-eyebrow">FKT WORKS · FISCALIZAÇÃO</p>
           <h1>Relatório de Visita</h1>
           <p className="report-subtitle">Registo de observações, ocorrências e acções de acompanhamento</p>
         </div>
@@ -170,7 +170,7 @@ export function RelatorioVisita() {
       </section>
 
       <footer className="report-footer">
-        <span>FKT Obras · Relatório de visita</span>
+        <span>FKT Works · Relatório de visita</span>
         <span>Documento gerado em {geradoEm.toLocaleString('pt-PT')}</span>
       </footer>
     </main>
