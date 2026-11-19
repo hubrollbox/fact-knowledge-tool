@@ -151,20 +151,20 @@ export function AppLayout({ children }: AppLayoutProps) {
   const dynamicNavItems: NavItem[] = [
     ...navItems,
     ...(moduloSlug === 'juridico'
-      ? [{ label: 'Jurídico', href: '/juridico', icon: Scale } as NavItem]
+      ? [{ label: 'FKT Lex', href: '/juridico', icon: Scale } as NavItem]
       : []),
     ...(moduloSlug === 'canil'
       ? [{
-          label: 'Canil', href: '/canil', icon: Dog, children: [
+          label: 'FKT Vet', href: '/canil', icon: Dog, children: [
             { label: 'Agenda', href: '/canil/agenda', icon: Calendar },
           ],
         } as NavItem]
       : []),
     ...(moduloSlug === 'obras'
-      ? [{ label: 'Obras', href: '/obras', icon: HardHat } as NavItem]
+      ? [{ label: 'FKT Works', href: '/obras', icon: HardHat } as NavItem]
       : []),
     ...(moduloSlug === 'dev'
-      ? [{ label: 'Dev', href: '/dev', icon: Code } as NavItem]
+      ? [{ label: 'FKT Dev', href: '/dev', icon: Code } as NavItem]
       : []),
   ];
   const navigate = useNavigate();

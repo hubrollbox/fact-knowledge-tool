@@ -80,16 +80,16 @@ O FKT desenvolve-se através de módulos verticais. O seu estado deve ser distin
 
 | Módulo | Âmbito | Enquadramento atual |
 |---|---|---|
-| **FKT Obras** | Visitas, ocorrências, fotografias, ações, decisões técnicas e relatórios de fiscalização. | Primeiro módulo escolhido para piloto e validação comercial. |
-| **FKT Jurídico** | Organização de processos, factos, documentos, referências e análise jurídica estruturada. | Em preparação. O FIRAC é aplicável neste módulo quando adequado. |
+| **FKT Works** | Visitas, ocorrências, fotografias, ações, decisões técnicas e relatórios de fiscalização. | Primeiro módulo escolhido para piloto e validação comercial. |
+| **FKT Lex** | Organização de processos, factos, documentos, referências e análise jurídica estruturada. | Em preparação. O FIRAC é aplicável neste módulo quando adequado. |
 | **FKT Vet** | Informação, histórico, cuidados e operações no domínio veterinário e animal. | Em preparação. |
-| **FKT Desenvolvimento** | Decisões técnicas, incidentes, documentação e acompanhamento de trabalho de desenvolvimento. | Em preparação. |
+| **FKT Dev** | Decisões técnicas, incidentes, documentação e acompanhamento de trabalho de desenvolvimento. | Em preparação. |
 
 Esta lista representa o âmbito identificado para o produto. A inclusão de um módulo nesta visão não significa que esteja concluído, validado comercialmente ou disponível para utilização em produção.
 
-### 4.1. FKT Obras
+### 4.1. FKT Works
 
-O FKT Obras é o primeiro módulo vertical selecionado para validação comercial.
+O FKT Works é o primeiro módulo vertical selecionado para validação comercial.
 
 Está orientado para profissionais que necessitam de registar e acompanhar a atividade de fiscalização e acompanhamento de obras, incluindo:
 
@@ -103,7 +103,7 @@ Está orientado para profissionais que necessitam de registar e acompanhar a ati
 
 O objetivo é assegurar que a informação recolhida no terreno não fica isolada: deve manter ligação à obra, à visita, à ocorrência, à decisão e à ação correspondente.
 
-O FKT Obras não deve ser apresentado como substituto de todas as ferramentas de gestão de obra. O seu foco é a organização da informação, a evidência, a rastreabilidade e o acompanhamento.
+O FKT Works não deve ser apresentado como substituto de todas as ferramentas de gestão de obra. O seu foco é a organização da informação, a evidência, a rastreabilidade e o acompanhamento.
 
 ## 5. Princípios Fundamentais
 
@@ -155,7 +155,7 @@ A diferenciação do FKT resulta da combinação de:
 
 A evolução do FKT deverá ser progressiva.
 
-**Primeira etapa — validação:** consolidar o Core necessário e validar o FKT Obras com profissionais e organizações reais, identificando necessidades, limitações e valor efetivo.
+**Primeira etapa — validação:** consolidar o Core necessário e validar o FKT Works com profissionais e organizações reais, identificando necessidades, limitações e valor efetivo.
 
 **Segunda etapa — consolidação:** estabilizar a arquitetura modular, as permissões, a gestão de organizações e a utilização de vários módulos no mesmo espaço de trabalho.
 
