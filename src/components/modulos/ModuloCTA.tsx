@@ -36,9 +36,16 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
   }
 
   if (!user) {
+    if (modulo.slug === 'obras') {
+      return (
+        <Button size={size} onClick={() => navigate('/#pedido-piloto')}>
+          Pedir acesso ao piloto <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      );
+    }
     return (
-      <Button size={size} onClick={() => navigate(`/login?redirect=/modulos/${modulo.slug}`)}>
-        Experimentar <ArrowRight className="h-4 w-4 ml-2" />
+      <Button size={size} variant="outline" onClick={() => navigate('/#pedido-piloto')}>
+        Em preparação
       </Button>
     );
   }
