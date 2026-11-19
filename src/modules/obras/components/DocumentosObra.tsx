@@ -96,9 +96,12 @@ export function DocumentosObra({ obraId, canWrite }: Props) {
         throw doc.error;
       }
 
-      const version = await supabase.from('obras_documento_versoes').insert({
-        id: versionId, documento_id: documentId, workspace_id: workspaceId, obra_id: obraId,
-        numero_versao: 1, storage_path: path, nome_ficheiro: file.name, mime_type: file.type, tamanho_bytes: file.size,
+      const version = await supabase.rpc('create_obras_documento_versao', {
+        _documento_id: documentId,
+        _storage_path: path,
+        _nome_ficheiro: file.name,
+        _mime_type: file.type,
+        _tamanho_bytes: file.size,
       });
       if (version.error) {
         await supabase.from('obras_documentos').delete().eq('id', documentId);
@@ -129,18 +132,17 @@ export function DocumentosObra({ obraId, canWrite }: Props) {
       if (!workspaceId) throw new Error('Não foi possível identificar o espaço de trabalho.');
       if (!ALLOWED.has(file.type)) throw new Error('Formato de ficheiro não permitido.');
       if (file.size > MAX_SIZE) throw new Error('O ficheiro excede o limite de 25 MB.');
-      const { data: latest, error: latestError } = await supabase.from('obras_documento_versoes')
-        .select('numero_versao').eq('documento_id', documentId).order('numero_versao', { ascending: false }).limit(1).maybeSingle();
-      if (latestError) throw latestError;
       const versionId = crypto.randomUUID();
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const path = `${workspaceId}/${obraId}/${documentId}/${versionId}/${safeName}`;
       const uploaded = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false });
       if (uploaded.error) throw uploaded.error;
-      const inserted = await supabase.from('obras_documento_versoes').insert({
-        id: versionId, documento_id: documentId, workspace_id: workspaceId, obra_id: obraId,
-        numero_versao: (latest?.numero_versao ?? 0) + 1, storage_path: path,
-        nome_ficheiro: file.name, mime_type: file.type, tamanho_bytes: file.size,
+      const inserted = await supabase.rpc('create_obras_documento_versao', {
+        _documento_id: documentId,
+        _storage_path: path,
+        _nome_ficheiro: file.name,
+        _mime_type: file.type,
+        _tamanho_bytes: file.size,
       });
       if (inserted.error) {
         await supabase.storage.from(BUCKET).remove([path]);
