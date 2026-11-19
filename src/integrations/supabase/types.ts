@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      pilot_access_requests: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          name: string
-          privacy_consent: boolean
-          privacy_consent_at: string
-          role_company: string
-          status: string
-          works_count: number | null
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          name: string
-          privacy_consent: boolean
-          privacy_consent_at?: string
-          role_company: string
-          status?: string
-          works_count?: number | null
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          name?: string
-          privacy_consent?: boolean
-          privacy_consent_at?: string
-          role_company?: string
-          status?: string
-          works_count?: number | null
-        }
-        Relationships: []
-      }
       actions: {
         Row: {
           created_at: string
@@ -782,24 +746,42 @@ export type Database = {
         Row: {
           created_at: string | null
           descricao: string | null
+          docente: string | null
+          docente_email: string | null
+          docente_telm: string | null
           id: string
           nome: string
+          regente: string | null
+          regente_email: string | null
+          regente_telm: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           descricao?: string | null
+          docente?: string | null
+          docente_email?: string | null
+          docente_telm?: string | null
           id?: string
           nome: string
+          regente?: string | null
+          regente_email?: string | null
+          regente_telm?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           descricao?: string | null
+          docente?: string | null
+          docente_email?: string | null
+          docente_telm?: string | null
           id?: string
           nome?: string
+          regente?: string | null
+          regente_email?: string | null
+          regente_telm?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1489,22 +1471,216 @@ export type Database = {
         ]
       }
       obras_ocorrencia_analises: {
-        Row: { conclusao:string|null; created_at:string; created_by:string|null; id:string; informacao_em_falta:string|null; interpretacao:string|null; ocorrencia_id:string; recomendacao:string|null; referencias_gerais:string|null; updated_at:string; updated_by:string|null; workspace_id:string }
-        Insert: { conclusao?:string|null; created_at?:string; created_by?:string|null; id?:string; informacao_em_falta?:string|null; interpretacao?:string|null; ocorrencia_id:string; recomendacao?:string|null; referencias_gerais?:string|null; updated_at?:string; updated_by?:string|null; workspace_id:string }
-        Update: { conclusao?:string|null; created_at?:string; created_by?:string|null; id?:string; informacao_em_falta?:string|null; interpretacao?:string|null; ocorrencia_id?:string; recomendacao?:string|null; referencias_gerais?:string|null; updated_at?:string; updated_by?:string|null; workspace_id?:string }
+        Row: {
+          conclusao: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          informacao_em_falta: string | null
+          interpretacao: string | null
+          ocorrencia_id: string
+          recomendacao: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          conclusao?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          informacao_em_falta?: string | null
+          interpretacao?: string | null
+          ocorrencia_id: string
+          recomendacao?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          conclusao?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          informacao_em_falta?: string | null
+          interpretacao?: string | null
+          ocorrencia_id?: string
+          recomendacao?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id?: string
+        }
         Relationships: [
-          { foreignKeyName:"obras_ocorrencia_analises_ocorrencia_id_fkey"; columns:["ocorrencia_id"]; isOneToOne:true; referencedRelation:"obras_ocorrencias"; referencedColumns:["id"] },
-          { foreignKeyName:"obras_ocorrencia_analises_workspace_id_fkey"; columns:["workspace_id"]; isOneToOne:false; referencedRelation:"workspaces"; referencedColumns:["id"] }
+          {
+            foreignKeyName: "obras_ocorrencia_analises_ocorrencia_workspace_fkey"
+            columns: ["ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_analises_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
         ]
       }
       obras_ocorrencia_factos: {
-        Row: { analise_id:string; created_at:string; created_by:string|null; descricao:string; estado:string; evidencia_foto_id:string|null; id:string; referencia:string|null; workspace_id:string }
-        Insert: { analise_id:string; created_at?:string; created_by?:string|null; descricao:string; estado?:string; evidencia_foto_id?:string|null; id?:string; referencia?:string|null; workspace_id:string }
-        Update: { analise_id?:string; created_at?:string; created_by?:string|null; descricao?:string; estado?:string; evidencia_foto_id?:string|null; id?:string; referencia?:string|null; workspace_id?:string }
+        Row: {
+          analise_id: string
+          created_at: string
+          created_by: string | null
+          descricao: string
+          estado: string
+          evidencia_foto_id: string | null
+          id: string
+          ocorrencia_id: string
+          referencia_id: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          analise_id: string
+          created_at?: string
+          created_by?: string | null
+          descricao: string
+          estado?: string
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id: string
+          referencia_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          analise_id?: string
+          created_at?: string
+          created_by?: string | null
+          descricao?: string
+          estado?: string
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id?: string
+          referencia_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id?: string
+        }
         Relationships: [
-          { foreignKeyName:"obras_ocorrencia_factos_analise_workspace_fkey"; columns:["analise_id","workspace_id"]; isOneToOne:false; referencedRelation:"obras_ocorrencia_analises"; referencedColumns:["id","workspace_id"] },
-          { foreignKeyName:"obras_ocorrencia_factos_evidencia_foto_id_fkey"; columns:["evidencia_foto_id"]; isOneToOne:false; referencedRelation:"obras_fotos"; referencedColumns:["id"] },
-          { foreignKeyName:"obras_ocorrencia_factos_workspace_id_fkey"; columns:["workspace_id"]; isOneToOne:false; referencedRelation:"workspaces"; referencedColumns:["id"] }
+          {
+            foreignKeyName: "obras_ocorrencia_factos_analise_fkey"
+            columns: ["analise_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_analises"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_evidencia_foto_fkey"
+            columns: ["evidencia_foto_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_fotos"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_referencia_fkey"
+            columns: [
+              "referencia_id",
+              "analise_id",
+              "ocorrencia_id",
+              "workspace_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_referencias"
+            referencedColumns: [
+              "id",
+              "analise_id",
+              "ocorrencia_id",
+              "workspace_id",
+            ]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_referencias: {
+        Row: {
+          analise_id: string
+          created_at: string
+          created_by: string | null
+          data_documento: string | null
+          entidade_origem: string | null
+          id: string
+          identificador: string | null
+          notas: string | null
+          ocorrencia_id: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          versao: string | null
+          workspace_id: string
+        }
+        Insert: {
+          analise_id: string
+          created_at?: string
+          created_by?: string | null
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          ocorrencia_id: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          versao?: string | null
+          workspace_id: string
+        }
+        Update: {
+          analise_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          ocorrencia_id?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          versao?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_analise_fkey"
+            columns: ["analise_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_analises"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
         ]
       }
       obras_ocorrencias: {
@@ -1627,6 +1803,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pilot_access_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          privacy_consent: boolean
+          privacy_consent_at: string
+          role_company: string
+          status: string
+          works_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          privacy_consent?: boolean
+          privacy_consent_at?: string
+          role_company: string
+          status?: string
+          works_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          privacy_consent?: boolean
+          privacy_consent_at?: string
+          role_company?: string
+          status?: string
+          works_count?: number | null
+        }
+        Relationships: []
       }
       rules: {
         Row: {
