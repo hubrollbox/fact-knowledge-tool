@@ -3,7 +3,7 @@ import { Modulo } from '@/types/modulos';
 export const modulos: Modulo[] = [
   {
     slug: 'obras',
-    nome: 'Obras',
+    nome: 'FKT Works',
     descricao: 'Visitas, ocorrências e ações de fiscalização',
     icone: 'HardHat',
     destaque: 'Piloto fechado',
@@ -36,13 +36,13 @@ export const modulos: Modulo[] = [
   },
   {
     slug: 'juridico',
-    nome: 'Jurídico',
+    nome: 'FKT Lex',
     descricao: 'Processos, documentos e prazos',
     icone: 'Scale',
     tagline: 'Organiza processos, prazos e documentos com rigor.',
     rotaPrincipal: '/juridico',
     descricaoLonga: [
-      'O módulo Jurídico ajuda a estruturar cada processo num dossier completo, com partes, factos, documentos e prazos sempre acessíveis.',
+      'O FKT Lex ajuda a estruturar cada processo num dossier completo, com partes, factos, documentos e prazos sempre acessíveis.',
       'Pensado para quem precisa de rastreabilidade total — cada decisão fica justificada por factos e referências.',
     ],
     funcionalidades: [
@@ -67,13 +67,13 @@ export const modulos: Modulo[] = [
   },
   {
     slug: 'canil',
-    nome: 'Canil & Vet',
+    nome: 'FKT Vet',
     descricao: 'Animais, ninhadas e alojamento',
     icone: 'Dog',
     tagline: 'Gere animais, ninhadas e reservas de alojamento.',
     rotaPrincipal: '/canil',
     descricaoLonga: [
-      'O módulo Canil & Vet centraliza fichas de animais, registos sanitários, ninhadas e reservas de alojamento.',
+      'O FKT Vet centraliza fichas de animais, registos sanitários, ninhadas e reservas de alojamento.',
       'Ideal para canis, criadores e clínicas que precisam de histórico claro por animal.',
     ],
     funcionalidades: [
@@ -97,13 +97,13 @@ export const modulos: Modulo[] = [
   },
   {
     slug: 'dev',
-    nome: 'Desenvolvimento',
+    nome: 'FKT Dev',
     descricao: 'Projectos, issues e decisões técnicas',
     icone: 'Code',
     tagline: 'Decisões técnicas documentadas, projectos sob controlo.',
     rotaPrincipal: '/dev',
     descricaoLonga: [
-      'O módulo Desenvolvimento ajuda equipas a registar decisões arquitectónicas (ADRs), gerir projectos e seguir issues.',
+      'O FKT Dev ajuda equipas a registar decisões arquitectónicas (ADRs), gerir projectos e seguir issues.',
       'Tudo num formato leve, sem a complexidade de ferramentas pesadas de gestão de projectos.',
     ],
     funcionalidades: [
