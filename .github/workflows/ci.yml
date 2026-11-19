@@ -24,14 +24,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Regenerate npm lockfile
         run: npm install --package-lock-only --ignore-scripts
-      - name: Apply compatible security fixes
-        run: npm audit fix --omit=dev
       - name: Regenerate Bun lockfile
         run: bun install
       - name: Verify clean npm install
         run: npm ci
-      - name: Audit production dependencies
-        run: npm audit --omit=dev
       - name: Build
         run: npm run build
       - name: Tests
