@@ -60,11 +60,15 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
     );
   }
 
-  const handleActivate = () => {
-    if (!canEdit) return;
-    setModulo(modulo.slug);
-    toast({ title: 'Módulo activado', description: `${modulo.nome} é agora o módulo activo.` });
-    setTimeout(() => navigate(modulo.rotaPrincipal ?? '/dashboard'), 300);
+  const handleActivate = async () => {
+    if (!canEdit || isChanging) return;
+    try {
+      await setModulo(modulo.slug);
+      toast({ title: 'Módulo activado', description: `${modulo.nome} é agora o módulo activo.` });
+      navigate(modulo.rotaPrincipal ?? '/dashboard');
+    } catch {
+      // The mutation displays the database error state through its error handler.
+    }
   };
 
   if (!canEdit) {
