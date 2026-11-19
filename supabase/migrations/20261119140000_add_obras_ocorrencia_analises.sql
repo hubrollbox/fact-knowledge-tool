@@ -42,6 +42,22 @@ CREATE POLICY obras_ocorrencia_analises_delete ON public.obras_ocorrencia_analis
 CREATE POLICY obras_ocorrencia_factos_select ON public.obras_ocorrencia_factos FOR SELECT TO authenticated USING (private.obras_can_read(workspace_id));
 CREATE POLICY obras_ocorrencia_factos_insert ON public.obras_ocorrencia_factos FOR INSERT TO authenticated WITH CHECK (private.obras_can_write(workspace_id) AND created_by IS NOT DISTINCT FROM (SELECT auth.uid()));
 CREATE POLICY obras_ocorrencia_factos_delete ON public.obras_ocorrencia_factos FOR DELETE TO authenticated USING (private.obras_can_write(workspace_id));
+CREATE OR REPLACE FUNCTION private.validate_obras_ocorrencia_analise()
+RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = public AS $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM public.obras_ocorrencias o
+    WHERE o.id = NEW.ocorrencia_id AND o.workspace_id = NEW.workspace_id
+  ) THEN
+    RAISE EXCEPTION 'A ocorrência não pertence a este espaço de trabalho';
+  END IF;
+  RETURN NEW;
+END; $;
+REVOKE ALL ON FUNCTION private.validate_obras_ocorrencia_analise() FROM PUBLIC,anon,authenticated;
+CREATE TRIGGER obras_ocorrencia_analises_validate
+  BEFORE INSERT OR UPDATE ON public.obras_ocorrencia_analises
+  FOR EACH ROW EXECUTE FUNCTION private.validate_obras_ocorrencia_analise();
+
 CREATE OR REPLACE FUNCTION private.validate_obras_ocorrencia_facto()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = public AS $$
 DECLARE _ocorrencia_id uuid;
