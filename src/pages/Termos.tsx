@@ -16,14 +16,14 @@ export default function Termos() {
 
           <h2 className="text-lg font-semibold">2. O que é o FKT</h2>
           <p>O FKT é uma plataforma digital modular destinada a estruturar, registar, organizar e acompanhar informação, evidências, análises e decisões em diferentes áreas de actividade.</p>
-          <p>O FKT Obras é o primeiro módulo em fase de piloto fechado. Destina-se a apoiar o registo de visitas, ocorrências, fotografias, análises, decisões e acções associadas a trabalhos de fiscalização de obras.</p>
-          <p>Os módulos Jurídico, Canil &amp; Vet e Desenvolvimento são áreas previstas ou em preparação. A sua apresentação na plataforma não significa que estejam disponíveis para utilização, nem constitui compromisso de disponibilização numa data determinada.</p>
+          <p>O FKT Works é o primeiro módulo em fase de piloto fechado. Destina-se a apoiar o registo de visitas, ocorrências, fotografias, análises, decisões e acções associadas a trabalhos de fiscalização de obras.</p>
+          <p>Os módulos FKT Lex, FKT Vet e FKT Dev são áreas previstas ou em preparação. A sua apresentação na plataforma não significa que estejam disponíveis para utilização, nem constitui compromisso de disponibilização numa data determinada.</p>
           <p>O FKT é uma ferramenta de apoio à organização e ao acompanhamento da informação. Não substitui o juízo profissional, a validação técnica, a consulta jurídica, a contabilidade, nem outros serviços profissionais que possam ser necessários em cada situação. O utilizador mantém a responsabilidade pela verificação dos dados, documentos, análises e decisões que regista ou utiliza.</p>
 
           <h2 className="text-lg font-semibold">3. Registo e conta de utilizador</h2>
           <p>O acesso às áreas reservadas requer uma conta, criada através dos meios de registo disponibilizados na plataforma. O utilizador compromete-se a fornecer informação verdadeira e actualizada e a manter a confidencialidade das suas credenciais.</p>
           <p>O utilizador é responsável pelas actividades realizadas através da sua conta e deve comunicar, logo que possível, qualquer utilização não autorizada ou suspeita de comprometimento das credenciais.</p>
-          <p>O registo ou o pedido de acesso a um piloto não confere, por si só, um direito automático de acesso a todos os módulos ou funcionalidades. O acesso ao piloto FKT Obras depende de aceitação e disponibilização pelo responsável da plataforma. O envio do formulário de pedido não cria uma conta nem garante a admissão no piloto.</p>
+          <p>O registo ou o pedido de acesso a um piloto não confere, por si só, um direito automático de acesso a todos os módulos ou funcionalidades. O acesso ao piloto FKT Works depende de aceitação e disponibilização pelo responsável da plataforma. O envio do formulário de pedido não cria uma conta nem garante a admissão no piloto.</p>
 
           <h2 className="text-lg font-semibold">4. Planos, preços e pagamentos</h2>
           <p>O modelo comercial previsto para o FKT é o de um serviço digital por subscrição, organizado por planos e espaços de trabalho (workspaces), podendo incluir módulos ou funcionalidades adicionais.</p>
