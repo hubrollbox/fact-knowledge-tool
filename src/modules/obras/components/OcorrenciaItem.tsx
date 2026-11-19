@@ -9,6 +9,7 @@ import { ESTADOS_OCORRENCIA,GRAVIDADES,gravidadeVariant,type Ocorrencia } from '
 import { FotosGaleria } from './FotosGaleria';
 import { AnaliseOcorrencia } from './AnaliseOcorrencia';
 import { DocumentosAssociados } from './DocumentosAssociados';
+import { HistoricoOcorrencia } from './HistoricoOcorrencia';
 
 export function OcorrenciaItem({o,canWrite}:{o:Ocorrencia;canWrite:boolean}) {
  const [aberto,setAberto]=useState(false), upd=useActualizarEstado();
@@ -28,6 +29,7 @@ export function OcorrenciaItem({o,canWrite}:{o:Ocorrencia;canWrite:boolean}) {
     <AccordionTrigger className="min-h-11 text-sm text-left">Análise técnica de escritório</AccordionTrigger>
     <AccordionContent><AnaliseOcorrencia ocorrenciaId={o.id} canWrite={canWrite}/></AccordionContent>
    </AccordionItem></Accordion>
+   <HistoricoOcorrencia ocorrenciaId={o.id}/>
   </div>}
  </div>;
 }
