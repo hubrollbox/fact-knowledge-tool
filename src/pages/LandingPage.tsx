@@ -126,7 +126,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FKT OBRAS */}
+      {/* FKT WORKS */}
       <section className="border-t border-border px-6 py-20 md:py-24">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div className="space-y-5">
