@@ -7,16 +7,11 @@ export default function Privacidade() {
         <h1 className="text-2xl font-bold text-foreground">Política de Privacidade</h1>
         <p className="text-sm text-muted-foreground">Última atualização: 19 de novembro de 2026</p>
 
-        <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4 text-sm">
-          <strong>Informação por completar antes da abertura pública.</strong>
-          <p className="mt-1">A identificação jurídica do responsável pelo tratamento, a morada e o contacto para assuntos de privacidade ainda têm de ser inseridos nesta política. Esta informação não deve ser substituída por dados presumidos.</p>
-        </div>
-
         <div className="prose prose-sm text-foreground space-y-4">
           <h2 className="text-lg font-semibold">1. Responsável pelo tratamento</h2>
-          <p><strong>Entidade ou pessoa responsável:</strong> [INSERIR NOME COMPLETO OU DENOMINAÇÃO SOCIAL].</p>
-          <p><strong>Morada:</strong> [INSERIR MORADA POSTAL].</p>
-          <p><strong>Contacto para assuntos de privacidade e exercício de direitos:</strong> [INSERIR ENDEREÇO DE EMAIL].</p>
+          <p><strong>Entidade ou pessoa responsável:</strong> Bruno Miguel Pinto.</p>
+          <p><strong>Morada:</strong> Rua Brito Capelo, Edifício Diplomata, 4450-075 Matosinhos, Portugal.</p>
+          <p><strong>Contacto para assuntos de privacidade e exercício de direitos:</strong> brunomiguelpinto@icloud.com.</p>
           <p>Quando exista Encarregado da Proteção de Dados formalmente designado, os respetivos contactos serão indicados aqui: [INSERIR CONTACTO, SE APLICÁVEL].</p>
 
           <h2 className="text-lg font-semibold">2. Dados pessoais tratados</h2>
@@ -37,8 +32,7 @@ export default function Privacidade() {
           <p>Os dados poderão ser tratados por prestadores de serviços técnicos que assegurem alojamento, armazenamento, manutenção ou segurança, apenas na medida necessária à prestação desses serviços e mediante as garantias contratuais aplicáveis. O responsável pelo tratamento deve manter identificados os prestadores e avaliar eventuais transferências de dados para fora do Espaço Económico Europeu.</p>
 
           <h2 className="text-lg font-semibold">5. Prazo de conservação</h2>
-          <p>Os dados são conservados apenas durante o período necessário às finalidades para que foram recolhidos. Os pedidos de acesso ao piloto serão revistos durante o processo de selecção e contacto e apagados ou anonimizados quando deixarem de ser necessários, salvo obrigação legal que imponha conservação adicional.</p>
-          <p>O prazo concreto ou os critérios operacionais de revisão e eliminação têm de ser definidos e documentados pelo responsável pelo tratamento antes da abertura pública do formulário.</p>
+          <p>Os dados são conservados apenas durante o período necessário às finalidades para que foram recolhidos. Os dados dos pedidos de acesso ao piloto serão conservados durante 12 meses após o último contacto relacionado com o pedido. Findo esse prazo, serão apagados ou anonimizados, salvo se existir uma obrigação legal que imponha a sua conservação por período superior.</p>
 
           <h2 className="text-lg font-semibold">6. Direitos dos titulares</h2>
           <p>Nos termos da legislação aplicável, pode solicitar o acesso aos seus dados, a sua retificação ou apagamento, a limitação do tratamento e, quando aplicável, a portabilidade ou oposição. Quando o tratamento se baseie no consentimento, pode retirá-lo a qualquer momento.</p>
