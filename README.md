@@ -21,12 +21,12 @@ Capacidades comuns a todos os módulos:
 
 | Módulo | Estado | Foco principal |
 |--------|--------|----------------|
-| **FKT Obras** | Piloto / Validação comercial | Visitas, ocorrências, evidência, decisão e relatório |
-| FKT Jurídico | Em preparação | Processos, referências e análise estruturada (FIRAC) |
+| **FKT Works** | Piloto / Validação comercial | Visitas, ocorrências, evidência, decisão e relatório |
+| FKT Lex | Em preparação | Processos, referências e análise estruturada (FIRAC) |
 | FKT Vet | Em preparação | Histórico, cuidados e operações em pecuária |
-| FKT Desenvolvimento | Em preparação | Decisões técnicas, incidentes e documentação |
+| FKT Dev | Em preparação | Decisões técnicas, incidentes e documentação |
 
-O **FKT Obras** é o primeiro módulo selecionado para validação comercial e lançamento controlado.
+O **FKT Works** é o primeiro módulo selecionado para validação comercial e lançamento controlado.
 
 ## Método
 
@@ -38,12 +38,12 @@ Todos os módulos partilham a mesma lógica de trabalho:
 4. **Decidir** — registar análise e decisão de forma explícita
 5. **Agir** — atribuir ações, responsáveis e prazos
 
-No módulo Jurídico esta lógica é aplicada através do método **FIRAC** (Factos, Issue, Rules, Application, Conclusion).
+No módulo FKT Lex esta lógica é aplicada através do método **FIRAC** (Factos, Issue, Rules, Application, Conclusion).
 
 ## Estado do projeto
 
 MVP funcional em produção.  
-Foco comercial atual: **FKT Obras** (piloto controlado).
+Foco comercial atual: **FKT Works** (piloto controlado).
 
 ## Stack
 
