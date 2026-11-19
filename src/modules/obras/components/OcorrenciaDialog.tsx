@@ -92,7 +92,7 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             </div>
             <section className="space-y-3 rounded-md border border-dashed p-3">
               <div><h3 className="text-sm font-medium">Fotografia da ocorrência</h3><p className="text-xs text-muted-foreground">Pode tirar uma fotografia ou escolher uma imagem do dispositivo.</p></div>
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => escolherFotografia(e.target.files?.[0] ?? null)} />
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { escolherFotografia(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} />
               <input ref={ficheiroRef} type="file" accept="image/*" className="hidden" onChange={(e) => escolherFotografia(e.target.files?.[0] ?? null)} />
               <div className="grid grid-cols-2 gap-2">
                 <Button type="button" variant="default" className="min-h-11" onClick={() => cameraRef.current?.click()} disabled={ocupado}><Camera className="mr-2 h-4 w-4" />Tirar fotografia</Button>
