@@ -20,6 +20,7 @@ export default function ModulosHub() {
           <Link to="/" className="text-lg font-bold tracking-tight">FKT</Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link to="/modulos" className="text-foreground">Módulos</Link>
+            <Link to="/ajuda-suporte" className="text-muted-foreground hover:text-foreground">Ajuda e Suporte</Link>
             <Link to="/login" className="text-muted-foreground hover:text-foreground">Entrar</Link>
           </nav>
         </div>
