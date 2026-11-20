@@ -172,8 +172,17 @@ CREATE POLICY workspace_members_delete_owner ON public.workspace_members
   FOR DELETE TO authenticated USING (private.workspace_can_manage_members(workspace_id));
 
 -- Ensure a child row cannot point to a process in another workspace.
-ALTER TABLE public.juridico_processos
-  ADD CONSTRAINT juridico_processos_id_workspace_unique UNIQUE (id, workspace_id);
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.juridico_processos'::regclass
+      AND conname = 'juridico_processos_id_workspace_unique'
+  ) THEN
+    ALTER TABLE public.juridico_processos
+      ADD CONSTRAINT juridico_processos_id_workspace_unique UNIQUE (id, workspace_id);
+  END IF;
+END $;
 
 ALTER TABLE public.juridico_partes
   DROP CONSTRAINT IF EXISTS juridico_partes_processo_id_fkey;
