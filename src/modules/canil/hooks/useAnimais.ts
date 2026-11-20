@@ -21,6 +21,24 @@ export function useAnimais() {
   });
 }
 
+export function useAnimaisArquivados() {
+  const workspaceId = useWorkspaceId();
+  return useQuery({
+    queryKey: ['canil_animais_arquivados', workspaceId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('canil_animais')
+        .select('*')
+        .eq('workspace_id', workspaceId!)
+        .eq('activo', false)
+        .order('nome');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
 export function useAnimal(id: string | undefined) {
   return useQuery({
     queryKey: ['canil_animal', id],
@@ -70,6 +88,7 @@ export function useUpdateAnimal() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['canil_animais'] });
+      qc.invalidateQueries({ queryKey: ['canil_animais_arquivados'] });
       qc.invalidateQueries({ queryKey: ['canil_animal', data.id] });
     },
   });
