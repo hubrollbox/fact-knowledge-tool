@@ -53,6 +53,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'works') AND (p_record_type IS NULL OR p_record_type = 'visita')
       AND (p_workspace_id IS NULL OR v.workspace_id = p_workspace_id)
       AND (p_obra_id IS NULL OR v.obra_id = p_obra_id)
+      AND p_status IS NULL
       AND (p_date_from IS NULL OR v.data_visita >= p_date_from)
       AND (p_date_to IS NULL OR v.data_visita <= p_date_to)
       AND concat_ws(' ', o.nome, v.tecnico, v.notas, v.condicoes_meteo) ILIKE q.pattern
@@ -84,6 +85,7 @@ AS $$
       AND (p_obra_id IS NULL OR d.obra_id = p_obra_id)
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR d.created_at::date <= p_date_to)
+      AND p_status IS NULL
       AND concat_ws(' ', d.titulo, d.categoria, d.entidade_origem, d.identificador, d.notas, v.nome_ficheiro) ILIKE q.pattern
 
     UNION ALL
@@ -100,6 +102,7 @@ AS $$
       AND (p_obra_id IS NULL OR oc.obra_id = p_obra_id)
       AND (p_date_from IS NULL OR an.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR an.created_at::date <= p_date_to)
+      AND p_status IS NULL
       AND concat_ws(' ', o.nome, oc.titulo, an.interpretacao, an.conclusao, an.recomendacao, an.informacao_em_falta) ILIKE q.pattern
 
     -- FKT Lex: structured case records.
@@ -145,6 +148,7 @@ AS $$
       AND (p_workspace_id IS NULL OR s.workspace_id = p_workspace_id)
       AND (p_date_from IS NULL OR s.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR s.created_at::date <= p_date_to)
+      AND p_status IS NULL
       AND concat_ws(' ', p.titulo, s.titulo, s.tipo, s.entidade, s.referencia, s.jurisdicao, s.notas) ILIKE q.pattern
 
     UNION ALL
@@ -158,6 +162,7 @@ AS $$
       AND (p_workspace_id IS NULL OR doc.workspace_id = p_workspace_id)
       AND (p_date_from IS NULL OR doc.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR doc.created_at::date <= p_date_to)
+      AND p_status IS NULL
       AND concat_ws(' ', p.titulo, doc.nome, doc.categoria, doc.notas) ILIKE q.pattern
 
 
@@ -191,12 +196,13 @@ AS $$
     UNION ALL
     SELECT 'vet', 'registo_clinico', c.id, concat('Registo clínico · ', a.nome),
       concat_ws(' · ', c.tipo, c.descricao, c.produto, c.veterinario),
-      '/canil/animal/' || a.id::text, c.created_at, c.workspace_id, NULL, c.tipo
+      '/canil/animal/' || a.id::text, c.created_at, c.workspace_id, NULL, NULL
     FROM public.canil_registos_clinicos c JOIN public.canil_animais a ON a.id = c.animal_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'vet') AND (p_record_type IS NULL OR p_record_type = 'registo_clinico')
       AND (p_workspace_id IS NULL OR c.workspace_id = p_workspace_id)
       AND (p_date_from IS NULL OR c.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR c.created_at::date <= p_date_to)
+      AND p_status IS NULL
       AND concat_ws(' ', a.nome, c.tipo, c.descricao, c.produto, c.veterinario) ILIKE q.pattern
 
     UNION ALL
@@ -230,6 +236,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'disciplina')
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR d.created_at::date <= p_date_to)
+      AND p_workspace_id IS NULL AND p_obra_id IS NULL AND p_status IS NULL
       AND concat_ws(' ', d.nome, d.descricao) ILIKE q.pattern
 
     UNION ALL
@@ -239,6 +246,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'topico')
       AND (p_date_from IS NULL OR t.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR t.created_at::date <= p_date_to)
+      AND p_workspace_id IS NULL AND p_obra_id IS NULL AND p_status IS NULL
       AND concat_ws(' ', d.nome, t.nome, t.conteudo, t.referencias) ILIKE q.pattern
 
     UNION ALL
@@ -249,6 +257,7 @@ AS $$
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR d.created_at::date <= p_date_to)
       AND (p_status IS NULL OR d.estado = p_status)
+      AND p_workspace_id IS NULL AND p_obra_id IS NULL
       AND concat_ws(' ', d.titulo, d.tipo, d.estado, d.materia, d.descricao) ILIKE q.pattern
 
     UNION ALL
@@ -258,6 +267,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'documento')
       AND (p_date_from IS NULL OR doc.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR doc.created_at::date <= p_date_to)
+      AND p_workspace_id IS NULL AND p_obra_id IS NULL AND p_status IS NULL
       AND concat_ws(' ', doc.titulo, doc.tipo, doc.entidade_origem, doc.descricao) ILIKE q.pattern
 
     UNION ALL
@@ -267,6 +277,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'facto')
       AND (p_date_from IS NULL OR f.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR f.created_at::date <= p_date_to)
+      AND p_workspace_id IS NULL AND p_obra_id IS NULL AND p_status IS NULL
       AND concat_ws(' ', d.titulo, f.descricao, f.grau_certeza, f.observacoes) ILIKE q.pattern
   )
   SELECT r.module, r.record_type, r.record_id, r.title, left(coalesce(r.excerpt, ''), 320),
