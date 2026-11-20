@@ -196,6 +196,34 @@ FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_workspace_change();
 
 REVOKE ALL ON FUNCTION public.canil_prevent_workspace_change() FROM PUBLIC, anon, authenticated;
 
+-- A litter with recorded parents or puppy records is itself breeding history.
+-- Keep that record so a parent cannot lose its recorded descendants by deleting
+-- the litter first.
+CREATE OR REPLACE FUNCTION public.canil_prevent_ninhada_history_delete()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $
+BEGIN
+  IF OLD.mae_id IS NOT NULL
+     OR OLD.pai_id IS NOT NULL
+     OR EXISTS (
+       SELECT 1 FROM public.canil_cachorros c
+       WHERE c.ninhada_id = OLD.id
+     ) THEN
+    RAISE EXCEPTION 'Ninhadas com progenitores ou cachorros registados não podem ser eliminadas; preserve o historial';
+  END IF;
+  RETURN OLD;
+END;
+$;
+
+DROP TRIGGER IF EXISTS canil_ninhadas_preserve_history ON public.canil_ninhadas;
+CREATE TRIGGER canil_ninhadas_preserve_history
+BEFORE DELETE ON public.canil_ninhadas
+FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_ninhada_history_delete();
+
+REVOKE ALL ON FUNCTION public.canil_prevent_ninhada_history_delete() FROM PUBLIC, anon, authenticated;
+
 -- Supporting indexes for the composite foreign keys and workspace-scoped reads.
 CREATE INDEX IF NOT EXISTS idx_canil_clinico_workspace_animal
   ON public.canil_registos_clinicos (workspace_id, animal_id);
