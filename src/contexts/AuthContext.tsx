@@ -19,19 +19,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    let isMounted = true;
+    let authEventVersion = 0;
+
+    // Subscribe first so auth changes cannot be missed while the initial
+    // session is being loaded.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      authEventVersion += 1;
+
+      if (!isMounted) return;
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // A newer auth event takes precedence over this initial snapshot.
+    const versionAtRequest = authEventVersion;
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession()
+      .then(({ data: { session: initialSession }, error }) => {
+        if (!isMounted || authEventVersion !== versionAtRequest) return;
+
+        if (error) {
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!isMounted || authEventVersion !== versionAtRequest) return;
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
