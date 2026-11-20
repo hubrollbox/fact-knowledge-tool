@@ -71,3 +71,56 @@ $$;
 
 REVOKE ALL ON FUNCTION public.sincronizar_alertas_obras_acoes() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.sincronizar_alertas_obras_acoes() TO authenticated;
+
+CREATE OR REPLACE FUNCTION private.notificar_alteracoes_obras_acoes()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_tipo text;
+  v_titulo text;
+  v_user uuid;
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    v_user := NEW.responsavel_user_id;
+    v_tipo := 'acao_atribuida';
+    v_titulo := 'Nova acção atribuída';
+  ELSIF NEW.responsavel_user_id IS DISTINCT FROM OLD.responsavel_user_id
+        AND NEW.responsavel_user_id IS NOT NULL THEN
+    v_user := NEW.responsavel_user_id;
+    v_tipo := 'acao_atribuida';
+    v_titulo := 'Acção atribuída';
+  ELSIF NEW.estado IS DISTINCT FROM OLD.estado
+        AND NEW.responsavel_user_id IS NOT NULL THEN
+    v_user := NEW.responsavel_user_id;
+    v_tipo := 'acao_actualizada';
+    v_titulo := 'Estado de acção actualizado';
+  ELSE
+    RETURN NEW;
+  END IF;
+
+  INSERT INTO public.alertas (
+    workspace_id, user_id, modulo, tipo, titulo, descricao,
+    data_alerta, referencia_id, referencia_tipo
+  ) VALUES (
+    NEW.workspace_id, v_user, 'obras', v_tipo, v_titulo,
+    NEW.descricao, CURRENT_DATE, NEW.id, 'obras_acoes'
+  )
+  ON CONFLICT (workspace_id, user_id, referencia_id, referencia_tipo, tipo, data_alerta)
+    WHERE modulo = 'obras'
+      AND user_id IS NOT NULL
+      AND referencia_id IS NOT NULL
+      AND referencia_tipo = 'obras_acoes'
+  DO NOTHING;
+
+  RETURN NEW;
+END;
+$$;
+REVOKE ALL ON FUNCTION private.notificar_alteracoes_obras_acoes() FROM PUBLIC, anon, authenticated;
+
+CREATE TRIGGER obras_acoes_alertas
+  AFTER INSERT OR UPDATE OF responsavel_user_id, estado
+  ON public.obras_acoes
+  FOR EACH ROW EXECUTE FUNCTION private.notificar_alteracoes_obras_acoes();
