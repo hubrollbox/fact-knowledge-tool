@@ -1182,6 +1182,277 @@ export type Database = {
           },
         ]
       }
+      juridico_aplicacoes: {
+        Row: {
+          argumentos_contrarios: string | null
+          argumentos_favoraveis: string | null
+          autor_id: string | null
+          created_at: string
+          estado: string
+          id: string
+          lacunas: string | null
+          pressupostos: string | null
+          processo_id: string
+          questao_id: string
+          raciocinio: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          argumentos_contrarios?: string | null
+          argumentos_favoraveis?: string | null
+          autor_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          lacunas?: string | null
+          pressupostos?: string | null
+          processo_id: string
+          questao_id: string
+          raciocinio: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          argumentos_contrarios?: string | null
+          argumentos_favoraveis?: string | null
+          autor_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          lacunas?: string | null
+          pressupostos?: string | null
+          processo_id?: string
+          questao_id?: string
+          raciocinio?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_aplicacoes_processo_id_workspace_id_fkey"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_aplicacoes_questao_id_processo_id_workspace_id_fkey"
+            columns: ["questao_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+        ]
+      }
+      juridico_aplicacoes_factos: {
+        Row: {
+          aplicacao_id: string
+          created_at: string
+          facto_id: string
+          notas: string | null
+          processo_id: string
+          questao_id: string
+          workspace_id: string
+        }
+        Insert: {
+          aplicacao_id: string
+          created_at?: string
+          facto_id: string
+          notas?: string | null
+          processo_id: string
+          questao_id: string
+          workspace_id: string
+        }
+        Update: {
+          aplicacao_id?: string
+          created_at?: string
+          facto_id?: string
+          notas?: string | null
+          processo_id?: string
+          questao_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_aplicacoes_factos_aplicacao_id_processo_id_worksp_fkey"
+            columns: [
+              "aplicacao_id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "juridico_aplicacoes"
+            referencedColumns: [
+              "id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+          },
+          {
+            foreignKeyName: "juridico_aplicacoes_factos_facto_id_processo_id_workspace__fkey"
+            columns: ["facto_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_factos"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_aplicacoes_factos_questao_id_facto_id_processo_id_fkey"
+            columns: ["questao_id", "facto_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes_factos"
+            referencedColumns: [
+              "questao_id",
+              "facto_id",
+              "processo_id",
+              "workspace_id",
+            ]
+          },
+        ]
+      }
+      juridico_aplicacoes_fontes: {
+        Row: {
+          aplicacao_id: string
+          created_at: string
+          fonte_id: string
+          notas: string | null
+          processo_id: string
+          questao_id: string
+          segmento_aplicavel: string | null
+          workspace_id: string
+        }
+        Insert: {
+          aplicacao_id: string
+          created_at?: string
+          fonte_id: string
+          notas?: string | null
+          processo_id: string
+          questao_id: string
+          segmento_aplicavel?: string | null
+          workspace_id: string
+        }
+        Update: {
+          aplicacao_id?: string
+          created_at?: string
+          fonte_id?: string
+          notas?: string | null
+          processo_id?: string
+          questao_id?: string
+          segmento_aplicavel?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_aplicacoes_fontes_aplicacao_id_processo_id_worksp_fkey"
+            columns: [
+              "aplicacao_id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "juridico_aplicacoes"
+            referencedColumns: [
+              "id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+          },
+          {
+            foreignKeyName: "juridico_aplicacoes_fontes_fonte_id_processo_id_workspace__fkey"
+            columns: ["fonte_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_fontes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_aplicacoes_fontes_questao_id_fonte_id_processo_id_fkey"
+            columns: ["questao_id", "fonte_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes_fontes"
+            referencedColumns: [
+              "questao_id",
+              "fonte_id",
+              "processo_id",
+              "workspace_id",
+            ]
+          },
+        ]
+      }
+      juridico_conclusoes: {
+        Row: {
+          aplicacao_id: string | null
+          autor_id: string | null
+          created_at: string
+          estado: string
+          id: string
+          processo_id: string
+          questao_id: string | null
+          texto: string
+          versao: number
+          workspace_id: string
+        }
+        Insert: {
+          aplicacao_id?: string | null
+          autor_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          processo_id: string
+          questao_id?: string | null
+          texto: string
+          versao?: number
+          workspace_id: string
+        }
+        Update: {
+          aplicacao_id?: string | null
+          autor_id?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          processo_id?: string
+          questao_id?: string | null
+          texto?: string
+          versao?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_conclusoes_aplicacao_id_processo_id_workspace_id__fkey"
+            columns: [
+              "aplicacao_id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "juridico_aplicacoes"
+            referencedColumns: [
+              "id",
+              "processo_id",
+              "workspace_id",
+              "questao_id",
+            ]
+          },
+          {
+            foreignKeyName: "juridico_conclusoes_processo_id_workspace_id_fkey"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_conclusoes_questao_id_processo_id_workspace_id_fkey"
+            columns: ["questao_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+        ]
+      }
       juridico_documentos: {
         Row: {
           categoria: string | null
@@ -1224,11 +1495,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "juridico_documentos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "juridico_documentos_process_workspace_fk"
+            columns: ["processo_id", "workspace_id"]
             isOneToOne: false
             referencedRelation: "juridico_processos"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "workspace_id"]
           },
           {
             foreignKeyName: "juridico_documentos_workspace_id_fkey"
@@ -1236,6 +1507,170 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_factos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_facto: string | null
+          descricao: string
+          estado: string
+          id: string
+          notas: string | null
+          origem: string | null
+          processo_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_facto?: string | null
+          descricao: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          origem?: string | null
+          processo_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_facto?: string | null
+          descricao?: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          origem?: string | null
+          processo_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_factos_process_fk"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
+          },
+        ]
+      }
+      juridico_factos_documentos: {
+        Row: {
+          created_at: string
+          documento_id: string
+          facto_id: string
+          notas: string | null
+          processo_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          documento_id: string
+          facto_id: string
+          notas?: string | null
+          processo_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          documento_id?: string
+          facto_id?: string
+          notas?: string | null
+          processo_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_factos_documentos_documento_id_processo_id_worksp_fkey"
+            columns: ["documento_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_documentos"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_factos_documentos_facto_id_processo_id_workspace__fkey"
+            columns: ["facto_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_factos"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+        ]
+      }
+      juridico_fontes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_fonte: string | null
+          documento_id: string | null
+          entidade: string | null
+          id: string
+          jurisdicao: string | null
+          notas: string | null
+          processo_id: string
+          referencia: string | null
+          tipo: string
+          titulo: string
+          updated_at: string
+          url_origem: string | null
+          versao: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_fonte?: string | null
+          documento_id?: string | null
+          entidade?: string | null
+          id?: string
+          jurisdicao?: string | null
+          notas?: string | null
+          processo_id: string
+          referencia?: string | null
+          tipo: string
+          titulo: string
+          updated_at?: string
+          url_origem?: string | null
+          versao?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_fonte?: string | null
+          documento_id?: string | null
+          entidade?: string | null
+          id?: string
+          jurisdicao?: string | null
+          notas?: string | null
+          processo_id?: string
+          referencia?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          url_origem?: string | null
+          versao?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_fontes_document_fk"
+            columns: ["documento_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_documentos"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_fontes_process_fk"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
           },
         ]
       }
@@ -1281,11 +1716,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "juridico_partes_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "juridico_partes_process_workspace_fk"
+            columns: ["processo_id", "workspace_id"]
             isOneToOne: false
             referencedRelation: "juridico_processos"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "workspace_id"]
           },
           {
             foreignKeyName: "juridico_partes_workspace_id_fkey"
@@ -1335,11 +1770,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "juridico_prazos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "juridico_prazos_process_workspace_fk"
+            columns: ["processo_id", "workspace_id"]
             isOneToOne: false
             referencedRelation: "juridico_processos"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "workspace_id"]
           },
           {
             foreignKeyName: "juridico_prazos_workspace_id_fkey"
@@ -1409,6 +1844,137 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "workspaces"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_questoes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          estado: string
+          id: string
+          notas: string | null
+          ordem: number
+          pergunta: string
+          processo_id: string
+          titulo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          id?: string
+          notas?: string | null
+          ordem?: number
+          pergunta: string
+          processo_id: string
+          titulo: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          estado?: string
+          id?: string
+          notas?: string | null
+          ordem?: number
+          pergunta?: string
+          processo_id?: string
+          titulo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_questoes_process_fk"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
+          },
+        ]
+      }
+      juridico_questoes_factos: {
+        Row: {
+          created_at: string
+          facto_id: string
+          processo_id: string
+          questao_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          facto_id: string
+          processo_id: string
+          questao_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          facto_id?: string
+          processo_id?: string
+          questao_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_questoes_factos_facto_id_processo_id_workspace_id_fkey"
+            columns: ["facto_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_factos"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_questoes_factos_questao_id_processo_id_workspace__fkey"
+            columns: ["questao_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+        ]
+      }
+      juridico_questoes_fontes: {
+        Row: {
+          created_at: string
+          fonte_id: string
+          processo_id: string
+          questao_id: string
+          segmento_aplicavel: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          fonte_id: string
+          processo_id: string
+          questao_id: string
+          segmento_aplicavel?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          fonte_id?: string
+          processo_id?: string
+          questao_id?: string
+          segmento_aplicavel?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_questoes_fontes_fonte_id_processo_id_workspace_id_fkey"
+            columns: ["fonte_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_fontes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_questoes_fontes_questao_id_processo_id_workspace__fkey"
+            columns: ["questao_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
           },
         ]
       }
