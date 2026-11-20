@@ -352,4 +352,6 @@ export default function AjudaSuporte() {
       )}
     </div>
   );
+
+  return user ? <AppLayout>{page}</AppLayout> : page;
 }
