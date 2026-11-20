@@ -165,15 +165,14 @@ CREATE OR REPLACE FUNCTION public.canil_prevent_workspace_change()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog, public
-AS $
+AS $$
 BEGIN
   IF NEW.workspace_id IS DISTINCT FROM OLD.workspace_id THEN
     RAISE EXCEPTION 'Não é permitido mover registos do FKT Vet entre workspaces';
   END IF;
   RETURN NEW;
 END;
-$;
-
+$$;
 DROP TRIGGER IF EXISTS canil_animais_workspace_immutable ON public.canil_animais;
 CREATE TRIGGER canil_animais_workspace_immutable
 BEFORE UPDATE OF workspace_id ON public.canil_animais
@@ -203,7 +202,7 @@ CREATE OR REPLACE FUNCTION public.canil_prevent_ninhada_history_delete()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = pg_catalog, public
-AS $
+AS $$
 BEGIN
   IF OLD.mae_id IS NOT NULL
      OR OLD.pai_id IS NOT NULL
@@ -215,8 +214,7 @@ BEGIN
   END IF;
   RETURN OLD;
 END;
-$;
-
+$$;
 DROP TRIGGER IF EXISTS canil_ninhadas_preserve_history ON public.canil_ninhadas;
 CREATE TRIGGER canil_ninhadas_preserve_history
 BEFORE DELETE ON public.canil_ninhadas
