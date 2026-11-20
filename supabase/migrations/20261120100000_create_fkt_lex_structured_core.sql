@@ -66,7 +66,7 @@ CREATE TABLE public.juridico_fontes (
   CONSTRAINT juridico_fontes_id_process_workspace_unique UNIQUE (id, processo_id, workspace_id),
   CONSTRAINT juridico_fontes_document_fk
     FOREIGN KEY (documento_id, processo_id, workspace_id)
-    REFERENCES public.juridico_documentos(id, processo_id, workspace_id) ON DELETE SET NULL
+    REFERENCES public.juridico_documentos(id, processo_id, workspace_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE public.juridico_factos_documentos (
@@ -148,7 +148,7 @@ CREATE TABLE public.juridico_conclusoes (
   FOREIGN KEY (questao_id, processo_id, workspace_id)
     REFERENCES public.juridico_questoes(id, processo_id, workspace_id) ON DELETE CASCADE,
   FOREIGN KEY (aplicacao_id, processo_id, workspace_id)
-    REFERENCES public.juridico_aplicacoes(id, processo_id, workspace_id) ON DELETE SET NULL,
+    REFERENCES public.juridico_aplicacoes(id, processo_id, workspace_id) ON DELETE RESTRICT,
   UNIQUE (processo_id, questao_id, versao)
 );
 
