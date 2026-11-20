@@ -125,6 +125,22 @@ BEGIN
     RAISE EXCEPTION 'Default privileges still grant access to PUBLIC/anon in public schema';
   END IF;
 
+
+  -- Parent/child records cannot be reassigned to another workspace.
+  FOREACH _table IN ARRAY ARRAY[
+    'canil_animais_workspace_immutable',
+    'canil_ninhadas_workspace_immutable',
+    'canil_clinico_workspace_immutable',
+    'canil_reservas_workspace_immutable'
+  ] LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_trigger
+      WHERE tgname = _table AND NOT tgisinternal
+    ) THEN
+      RAISE EXCEPTION 'Workspace immutability trigger is missing: %', _table;
+    END IF;
+  END LOOP;
+
   -- All Canil write policies on UPDATE must include WITH CHECK.
   FOR _policy IN
     SELECT tablename, policyname
