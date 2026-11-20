@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADOS_ACAO } from '../types/obras';
-import { useAtribuirAcao, useFilaAcoes, useMembrosFilaAcoes, type AcaoFila } from '../hooks/useFilaAcoes';
+import { useAtribuirAcao, useFilaAcoes, useMembrosFilaAcoes, useOcorrenciasComLacunas, type AcaoFila } from '../hooks/useFilaAcoes';
 import { useActualizarEstado } from '../hooks/useObras';
 
 const hoje = () => {
@@ -22,6 +22,7 @@ const dataPt = (v: string | null) => v ? new Date(`${v}T00:00:00`).toLocaleDateS
 export function FilaAcoes() {
   const { data: acoes = [], isLoading, isError, error } = useFilaAcoes();
   const { data: membros = [] } = useMembrosFilaAcoes();
+  const { data: ocorrenciasLacunas = [] } = useOcorrenciasComLacunas();
   const { canWrite } = useWorkspaceRole();
   const { user } = useAuth();
   const atribuir = useAtribuirAcao();
@@ -70,7 +71,7 @@ export function FilaAcoes() {
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Acções abertas</div><div className="mt-1 text-2xl font-semibold">{abertas.length}</div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Atrasadas</div><div className="mt-1 flex items-center gap-2 text-2xl font-semibold text-destructive"><AlertTriangle className="h-5 w-5" />{atrasadas.length}</div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Prazo nos próximos 3 dias</div><div className="mt-1 text-2xl font-semibold">{proximas.length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Ocorrências sem análise/conclusão</div><div className="mt-1 text-2xl font-semibold">{new Set([...semAnalise, ...semConclusao].map(a => a.ocorrencia_id)).size}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Ocorrências sem análise/conclusão</div><div className="mt-1 text-2xl font-semibold">{ocorrenciasLacunas.length}</div></CardContent></Card>
       </section>
 
       <Card>
@@ -81,6 +82,21 @@ export function FilaAcoes() {
           <div className="space-y-1"><Label>Responsável</Label><Select value={responsavel} onValueChange={setResponsavel}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem><SelectItem value="minhas">Atribuídas a mim</SelectItem><SelectItem value="sem">Sem responsável</SelectItem>{membros.map(m => <SelectItem key={m.user_id} value={m.user_id}>Membro {m.user_id.slice(0,8)} · {m.role}</SelectItem>)}</SelectContent></Select></div>
           <div className="space-y-1"><Label>Prazo</Label><Select value={prazo} onValueChange={setPrazo}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem><SelectItem value="atrasadas">Atrasadas</SelectItem><SelectItem value="proximas">Próximos 3 dias</SelectItem><SelectItem value="sem">Sem prazo</SelectItem></SelectContent></Select></div>
           <div className="space-y-1"><Label>Obra</Label><Select value={obra} onValueChange={setObra}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todas">Todas as obras</SelectItem>{obras.map(o => <SelectItem key={o.id} value={o.id}>{o.nome}</SelectItem>)}</SelectContent></Select></div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Ocorrências que precisam de decisão</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {!ocorrenciasLacunas.length ? <p className="text-sm text-muted-foreground">Não existem ocorrências abertas com lacunas de análise identificadas.</p> : ocorrenciasLacunas.map(o => (
+            <div key={o.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
+              <div><div className="text-sm font-medium">{o.titulo}</div><div className="text-xs text-muted-foreground">{o.obras?.nome ?? 'Obra'}</div></div>
+              <div className="flex flex-wrap items-center gap-2">
+                {!o.analise || (!o.analise.interpretacao && !o.analise.conclusao && !o.analise.recomendacao) ? <Badge variant="destructive">Sem análise</Badge> : <>{!o.analise.conclusao && <Badge variant="outline">Sem conclusão</Badge>}{!o.analise.recomendacao && <Badge variant="outline">Sem recomendação</Badge>}</>}
+                <Button asChild size="sm" variant="outline"><Link to={`/obras/${o.obra_id}/ocorrencia/${o.id}`}>Abrir dossier</Link></Button>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
 
