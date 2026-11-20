@@ -449,3 +449,35 @@
     page-break-inside: avoid;
   }
 }
+
+
+.report-fact-evidence {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+  font-size: 9px;
+  color: #526273;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.report-fact-evidence img {
+  display: block;
+  width: 76px;
+  height: 58px;
+  object-fit: cover;
+  border: 1px solid #cbd3da;
+  border-radius: 2px;
+}
+
+.report-fact-evidence > span {
+  align-self: center;
+  overflow-wrap: anywhere;
+}
+
+.report-fact-reference {
+  margin: 5px 0;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
