@@ -87,8 +87,6 @@ AS $$
       AND concat_ws(' ', d.titulo, d.categoria, d.entidade_origem, d.identificador, d.notas, v.nome_ficheiro) ILIKE q.pattern
 
     UNION ALL
-
-    UNION ALL
     SELECT 'works', 'analise', an.id, concat('Análise · ', oc.titulo),
       concat_ws(' · ', o.nome, an.interpretacao, an.conclusao, an.recomendacao, an.informacao_em_falta),
       '/obras/' || oc.obra_id::text || '/ocorrencia/' || oc.id::text,
@@ -105,6 +103,7 @@ AS $$
       AND concat_ws(' ', o.nome, oc.titulo, an.interpretacao, an.conclusao, an.recomendacao, an.informacao_em_falta) ILIKE q.pattern
 
     -- FKT Lex: structured case records.
+    UNION ALL
     SELECT 'lex', 'processo', p.id, p.titulo,
       concat_ws(' · ', p.referencia, p.numero_processo, p.tribunal, p.tipo, p.contexto, p.questao),
       '/juridico/' || p.id::text, p.created_at, p.workspace_id, NULL, p.estado
@@ -149,8 +148,6 @@ AS $$
       AND concat_ws(' ', p.titulo, s.titulo, s.tipo, s.entidade, s.referencia, s.jurisdicao, s.notas) ILIKE q.pattern
 
     UNION ALL
-
-    UNION ALL
     SELECT 'lex', 'documento', doc.id, doc.nome,
       concat_ws(' · ', p.titulo, doc.categoria, doc.notas, doc.data_documento::text),
       '/juridico/' || p.id::text, doc.created_at, doc.workspace_id, NULL, NULL
@@ -180,6 +177,7 @@ AS $$
       AND concat_ws(' ', p.titulo, qst.titulo, a.raciocinio, a.argumentos_favoraveis, a.argumentos_contrarios, a.lacunas, a.pressupostos) ILIKE q.pattern
 
     -- FKT Vet.
+    UNION ALL
     SELECT 'vet', 'animal', a.id, a.nome,
       concat_ws(' · ', a.raca, a.numero_chip, a.numero_lop, a.proprietario_nome, a.observacoes),
       '/canil/animal/' || a.id::text, a.created_at, a.workspace_id, NULL, CASE WHEN a.activo THEN 'activo' ELSE 'arquivado' END
