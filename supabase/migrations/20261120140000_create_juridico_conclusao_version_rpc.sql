@@ -29,7 +29,7 @@ BEGIN
     RAISE EXCEPTION 'O texto da conclusão é obrigatório' USING ERRCODE = '22023';
   END IF;
 
-  IF _estado NOT IN ('rascunho', 'revista', 'final') THEN
+  IF _estado IS NULL OR _estado NOT IN ('rascunho', 'revista', 'final') THEN
     RAISE EXCEPTION 'Estado de conclusão inválido' USING ERRCODE = '22023';
   END IF;
 
