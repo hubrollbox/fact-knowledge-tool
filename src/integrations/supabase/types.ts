@@ -2190,6 +2190,7 @@ export type Database = {
           ocorrencia_id: string | null
           prazo: string | null
           responsavel: string | null
+          responsavel_user_id: string | null
           updated_at: string
           workspace_id: string
         }
@@ -2202,6 +2203,7 @@ export type Database = {
           ocorrencia_id?: string | null
           prazo?: string | null
           responsavel?: string | null
+          responsavel_user_id?: string | null
           updated_at?: string
           workspace_id: string
         }
@@ -2214,6 +2216,7 @@ export type Database = {
           ocorrencia_id?: string | null
           prazo?: string | null
           responsavel?: string | null
+          responsavel_user_id?: string | null
           updated_at?: string
           workspace_id?: string
         }
