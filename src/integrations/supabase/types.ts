@@ -249,7 +249,6 @@ export type Database = {
           ninhada_id: string
           preco_venda: number | null
           sexo: string | null
-          workspace_id: string
         }
         Insert: {
           animal_id?: string | null
@@ -263,7 +262,6 @@ export type Database = {
           ninhada_id: string
           preco_venda?: number | null
           sexo?: string | null
-          workspace_id?: string
         }
         Update: {
           animal_id?: string | null
@@ -277,22 +275,21 @@ export type Database = {
           ninhada_id?: string
           preco_venda?: number | null
           sexo?: string | null
-          workspace_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "canil_cachorros_workspace_animal_fkey"
-            columns: ["workspace_id", "animal_id"]
+            foreignKeyName: "canil_cachorros_animal_id_fkey"
+            columns: ["animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "canil_cachorros_workspace_ninhada_fkey"
-            columns: ["workspace_id", "ninhada_id"]
+            foreignKeyName: "canil_cachorros_ninhada_id_fkey"
+            columns: ["ninhada_id"]
             isOneToOne: false
             referencedRelation: "canil_ninhadas"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -335,18 +332,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_ninhadas_workspace_mae_fkey"
-            columns: ["workspace_id", "mae_id"]
+            foreignKeyName: "canil_ninhadas_mae_id_fkey"
+            columns: ["mae_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "canil_ninhadas_workspace_pai_fkey"
-            columns: ["workspace_id", "pai_id"]
+            foreignKeyName: "canil_ninhadas_pai_id_fkey"
+            columns: ["pai_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -392,11 +389,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_registos_clinicos_workspace_animal_fkey"
-            columns: ["workspace_id", "animal_id"]
+            foreignKeyName: "canil_registos_clinicos_animal_id_fkey"
+            columns: ["animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -448,11 +445,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_reservas_workspace_animal_fkey"
-            columns: ["workspace_id", "animal_id"]
+            foreignKeyName: "canil_reservas_animal_id_fkey"
+            columns: ["animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["workspace_id", "id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3315,6 +3312,17 @@ export type Database = {
         }
         Returns: string
       }
+      create_juridico_conclusao_version: {
+        Args: {
+          _aplicacao_id?: string
+          _estado?: string
+          _processo_id: string
+          _questao_id?: string
+          _texto?: string
+          _workspace_id: string
+        }
+        Returns: string
+      }
       create_obras_documento_versao: {
         Args: {
           _documento_id: string
@@ -3323,25 +3331,6 @@ export type Database = {
           _notas?: string
           _storage_path: string
           _tamanho_bytes: number
-        }
-        Returns: string
-      }
-      create_juridico_conclusao_version: {
-        Args: {
-          _aplicacao_id?: string | null
-          _estado?: string
-          _processo_id: string
-          _questao_id?: string | null
-          _texto: string
-          _workspace_id: string
-        }
-        Returns: string
-      }
-      transition_juridico_conclusao: {
-        Args: {
-          _conclusao_id: string
-          _novo_estado: string
-          _notas?: string | null
         }
         Returns: string
       }
@@ -3357,6 +3346,10 @@ export type Database = {
       is_fkt_global_admin: { Args: never; Returns: boolean }
       reabrir_obras_ocorrencia: {
         Args: { _motivo: string; _ocorrencia_id: string }
+        Returns: string
+      }
+      transition_juridico_conclusao: {
+        Args: { _conclusao_id: string; _notas?: string; _novo_estado: string }
         Returns: string
       }
       workspace_can_manage_members: {
