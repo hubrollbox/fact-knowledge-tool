@@ -27,7 +27,6 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const [fundamentacao, setFundamentacao] = useState('');
   const [verificacaoAcao, setVerificacaoAcao] = useState<Acao | null>(null);
   const [resultado, setResultado] = useState('eficaz');
-  const [causaEstados, setCausaEstados] = useState<Record<string, string>>({});
   const [verificacaoDescricao, setVerificacaoDescricao] = useState('');
   const [evidencia, setEvidencia] = useState('');
   const [reabrirOpen, setReabrirOpen] = useState(false);
@@ -64,7 +63,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
 
   const criarCausa = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from('obras_ocorrencia_causas').insert({
+      const { error } = await supabase.from('obras_ocorrencia_causas').insert({
         ocorrencia_id: ocorrenciaId, descricao: descricao.trim(), fundamentacao: fundamentacao.trim(),
       });
       if (error) throw error;
@@ -88,7 +87,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const criarVerificacao = useMutation({
     mutationFn: async () => {
       if (!verificacaoAcao) throw new Error('Seleccione uma acção.');
-      const { error } = await (supabase as any).from('obras_acoes_verificacoes').insert({
+      const { error } = await supabase.from('obras_acoes_verificacoes').insert({
         acao_id: verificacaoAcao.id, ocorrencia_id: ocorrenciaId, resultado,
         descricao: verificacaoDescricao.trim(), evidencia: evidencia.trim() || null,
       });
@@ -103,7 +102,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
 
   const reabrir = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).rpc('reabrir_obras_ocorrencia', {
+      const { error } = await supabase.rpc('reabrir_obras_ocorrencia', {
         _ocorrencia_id: ocorrenciaId, _motivo: motivo.trim(),
       });
       if (error) throw error;
