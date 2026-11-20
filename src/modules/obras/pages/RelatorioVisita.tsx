@@ -6,7 +6,7 @@ import { useObra, useVisita, useOcorrencias, useAcoes } from '../hooks/useObras'
 import { useFotos } from '../hooks/useFotosObra';
 import { fetchAnaliseOcorrencia } from '../hooks/useAnaliseOcorrencia';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES } from '../types/obras';
-import type { Ocorrencia } from '../types/obras';
+import type { Foto, Ocorrencia } from '../types/obras';
 import './relatorio-visita.css';
 
 function dataPt(value?: string | null) {
@@ -21,8 +21,9 @@ function dataHoraPt(value?: string | null) {
   return Number.isNaN(d.getTime()) ? value : d.toLocaleString('pt-PT');
 }
 
-function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
-  const { data: fotos, isLoading } = useFotos({ ocorrenciaId });
+type FotoRelatorio = Foto & { url: string | null };
+
+function FotosOcorrencia({ fotos, isLoading }: { fotos?: FotoRelatorio[]; isLoading: boolean }) {
   if (isLoading) return <p className="report-muted">A carregar fotografias…</p>;
   if (!fotos?.length) return null;
   return (
@@ -43,7 +44,7 @@ function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
 type AnaliseData = Awaited<ReturnType<typeof fetchAnaliseOcorrencia>>;
 type AnaliseRelatorio = AnaliseData & { analise: NonNullable<AnaliseData['analise']> };
 
-function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
+function BlocoAnalise({ dados, fotos }: { dados: AnaliseRelatorio; fotos: FotoRelatorio[] }) {
   const { analise, factos, referencias, versoes, documentos } = dados;
   const versaoPorId = new Map(versoes.map((item) => [item.id, item]));
   const documentoPorId = new Map(documentos.map((item) => [item.id, item]));
@@ -54,8 +55,33 @@ function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
       <h4>Análise técnica</h4>
       {analise.interpretacao && <div className="report-analysis-block"><strong>Interpretação técnica</strong><p>{analise.interpretacao}</p></div>}
       <div className="report-fact-columns">
-        <div><strong>Factos confirmados ({confirmados.length})</strong>{confirmados.length ? <ul>{confirmados.map((f) => <li key={f.id}>{f.descricao}</li>)}</ul> : <p className="report-muted">Não foram registados factos confirmados.</p>}</div>
-        <div><strong>Factos por confirmar ({porConfirmar.length})</strong>{porConfirmar.length ? <ul>{porConfirmar.map((f) => <li key={f.id}>{f.descricao}</li>)}</ul> : <p className="report-muted">Não existem factos assinalados como por confirmar.</p>}</div>
+        {[{ titulo: `Factos confirmados (${confirmados.length})`, items: confirmados, vazio: 'Não foram registados factos confirmados.' }, { titulo: `Factos por confirmar (${porConfirmar.length})`, items: porConfirmar, vazio: 'Não existem factos assinalados como por confirmar.' }].map((grupo) => (
+          <div key={grupo.titulo}>
+            <strong>{grupo.titulo}</strong>
+            {grupo.items.length ? (
+              <ul>{grupo.items.map((facto) => {
+                const foto = fotos.find((item) => item.id === facto.evidencia_foto_id);
+                const referencia = referencias.find((item) => item.id === facto.referencia_id);
+                return (
+                  <li key={facto.id}>
+                    <p>{facto.descricao}</p>
+                    {foto ? (
+                      <div className="report-fact-evidence">
+                        {foto.url ? <a href={foto.url} target="_blank" rel="noreferrer"><img src={foto.url} alt={foto.legenda || 'Evidência fotográfica do facto'} /></a> : <span>Imagem da evidência indisponível.</span>}
+                        <span><strong>Evidência:</strong> {foto.legenda || 'Fotografia associada'} · {foto.capturada_em ? dataHoraPt(foto.capturada_em) : 'Data/hora não registada'}</span>
+                      </div>
+                    ) : facto.evidencia_foto_id ? (
+                      <p className="report-muted">A fotografia associada não está disponível no relatório.</p>
+                    ) : (
+                      <p className="report-muted">Sem evidência fotográfica associada.</p>
+                    )}
+                    {referencia ? <p className="report-fact-reference"><strong>Referência:</strong> {referencia.titulo}</p> : facto.referencia_id ? <p className="report-muted">A referência associada não está disponível no relatório.</p> : <p className="report-muted">Sem referência técnica associada.</p>}
+                  </li>
+                );
+              })}</ul>
+            ) : <p className="report-muted">{grupo.vazio}</p>}
+          </div>
+        ))}
       </div>
       {analise.informacao_em_falta && <div className="report-analysis-block"><strong>Informação em falta / pontos por confirmar</strong><p>{analise.informacao_em_falta}</p></div>}
       <div className="report-analysis-block"><strong>Normas e referências técnicas</strong>{referencias.length ? <ul className="report-references">{referencias.map((ref) => { const versao = ref.documento_versao_id ? versaoPorId.get(ref.documento_versao_id) : null; const documento = versao ? documentoPorId.get(versao.documento_id) : null; return <li key={ref.id}><span>{ref.titulo}</span><small>{[ref.tipo, ref.entidade_origem, ref.identificador, ref.versao, ref.data_documento ? dataPt(ref.data_documento) : null].filter(Boolean).join(' · ')}</small>{versao && <small>Documento arquivado: {documento?.titulo || versao.nome_ficheiro} — versão {versao.numero_versao} ({versao.nome_ficheiro})</small>}{versao?.signedUrl && <a href={versao.signedUrl} target="_blank" rel="noreferrer">Abrir documento arquivado</a>}{ref.notas && <small>{ref.notas}</small>}{ref.url && <a href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}</li>; })}</ul> : <p className="report-muted">Não foram registadas referências técnicas ou documentais.</p>}</div>
@@ -64,7 +90,7 @@ function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
     </div>
   );
 }
-function BlocoOcorrencia({ ocorrencia, index, analise }: { ocorrencia: Ocorrencia; index: number; analise?: AnaliseRelatorio }) {
+function BlocoOcorrencia({ ocorrencia, index, analise, fotos }: { ocorrencia: Ocorrencia; index: number; analise?: AnaliseRelatorio; fotos: FotoRelatorio[] }) {
   return (
     <article className="report-occurrence">
       <div className="report-occurrence-heading">
@@ -76,8 +102,8 @@ function BlocoOcorrencia({ ocorrencia, index, analise }: { ocorrencia: Ocorrenci
         <div><dt>Estado</dt><dd>{ESTADOS_OCORRENCIA[ocorrencia.estado as keyof typeof ESTADOS_OCORRENCIA] ?? ocorrencia.estado}</dd></div>
       </dl>
       {ocorrencia.descricao && <p className="report-description">{ocorrencia.descricao}</p>}
-      <FotosOcorrencia ocorrenciaId={ocorrencia.id} />
-      {analise ? <BlocoAnalise dados={analise} /> : <div className="report-analysis"><h4>Análise técnica</h4><p className="report-muted">Não foi registada análise técnica para esta ocorrência.</p></div>}
+      <FotosOcorrencia fotos={fotos} isLoading={false} />
+      {analise ? <BlocoAnalise dados={analise} fotos={fotos ?? []} /> : <div className="report-analysis"><h4>Análise técnica</h4><p className="report-muted">Não foi registada análise técnica para esta ocorrência.</p></div>}
     </article>
   );
 }
@@ -88,8 +114,9 @@ export function RelatorioVisita() {
   const { data: visita, isLoading: visitaLoading } = useVisita(visitaId);
   const { data: ocorrencias, isLoading: ocorrenciasLoading } = useOcorrencias(id);
   const { data: acoes, isLoading: acoesLoading } = useAcoes(id);
-  const { data: fotosVisita, isLoading: fotosLoading } = useFotos({ visitaId });
   const idsOcorrenciasRelatorio = (ocorrencias ?? []).filter((o) => o.visita_id === visita?.id).map((o) => o.id);
+  const { data: fotosVisita, isLoading: fotosLoading } = useFotos({ visitaId });
+  const { data: fotosOcorrencias, isLoading: fotosOcorrenciasLoading } = useFotos({ ocorrenciaIds: idsOcorrenciasRelatorio });
   const { data: analisesRelatorio, isLoading: analisesLoading, isError: analisesError } = useQuery({
     queryKey: ['obras_relatorio_analises', visitaId, idsOcorrenciasRelatorio],
     enabled: !!visita?.id && !ocorrenciasLoading && idsOcorrenciasRelatorio.length > 0,
@@ -105,7 +132,7 @@ export function RelatorioVisita() {
   );
   const geradoEm = new Date();
 
-  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
+  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || fotosOcorrenciasLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
   if (!obra || !visita || visita.obra_id !== obra.id) {
     return <div className="p-8 space-y-3"><p className="text-sm text-muted-foreground">Não foi possível localizar esta visita e a respectiva obra.</p><Button asChild variant="outline"><Link to={id ? `/obras/${id}` : '/obras'}>Voltar</Link></Button></div>;
   }
@@ -168,7 +195,7 @@ export function RelatorioVisita() {
         <h2>4. Registo de ocorrências</h2>
         {!ocorrenciasVisita.length ? <p className="report-muted">Não foram registadas ocorrências nesta visita.</p> : (
           <div className="report-occurrences">
-            {ocorrenciasVisita.map((o, index) => <BlocoOcorrencia key={o.id} ocorrencia={o} index={index} analise={analisePorOcorrencia.get(o.id)} />)}
+            {ocorrenciasVisita.map((o, index) => <BlocoOcorrencia key={o.id} ocorrencia={o} index={index} analise={analisePorOcorrencia.get(o.id)} fotos={(fotosOcorrencias ?? []).filter((foto) => foto.ocorrencia_id === o.id)} />)}
           </div>
         )}
       </section>
