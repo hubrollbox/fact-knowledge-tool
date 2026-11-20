@@ -5,6 +5,9 @@
 ALTER TABLE public.juridico_processos
   ADD CONSTRAINT juridico_processos_id_workspace_unique UNIQUE (id, workspace_id);
 
+ALTER TABLE public.juridico_documentos
+  ADD CONSTRAINT juridico_documentos_id_process_workspace_unique UNIQUE (id, processo_id, workspace_id);
+
 CREATE TABLE public.juridico_factos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   processo_id uuid NOT NULL,
