@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
-  Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy
+  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, Layers
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
@@ -22,25 +20,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Módulos', href: '/modulos', icon: Layers },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   { label: 'Ajuda e Suporte', href: '/ajuda-suporte', icon: LifeBuoy },
-  {
-    label: 'Dossiers', href: '/dossiers', icon: FolderOpen, children: [
-      { label: 'Cronologia', href: '/dossiers/cronologia', icon: Clock },
-    ]
-  },
-  {
-    label: 'Conhecimento', href: '/conhecimento', icon: BookOpen, children: [
-      { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
-    ]
-  },
-  {
-    label: 'Gestão', icon: Settings, children: [
-      { label: 'Clientes', href: '/gestao/clientes', icon: Users },
-      { label: 'Relatórios', href: '/gestao/relatorios', icon: FileText },
-      { label: 'Tesouraria', href: '/gestao/tesouraria', icon: Landmark },
-    ]
-  },
 ];
 
 function NavItemComponent({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
@@ -148,7 +130,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut } = useAuth();
-  const { moduloSlug } = useModuloActivo();
+  const { moduloSlug, moduloActivo } = useModuloActivo();
   const dynamicNavItems: NavItem[] = [
     ...navItems,
     ...(moduloSlug === 'juridico'
@@ -294,6 +276,14 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <div className="flex-1" />
 
+          {moduloActivo && (
+            <Button asChild variant="outline" size="sm" className="max-w-[150px]">
+              <Link to="/modulos" title="Alterar módulo activo">
+                <Layers className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{moduloActivo.nome}</span>
+              </Link>
+            </Button>
+          )}
           <AlertasBadge />
           <CountdownFab contentSide="bottom" />
 

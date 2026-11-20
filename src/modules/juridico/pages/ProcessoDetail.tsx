@@ -317,7 +317,7 @@ function DocumentosTab({ documentos, processoId }: { documentos: any[]; processo
               <div key={doc.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
                 <div>
                   <p className="font-medium">{doc.nome}</p>
-                  {doc.categoria && <p className="text-xs text-muted-foreground capitalize">{doc.categoria}</p>}
+                  {doc.categoria && <p className="text-xs text-muted-foreground capitalize">{doc.categoria}</p>}{doc.signed_url && <a href={doc.signed_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Abrir documento</a>}
                 </div>
                 {doc.data_documento && (
                   <span className="text-xs text-muted-foreground">

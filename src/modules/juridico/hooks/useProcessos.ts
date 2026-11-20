@@ -4,24 +4,8 @@ import { useModuloActivo } from '@/hooks/useModuloActivo';
 import type { ProcessoInsert, ProcessoUpdate } from '../types/juridico';
 
 function useWorkspaceId() {
-  const { moduloActivo } = useModuloActivo();
-  // workspace id is fetched via the workspace query
-  const { data } = useQuery({
-    queryKey: ['workspace-id'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      const { data, error } = await supabase
-        .from('workspaces')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (error) throw error;
-      return data?.id ?? null;
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-  return data ?? null;
+  const { workspace } = useModuloActivo();
+  return workspace?.id ?? null;
 }
 
 export function useProcessos() {
