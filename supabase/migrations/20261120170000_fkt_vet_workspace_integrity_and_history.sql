@@ -404,19 +404,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
 TO authenticated;
 
 -- The database defaults currently grant all new public tables/sequences to anon.
--- Remove that default for both roles that create project objects, so the grants
--- do not silently return on future migrations.
+-- Remove anon's default grants for objects created by the migration role.
+-- Do not alter the internal supabase_admin role or authenticated/service_role defaults.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL ON TABLES FROM anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
   REVOKE ALL ON TABLES FROM anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL ON SEQUENCES FROM anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE ALL ON SEQUENCES FROM anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
   REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon;
 
 COMMIT;
