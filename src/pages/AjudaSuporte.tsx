@@ -3,6 +3,8 @@ import { BookOpen, LifeBuoy, MessageSquare, Plus, Search, Send, ShieldCheck, Tic
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 type ModuleKey = 'core' | 'works' | 'lex' | 'vet' | 'dev';
 type TicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved';
@@ -93,7 +95,26 @@ export default function AjudaSuporte() {
     }
   }, [loadFaqs, loadTickets]);
 
-  useEffect(() => { if (user) void refresh(); }, [user, refresh]);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    void loadFaqs().catch((error: any) => toast.error(error.message || 'Não foi possível carregar as FAQ.')).finally(() => { if (active) setLoading(false); });
+    if (user) {
+      void (async () => {
+        try {
+          const { data, error } = await db.rpc('is_fkt_global_admin');
+          if (error) throw error;
+          if (active) setIsAdmin(data === true);
+          await loadTickets();
+        } catch (error: any) {
+          if (active) toast.error(error.message || 'Não foi possível carregar os pedidos de suporte.');
+        }
+      })();
+    } else {
+      setIsAdmin(false); setTickets([]); setSelectedTicket(null); setTab('faq');
+    }
+    return () => { active = false; };
+  }, [user, loadFaqs, loadTickets]);
 
   const filteredFaqs = useMemo(() => faqs.filter(faq => {
     const matchesModule = moduleFilter === 'all' || faq.module === moduleFilter;
@@ -219,7 +240,7 @@ export default function AjudaSuporte() {
 
   if (loading) return <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted-foreground">A carregar Ajuda e Suporte…</div>;
 
-  return (
+  const page = (
     <div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -227,14 +248,12 @@ export default function AjudaSuporte() {
           <h1 className="text-2xl font-semibold tracking-tight">Ajuda e Suporte</h1>
           <p className="mt-1 text-sm text-muted-foreground">Respostas, orientações e acompanhamento de pedidos para toda a plataforma FKT.</p>
         </div>
-        <button className={buttonClass} onClick={() => { setNewTicketOpen(true); setTab('tickets'); }}>
-          <Plus className="h-4 w-4" /> Novo pedido
-        </button>
+        {user ? <button className={buttonClass} onClick={() => { setNewTicketOpen(true); setTab('tickets'); }}><Plus className="h-4 w-4" /> Novo pedido</button> : <Link className={buttonClass} to="/login">Entrar para pedir suporte</Link>}
       </header>
 
       <nav className="flex flex-wrap gap-2 border-b border-border pb-3">
         <button className={tab === 'faq' ? buttonClass : secondaryButton} onClick={() => { setTab('faq'); setSelectedTicket(null); }}><BookOpen className="h-4 w-4" /> Perguntas frequentes</button>
-        <button className={tab === 'tickets' ? buttonClass : secondaryButton} onClick={() => setTab('tickets')}><Ticket className="h-4 w-4" /> Os meus pedidos</button>
+        {user && <button className={tab === 'tickets' ? buttonClass : secondaryButton} onClick={() => setTab('tickets')}><Ticket className="h-4 w-4" /> Os meus pedidos</button>}
         {isAdmin && <button className={tab === 'manage' ? buttonClass : secondaryButton} onClick={() => { setTab('manage'); setSelectedTicket(null); }}><ShieldCheck className="h-4 w-4" /> Administração</button>}
       </nav>
 
