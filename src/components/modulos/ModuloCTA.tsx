@@ -38,13 +38,13 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
   if (!user) {
     if (modulo.slug === 'obras') {
       return (
-        <Button size={size} onClick={() => navigate('/#pedido-piloto')}>
+        <Button size={size} onClick={() => navigate('/modulos/obras#pedido-piloto')}>
           Pedir acesso ao piloto <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       );
     }
     return (
-      <Button size={size} variant="outline" onClick={() => navigate('/#pedido-piloto')}>
+      <Button size={size} variant="outline" onClick={() => navigate('/modulos/obras#pedido-piloto')}>
         Em preparação
       </Button>
     );

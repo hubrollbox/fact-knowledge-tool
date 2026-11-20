@@ -7,6 +7,7 @@ import { ModuloIcon } from '@/components/modulos/ModuloIcon';
 import { ModuloCTA } from '@/components/modulos/ModuloCTA';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { PilotAccessForm } from '@/components/modulos/PilotAccessForm';
 
 export default function ModuloDetalhe() {
   const { slug } = useParams();
@@ -17,6 +18,9 @@ export default function ModuloDetalhe() {
     document.title = `${modulo.nome} — Módulo FKT`;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', modulo.tagline ?? modulo.descricao);
+    if (window.location.hash === '#pedido-piloto') {
+      requestAnimationFrame(() => document.getElementById('pedido-piloto')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
   }, [modulo]);
 
   if (!modulo) return <Navigate to="/modulos" replace />;
@@ -127,6 +131,19 @@ export default function ModuloDetalhe() {
                   </AccordionItem>
                 ))}
               </Accordion>
+            </div>
+          </section>
+        )}
+
+        {modulo.slug === 'obras' && (
+          <section id="pedido-piloto" className="max-w-2xl mx-auto px-6 py-20 border-t border-border scroll-mt-24">
+            <div className="space-y-6">
+              <div className="text-center space-y-3">
+                <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">FKT Works · Piloto fechado</span>
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pedir acesso ao piloto</h2>
+                <p className="text-muted-foreground">Estamos a reunir fiscais e equipas de fiscalização para testar o fluxo de registo de visitas, ocorrências e acompanhamento de acções.</p>
+              </div>
+              <PilotAccessForm />
             </div>
           </section>
         )}
