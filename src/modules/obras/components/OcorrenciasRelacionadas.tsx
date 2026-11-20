@@ -73,18 +73,20 @@ export function OcorrenciasRelacionadas({
     queryFn: async () => {
       const search = `%${termo.trim()}%`;
       const [titles, descriptions, locations, types, specialties, works] = await Promise.all([
-        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('titulo', search).limit(20),
-        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('descricao', search).limit(20),
-        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('localizacao', search).limit(20),
+        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('titulo', search).limit(20),
+        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('descricao', search).limit(20),
+        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('localizacao', search).limit(20),
+        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('tipo', search).limit(20),
+        db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('especialidade', search).limit(20),
         db.from('obras').select('id').eq('workspace_id', workspaceId).ilike('nome', search).limit(20),
       ]);
       for (const result of [titles, descriptions, locations, types, specialties, works]) if (result.error) throw result.error;
       const workIds = (works.data ?? []).map((w: { id: string }) => w.id);
       const workOccurrences = workIds.length
-        ? await db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).in('obra_id', workIds).limit(20)
+        ? await db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).in('obra_id', workIds).limit(20)
         : { data: [], error: null };
       if (workOccurrences.error) throw workOccurrences.error;
-      const all = [...(titles.data ?? []), ...(descriptions.data ?? []), ...(locations.data ?? []), ...(workOccurrences.data ?? [])] as Candidate[];
+      const all = [...(titles.data ?? []), ...(descriptions.data ?? []), ...(locations.data ?? []), ...(types.data ?? []), ...(specialties.data ?? []), ...(workOccurrences.data ?? [])] as Candidate[];
       const unique = new Map(all.map((o) => [o.id, o]));
       const linked = new Set((relations.data ?? []).map((r: { occurrence: Candidate }) => r.occurrence.id));
       return [...unique.values()].filter((o) => o.id !== ocorrenciaId && !linked.has(o.id)).slice(0, 20);
