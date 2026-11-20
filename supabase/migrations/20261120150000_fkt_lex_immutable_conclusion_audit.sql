@@ -57,6 +57,8 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.prevent_juridico_conclusao_mutation() FROM PUBLIC, anon, authenticated, service_role;
+
 CREATE OR REPLACE FUNCTION public.record_juridico_conclusao_creation()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -79,6 +81,8 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.record_juridico_conclusao_creation() FROM PUBLIC, anon, authenticated, service_role;
 
 CREATE TRIGGER juridico_conclusoes_immutable
   BEFORE UPDATE OR DELETE ON public.juridico_conclusoes
@@ -107,6 +111,9 @@ CREATE TRIGGER juridico_conclusoes_eventos_no_truncate
   FOR EACH STATEMENT EXECUTE FUNCTION public.prevent_juridico_conclusao_mutation();
 ALTER TABLE public.juridico_conclusoes_eventos
   ENABLE ALWAYS TRIGGER juridico_conclusoes_eventos_no_truncate;
+
+REVOKE ALL ON FUNCTION public.transition_juridico_conclusao(uuid, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.transition_juridico_conclusao(uuid, text, text) TO authenticated;
 
 -- Lifecycle is event-sourced: no UPDATE is ever performed on the conclusion row.
 CREATE OR REPLACE FUNCTION public.transition_juridico_conclusao(
