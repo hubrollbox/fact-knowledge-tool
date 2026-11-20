@@ -188,8 +188,9 @@ AS $$
       '/canil/animal/' || a.id::text, a.created_at, a.workspace_id, NULL, CASE WHEN a.activo THEN 'activo' ELSE 'arquivado' END
     FROM public.canil_animais a CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'vet') AND (p_record_type IS NULL OR p_record_type = 'animal')
-      AND (p_workspace_id IS NULL OR a.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR a.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR a.created_at::date >= p_date_from)
+      AND (p_status IS NULL OR (CASE WHEN a.activo THEN 'activo' ELSE 'arquivado' END) = p_status)
       AND (p_date_to IS NULL OR a.created_at::date <= p_date_to)
       AND concat_ws(' ', a.nome, a.raca, a.numero_chip, a.numero_lop, a.proprietario_nome, a.observacoes) ILIKE q.pattern
 
