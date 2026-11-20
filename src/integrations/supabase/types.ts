@@ -1453,6 +1453,53 @@ export type Database = {
           },
         ]
       }
+      juridico_conclusoes_eventos: {
+        Row: {
+          actor_id: string
+          conclusao_id: string
+          created_at: string
+          estado_anterior: string | null
+          estado_novo: string
+          evento: string
+          id: string
+          notas: string | null
+          processo_id: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_id: string
+          conclusao_id: string
+          created_at?: string
+          estado_anterior?: string | null
+          estado_novo: string
+          evento: string
+          id?: string
+          notas?: string | null
+          processo_id: string
+          workspace_id: string
+        }
+        Update: {
+          actor_id?: string
+          conclusao_id?: string
+          created_at?: string
+          estado_anterior?: string | null
+          estado_novo?: string
+          evento?: string
+          id?: string
+          notas?: string | null
+          processo_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_conclusoes_eventos_conclusao_id_fkey"
+            columns: ["conclusao_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_conclusoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       juridico_documentos: {
         Row: {
           categoria: string | null
@@ -3284,6 +3331,14 @@ export type Database = {
           _questao_id?: string | null
           _texto: string
           _workspace_id: string
+        }
+        Returns: string
+      }
+      transition_juridico_conclusao: {
+        Args: {
+          _conclusao_id: string
+          _novo_estado: string
+          _notas?: string | null
         }
         Returns: string
       }
