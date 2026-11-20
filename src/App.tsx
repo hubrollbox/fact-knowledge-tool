@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Index";
+import ConfiguracaoInicial from "./pages/ConfiguracaoInicial";
 import NotFound from "./pages/NotFound";
 import AjudaSuporte from "./pages/AjudaSuporte";
 
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/configuracao-inicial" element={<ProtectedRoute><ConfiguracaoInicial /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/dossiers" element={<ProtectedRoute><DossiersList /></ProtectedRoute>} />
             <Route path="/dossiers/novo" element={<ProtectedRoute><DossierNovo /></ProtectedRoute>} />
