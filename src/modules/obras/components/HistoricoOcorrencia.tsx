@@ -40,7 +40,7 @@ function resumo(antes: Record<string, unknown> | null, depois: Record<string, un
     .filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at', 'created_by', 'updated_by'].includes(key))
     .filter((key) => JSON.stringify(a[key]) !== JSON.stringify(d[key]));
   return keys.slice(0, 5).map((key) => ({
-    label: CAMPOS[key] ?? key.replaceAll('_', ' '),
+    label: CAMPOS[key] ?? key.replace(/_/g, ' '),
     before: a[key],
     after: d[key],
   }));
@@ -82,7 +82,7 @@ export function HistoricoOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) 
             return (
               <li key={event.id} className="border-l-2 border-muted pl-3 space-y-1">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <span className="text-xs font-medium">{OPERACOES[event.operacao] ?? event.operacao} · {event.entidade.replaceAll('_', ' ')}</span>
+                  <span className="text-xs font-medium">{OPERACOES[event.operacao] ?? event.operacao} · {event.entidade.replace(/_/g, ' ')}</span>
                   <time className="text-[11px] text-muted-foreground">{new Date(event.ocorrido_em).toLocaleString('pt-PT')}</time>
                 </div>
                 {changes.length > 0 && (
