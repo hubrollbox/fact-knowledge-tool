@@ -22,7 +22,7 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
   const [erroFoto, setErroFoto] = useState('');
   const [ocorrenciaCriadaId, setOcorrenciaCriadaId] = useState<string | null>(null);
   const [aPreparar, setAPreparar] = useState(false);
-  const vazio = { titulo: '', descricao: '', localizacao: '', gravidade: 'media' };
+  const vazio = { titulo: '', descricao: '', localizacao: '', tipo: '', especialidade: '', gravidade: 'media' };
   const [f, setF] = useState(vazio);
   const ocupado = criar.isPending || upload.isPending || aPreparar;
 
@@ -60,6 +60,8 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
           titulo: f.titulo.trim(),
           descricao: f.descricao.trim() || null,
           localizacao: f.localizacao.trim() || null,
+          tipo: f.tipo.trim() || null,
+          especialidade: f.especialidade.trim() || null,
           gravidade: f.gravidade,
         });
         id = criada.id;
@@ -102,6 +104,8 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             <div className="space-y-1.5"><Label htmlFor="ocorrencia-descricao">Descrição</Label><Textarea id="ocorrencia-descricao" placeholder="Descreva o que viu, sem conclusões." value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} /></div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5"><Label htmlFor="ocorrencia-localizacao">Localização na obra</Label><Input id="ocorrencia-localizacao" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="ocorrencia-tipo">Tipo de ocorrência</Label><Input id="ocorrencia-tipo" maxLength={100} placeholder="Ex.: infiltração, fissura, defeito" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="ocorrencia-especialidade">Especialidade</Label><Input id="ocorrencia-especialidade" maxLength={100} placeholder="Ex.: estruturas, electricidade, AVAC" value={f.especialidade} onChange={(e) => setF({ ...f, especialidade: e.target.value })} /></div>
               <div className="space-y-1.5"><Label>Gravidade</Label>
                 <Select value={f.gravidade} onValueChange={(v) => setF({ ...f, gravidade: v })}><SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(GRAVIDADES).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>

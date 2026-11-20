@@ -10,6 +10,8 @@ import { AnaliseOcorrencia } from '../components/AnaliseOcorrencia';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
 import { HistoricoOcorrencia } from '../components/HistoricoOcorrencia';
 import { AcompanhamentoOcorrencia } from '../components/AcompanhamentoOcorrencia';
+import { OcorrenciasRelacionadas } from '../components/OcorrenciasRelacionadas';
+import { ClassificacaoOcorrencia } from '../components/ClassificacaoOcorrencia';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES, gravidadeVariant } from '../types/obras';
 
 function dataPt(value?: string | null) {
@@ -71,12 +73,22 @@ export function OcorrenciaDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">3. Documentos associados</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">3. Classificação</CardTitle></CardHeader>
+        <CardContent><ClassificacaoOcorrencia ocorrenciaId={ocorrencia.id} obraId={obra.id} tipoInicial={ocorrencia.tipo ?? null} especialidadeInicial={ocorrencia.especialidade ?? null} canWrite={canWrite} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">4. Ocorrências relacionadas</CardTitle></CardHeader>
+        <CardContent><OcorrenciasRelacionadas ocorrenciaId={ocorrencia.id} workspaceId={ocorrencia.workspace_id} canWrite={canWrite} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">5. Documentos associados</CardTitle></CardHeader>
         <CardContent><DocumentosAssociados obraId={obra.id} ocorrenciaId={ocorrencia.id} /></CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">4. Acções associadas ({acoesOcorrencia.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">6. Acções associadas ({acoesOcorrencia.length})</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {!acoesOcorrencia.length ? <p className="text-sm text-muted-foreground">Ainda não existem acções associadas a esta ocorrência.</p> : acoesOcorrencia.map((acao) => (
             <div key={acao.id} className="rounded-md border p-3">
@@ -95,12 +107,12 @@ export function OcorrenciaDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">5. Causas, acções e eficácia</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">7. Causas, acções e eficácia</CardTitle></CardHeader>
         <CardContent><AcompanhamentoOcorrencia ocorrenciaId={ocorrencia.id} workspaceId={ocorrencia.workspace_id} estado={ocorrencia.estado} acoes={acoesOcorrencia} canWrite={canWrite} /></CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">6. Histórico e rastreabilidade</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">8. Histórico e rastreabilidade</CardTitle></CardHeader>
         <CardContent><HistoricoOcorrencia ocorrenciaId={ocorrencia.id} /></CardContent>
       </Card>
     </main>
