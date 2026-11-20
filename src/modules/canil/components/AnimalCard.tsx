@@ -30,11 +30,14 @@ export function AnimalCard({ animal, onClick }: AnimalCardProps) {
       <CardContent className="space-y-1.5 p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="font-medium leading-tight">{animal.nome}</div>
-          {animal.sexo && (
+          <div className="flex flex-wrap gap-1">
+            {!animal.activo && <Badge variant="secondary">Arquivado</Badge>}
+            {animal.sexo && (
             <Badge variant="outline" className="text-xs capitalize">
               {animal.sexo}
             </Badge>
-          )}
+            )}
+          </div>
         </div>
         {animal.raca && (
           <div className="text-xs text-muted-foreground">{animal.raca}</div>
