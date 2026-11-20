@@ -48,6 +48,21 @@ export function useModuloActivo() {
     enabled: !!user,
   });
 
+  const createWorkspace = useMutation({
+    mutationFn: async ({ slug, name }: { slug: ModuloSlug; name: string }) => {
+      if (!user) throw new Error('Não autenticado');
+      if (workspace) throw new Error('A conta já está associada a um workspace.');
+      const { error } = await supabase.from('workspaces').insert({ user_id: user.id, modulo: slug, name: name.trim() });
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['workspace', user?.id] });
+    },
+    onError: (error) => {
+      toast({ title: 'Não foi possível concluir a configuração', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const moduloActivo = workspace
     ? modulos.find((m) => m.slug === workspace.modulo) ?? null
     : null;
@@ -56,18 +71,12 @@ export function useModuloActivo() {
     mutationFn: async (slug: ModuloSlug) => {
       if (!user) throw new Error('Não autenticado');
 
-      if (workspace) {
-        const { error } = await supabase
-          .from('workspaces')
-          .update({ modulo: slug })
-          .eq('id', workspace.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('workspaces')
-          .insert({ user_id: user.id, modulo: slug });
-        if (error) throw error;
-      }
+      if (!workspace) throw new Error('Conclua primeiro a configuração do workspace.');
+      const { error } = await supabase
+        .from('workspaces')
+        .update({ modulo: slug })
+        .eq('id', workspace.id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', user?.id] });
@@ -78,7 +87,10 @@ export function useModuloActivo() {
   });
 
   return {
+    workspace,
     moduloActivo,
+    createWorkspace: createWorkspace.mutateAsync,
+    isCreatingWorkspace: createWorkspace.isPending,
     moduloSlug: (workspace?.modulo as ModuloSlug) ?? null,
     isLoading,
     setModulo: setModulo.mutateAsync,
