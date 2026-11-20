@@ -75,7 +75,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/configuracao-inicial" element={<ProtectedRoute><ConfiguracaoInicial /></ProtectedRoute>} />
+            <Route path="/configuracao-inicial" element={<ProtectedRoute allowNoWorkspace><ConfiguracaoInicial /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
             <Route path="/dossiers" element={<ProtectedRoute><DossiersList /></ProtectedRoute>} />
             <Route path="/dossiers/novo" element={<ProtectedRoute><DossierNovo /></ProtectedRoute>} />
@@ -90,22 +90,22 @@ const App = () => (
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
             <Route path="/ajuda-suporte" element={<AjudaSuporte />} />
-            <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
-            <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
-            <Route path="/canil" element={<ProtectedRoute><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />
-            <Route path="/canil/agenda" element={<ProtectedRoute><AppLayout><AgendaDiaria /></AppLayout></ProtectedRoute>} />
-            <Route path="/canil/animal/novo" element={<ProtectedRoute><AppLayout><NovoAnimal /></AppLayout></ProtectedRoute>} />
-            <Route path="/canil/animal/:id" element={<ProtectedRoute><AppLayout><AnimalDetail /></AppLayout></ProtectedRoute>} />
-            <Route path="/canil/reserva/nova" element={<ProtectedRoute><AppLayout><NovaReserva /></AppLayout></ProtectedRoute>} />
-            <Route path="/dev" element={<ProtectedRoute><AppLayout><DevDashboard /></AppLayout></ProtectedRoute>} />
-            <Route path="/dev/projecto/novo" element={<ProtectedRoute><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
-            <Route path="/dev/projecto/:id" element={<ProtectedRoute><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
-            <Route path="/dev/adr/novo" element={<ProtectedRoute><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
-            <Route path="/obras" element={<ProtectedRoute><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
-            <Route path="/obras/nova" element={<ProtectedRoute><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
-            <Route path="/obras/:id" element={<ProtectedRoute><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
-            <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute><RelatorioVisita /></ProtectedRoute>} />
-            <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico" element={<ProtectedRoute module="juridico"><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute module="juridico"><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil" element={<ProtectedRoute module="canil"><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/agenda" element={<ProtectedRoute module="canil"><AppLayout><AgendaDiaria /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/novo" element={<ProtectedRoute module="canil"><AppLayout><NovoAnimal /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/:id" element={<ProtectedRoute module="canil"><AppLayout><AnimalDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/reserva/nova" element={<ProtectedRoute module="canil"><AppLayout><NovaReserva /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev" element={<ProtectedRoute module="dev"><AppLayout><DevDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/novo" element={<ProtectedRoute module="dev"><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/:id" element={<ProtectedRoute module="dev"><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/adr/novo" element={<ProtectedRoute module="dev"><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras" element={<ProtectedRoute module="obras"><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/nova" element={<ProtectedRoute module="obras"><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id" element={<ProtectedRoute module="obras"><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute module="obras"><RelatorioVisita /></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute module="obras"><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/modulos" element={<ModulosHub />} />
             <Route path="/modulos/:slug" element={<ModuloDetalhe />} />
             <Route path="/termos" element={<Termos />} />
