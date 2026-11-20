@@ -87,6 +87,23 @@ AS $$
       AND concat_ws(' ', d.titulo, d.categoria, d.entidade_origem, d.identificador, d.notas, v.nome_ficheiro) ILIKE q.pattern
 
     UNION ALL
+
+    UNION ALL
+    SELECT 'works', 'analise', an.id, concat('Análise · ', oc.titulo),
+      concat_ws(' · ', o.nome, an.interpretacao, an.conclusao, an.recomendacao, an.informacao_em_falta),
+      '/obras/' || oc.obra_id::text || '/ocorrencia/' || oc.id::text,
+      an.created_at, an.workspace_id, oc.obra_id, NULL
+    FROM public.obras_ocorrencia_analises an
+    JOIN public.obras_ocorrencias oc ON oc.id = an.ocorrencia_id
+    JOIN public.obras o ON o.id = oc.obra_id
+    CROSS JOIN q
+    WHERE (p_module IS NULL OR p_module = 'works') AND (p_record_type IS NULL OR p_record_type = 'analise')
+      AND (p_workspace_id IS NULL OR an.workspace_id = p_workspace_id)
+      AND (p_obra_id IS NULL OR oc.obra_id = p_obra_id)
+      AND (p_date_from IS NULL OR an.created_at::date >= p_date_from)
+      AND (p_date_to IS NULL OR an.created_at::date <= p_date_to)
+      AND concat_ws(' ', o.nome, oc.titulo, an.interpretacao, an.conclusao, an.recomendacao, an.informacao_em_falta) ILIKE q.pattern
+
     -- FKT Lex: structured case records.
     SELECT 'lex', 'processo', p.id, p.titulo,
       concat_ws(' · ', p.referencia, p.numero_processo, p.tribunal, p.tipo, p.contexto, p.questao),
@@ -132,6 +149,36 @@ AS $$
       AND concat_ws(' ', p.titulo, s.titulo, s.tipo, s.entidade, s.referencia, s.jurisdicao, s.notas) ILIKE q.pattern
 
     UNION ALL
+
+    UNION ALL
+    SELECT 'lex', 'documento', doc.id, doc.nome,
+      concat_ws(' · ', p.titulo, doc.categoria, doc.notas, doc.data_documento::text),
+      '/juridico/' || p.id::text, doc.created_at, doc.workspace_id, NULL, NULL
+    FROM public.juridico_documentos doc
+    JOIN public.juridico_processos p ON p.id = doc.processo_id
+    CROSS JOIN q
+    WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'documento')
+      AND (p_workspace_id IS NULL OR doc.workspace_id = p_workspace_id)
+      AND (p_date_from IS NULL OR doc.created_at::date >= p_date_from)
+      AND (p_date_to IS NULL OR doc.created_at::date <= p_date_to)
+      AND concat_ws(' ', p.titulo, doc.nome, doc.categoria, doc.notas) ILIKE q.pattern
+
+
+    UNION ALL
+    SELECT 'lex', 'analise', a.id, concat('Análise · ', p.titulo),
+      concat_ws(' · ', qst.titulo, a.raciocinio, a.argumentos_favoraveis, a.argumentos_contrarios, a.lacunas, a.pressupostos),
+      '/juridico/' || p.id::text, a.created_at, a.workspace_id, NULL, a.estado
+    FROM public.juridico_aplicacoes a
+    JOIN public.juridico_processos p ON p.id = a.processo_id
+    LEFT JOIN public.juridico_questoes qst ON qst.id = a.questao_id
+    CROSS JOIN q
+    WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'analise')
+      AND (p_workspace_id IS NULL OR a.workspace_id = p_workspace_id)
+      AND (p_date_from IS NULL OR a.created_at::date >= p_date_from)
+      AND (p_date_to IS NULL OR a.created_at::date <= p_date_to)
+      AND (p_status IS NULL OR a.estado = p_status)
+      AND concat_ws(' ', p.titulo, qst.titulo, a.raciocinio, a.argumentos_favoraveis, a.argumentos_contrarios, a.lacunas, a.pressupostos) ILIKE q.pattern
+
     -- FKT Vet.
     SELECT 'vet', 'animal', a.id, a.nome,
       concat_ws(' · ', a.raca, a.numero_chip, a.numero_lop, a.proprietario_nome, a.observacoes),
