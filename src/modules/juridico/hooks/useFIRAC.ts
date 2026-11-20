@@ -380,8 +380,14 @@ export function useCreateConclusao(processoId: string) {
   return useMutation({
     mutationFn: async (input: Omit<ConclusaoInsert, 'processo_id' | 'workspace_id' | 'autor_id' | 'versao'>) => {
       if (!workspaceId) throw new Error('Sem workspace activo');
-      const { data, error } = await supabase.from('juridico_conclusoes')
-        .insert({ ...input, processo_id: processoId, workspace_id: workspaceId }).select().single();
+      const { data, error } = await supabase.rpc('create_juridico_conclusao_version', {
+        _processo_id: processoId,
+        _workspace_id: workspaceId,
+        _questao_id: input.questao_id ?? null,
+        _aplicacao_id: input.aplicacao_id ?? null,
+        _texto: input.texto,
+        _estado: input.estado ?? 'rascunho',
+      });
       if (error) throw error;
       return data;
     },
