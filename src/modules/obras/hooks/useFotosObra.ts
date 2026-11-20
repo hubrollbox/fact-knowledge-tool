@@ -9,6 +9,8 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string }) {
   const key = filtro.visitaId ?? filtro.ocorrenciaId;
   return useQuery({
     queryKey: ['obras_fotos', key],
+    staleTime: 4 * 60 * 1000,
+    refetchInterval: 4 * 60 * 1000,
     enabled: !!key,
     queryFn: async () => {
       let q = supabase.from('obras_fotos').select('*').order('capturada_em', { ascending: false });
@@ -17,7 +19,7 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string }) {
       if (error) throw error;
       const paths = data.map((f) => f.storage_path);
       if (!paths.length) return [];
-      const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 3600);
+      const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 300);
       return data.map((f, i) => ({ ...f, url: signed?.[i]?.signedUrl ?? null }));
     },
   });

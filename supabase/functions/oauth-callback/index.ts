@@ -114,10 +114,7 @@ Deno.serve(async (req) => {
         : null;
 
       if (!idTokenEmail || idTokenEmail !== serviceEmail.toLowerCase()) {
-        console.error("OAuth email mismatch", {
-          expected: serviceEmail,
-          received: idTokenEmail,
-        });
+        console.error("OAuth email mismatch", { provider, hasIdTokenEmail: !!idTokenEmail });
         return Response.redirect(`${APP_URL}/gestao/perfil?oauth=error&message=email_mismatch`, 302);
       }
     }
