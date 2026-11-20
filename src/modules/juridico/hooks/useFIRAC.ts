@@ -42,8 +42,9 @@ export function useDeleteParte(processoId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('juridico_partes').delete().eq('id', id).eq('processo_id', processoId);
+      const { data, error } = await supabase.from('juridico_partes').delete().eq('id', id).eq('processo_id', processoId).select('id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Não tem permissões para remover esta parte');
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_partes', processoId] }),
   });
@@ -81,8 +82,9 @@ export function useDeleteFacto(processoId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('juridico_factos').delete().eq('id', id).eq('processo_id', processoId);
+      const { data, error } = await supabase.from('juridico_factos').delete().eq('id', id).eq('processo_id', processoId).select('id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Não tem permissões para remover este facto');
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['juridico_factos', processoId] });
@@ -126,8 +128,9 @@ export function useUnlinkFactoDocumento(processoId: string) {
   return useMutation({
     mutationFn: async ({ factoId, documentoId }: { factoId: string; documentoId: string }) => {
       const { error } = await supabase.from('juridico_factos_documentos').delete()
-        .eq('facto_id', factoId).eq('documento_id', documentoId).eq('processo_id', processoId);
+        .eq('facto_id', factoId).eq('documento_id', documentoId).eq('processo_id', processoId).select('facto_id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Não tem permissões para desligar esta evidência');
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_factos_documentos', processoId] }),
   });
@@ -194,8 +197,9 @@ export function useUnlinkQuestaoFacto(processoId: string) {
   return useMutation({
     mutationFn: async ({ questaoId, factoId }: { questaoId: string; factoId: string }) => {
       const { error } = await supabase.from('juridico_questoes_factos').delete()
-        .eq('questao_id', questaoId).eq('facto_id', factoId).eq('processo_id', processoId);
+        .eq('questao_id', questaoId).eq('facto_id', factoId).eq('processo_id', processoId).select('questao_id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Não tem permissões para desligar este facto');
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_questoes_factos', processoId] }),
   });
@@ -263,8 +267,9 @@ export function useUnlinkQuestaoFonte(processoId: string) {
   return useMutation({
     mutationFn: async ({ questaoId, fonteId }: { questaoId: string; fonteId: string }) => {
       const { error } = await supabase.from('juridico_questoes_fontes').delete()
-        .eq('questao_id', questaoId).eq('fonte_id', fonteId).eq('processo_id', processoId);
+        .eq('questao_id', questaoId).eq('fonte_id', fonteId).eq('processo_id', processoId).select('questao_id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Não tem permissões para desligar esta fonte');
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_questoes_fontes', processoId] }),
   });

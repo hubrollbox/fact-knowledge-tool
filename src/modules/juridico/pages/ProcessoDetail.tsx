@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, ArrowLeft, Calendar, FileText, Users, Scale } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -48,6 +48,19 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
   const { data: prazos } = usePrazos(processoId);
   const update = useUpdateProcesso();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('resumo');
+  const [pendingAnchor, setPendingAnchor] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!pendingAnchor) return;
+    document.getElementById(pendingAnchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setPendingAnchor(null);
+  }, [activeTab, pendingAnchor]);
+
+  const navigateTo = (tab: string, anchor: string) => {
+    setPendingAnchor(anchor);
+    setActiveTab(tab);
+  };
 
   const handleBack = () => {
     if (onBack) onBack();
@@ -103,7 +116,7 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
       </div>
 
 
-      <Tabs defaultValue="resumo">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="resumo"><Scale className="mr-1.5 h-3.5 w-3.5" />Resumo</TabsTrigger>
           <TabsTrigger value="factos">Factos</TabsTrigger>
@@ -123,10 +136,10 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
 
         {/* Tab Análise */}
         <TabsContent value="factos"><FactosTab processoId={processoId} /></TabsContent>
-        <TabsContent value="questoes"><QuestoesTab processoId={processoId} /></TabsContent>
+        <TabsContent value="questoes"><QuestoesTab processoId={processoId} onNavigate={navigateTo} /></TabsContent>
         <TabsContent value="fontes"><FontesTab processoId={processoId} /></TabsContent>
-        <TabsContent value="analise"><div className="space-y-4"><AplicacoesTab processoId={processoId} /><AnaliseTab processo={processo} onUpdate={update} /></div></TabsContent>
-        <TabsContent value="conclusoes"><ConclusoesTab processoId={processoId} /></TabsContent>
+        <TabsContent value="analise"><div className="space-y-4"><AplicacoesTab processoId={processoId} onNavigate={navigateTo} /><AnaliseTab processo={processo} onUpdate={update} /></div></TabsContent>
+        <TabsContent value="conclusoes"><ConclusoesTab processoId={processoId} onNavigate={navigateTo} /></TabsContent>
 
         {/* Tab Partes */}
         <TabsContent value="partes">
