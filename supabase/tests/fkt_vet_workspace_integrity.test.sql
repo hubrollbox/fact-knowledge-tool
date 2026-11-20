@@ -144,6 +144,15 @@ BEGIN
     END IF;
   END LOOP;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.canil_ninhadas'::regclass
+      AND tgname = 'canil_ninhadas_preserve_history'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'Ninhada history protection trigger is missing';
+  END IF;
+
   -- All Canil write policies on UPDATE must include WITH CHECK.
   FOR _policy IN
     SELECT tablename, policyname
