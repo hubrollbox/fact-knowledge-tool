@@ -11,6 +11,7 @@ import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADOS_ACAO } from '../types/obras';
 import { useAtribuirAcao, useFilaAcoes, useMembrosFilaAcoes, type AcaoFila } from '../hooks/useFilaAcoes';
+import { useActualizarEstado } from '../hooks/useObras';
 
 const hoje = () => {
   const d = new Date();
@@ -24,6 +25,7 @@ export function FilaAcoes() {
   const { canWrite } = useWorkspaceRole();
   const { user } = useAuth();
   const atribuir = useAtribuirAcao();
+  const actualizarEstado = useActualizarEstado();
   const [estado, setEstado] = useState('todos');
   const [responsavel, setResponsavel] = useState('todos');
   const [obra, setObra] = useState('todas');
@@ -89,7 +91,7 @@ export function FilaAcoes() {
               <CardContent className="space-y-3 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0"><div className="font-medium">{a.descricao}</div><div className="mt-1 text-xs text-muted-foreground">{a.obras?.nome ?? 'Obra'}{a.obras_ocorrencias ? ` · ${a.obras_ocorrencias.titulo}` : ''}</div></div>
-                  <div className="flex flex-wrap gap-2"><Badge variant={dataAtraso(a) ? 'destructive' : a.estado === 'concluida' ? 'secondary' : 'outline'}>{dataAtraso(a) ? 'Atrasada' : ESTADOS_ACAO[a.estado as keyof typeof ESTADOS_ACAO] ?? a.estado}</Badge>{a.prazo && <Badge variant="outline"><CalendarClock className="mr-1 h-3 w-3" />{dataPt(a.prazo)}</Badge>}</div>
+                  <div className="flex flex-wrap items-center gap-2"><Badge variant={dataAtraso(a) ? 'destructive' : a.estado === 'concluida' ? 'secondary' : 'outline'}>{dataAtraso(a) ? 'Atrasada' : ESTADOS_ACAO[a.estado as keyof typeof ESTADOS_ACAO] ?? a.estado}</Badge>{a.prazo && <Badge variant="outline"><CalendarClock className="mr-1 h-3 w-3" />{dataPt(a.prazo)}</Badge>}{canWrite && <Select value={a.estado} onValueChange={estado => actualizarEstado.mutate({ table: 'obras_acoes', id: a.id, estado })}><SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ESTADOS_ACAO).map(([k,v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>}</div>
                 </div>
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div className="text-xs text-muted-foreground">Responsável: {a.responsavel || 'Não atribuído'}</div>
@@ -97,7 +99,7 @@ export function FilaAcoes() {
                 </div>
                 {a.ocorrencia_id && <div className="flex flex-wrap items-center gap-3 border-t pt-3 text-xs">
                   <Link className="inline-flex items-center gap-1 text-primary hover:underline" to={`/obras/${a.obra_id}/ocorrencia/${a.ocorrencia_id}`}>Abrir ocorrência <ExternalLink className="h-3 w-3" /></Link>
-                  {!a.analise || (!a.analise.interpretacao && !a.analise.conclusao && !a.analise.recomendacao) ? <Badge variant="destructive">Sem análise</Badge> : !a.analise.conclusao ? <Badge variant="outline">Sem conclusão</Badge> : null}
+                  {!a.analise || (!a.analise.interpretacao && !a.analise.conclusao && !a.analise.recomendacao) ? <Badge variant="destructive">Sem análise</Badge> : <>{!a.analise.conclusao && <Badge variant="outline">Sem conclusão</Badge>}{!a.analise.recomendacao && <Badge variant="outline">Sem recomendação</Badge>}</>}
                 </div>}
               </CardContent>
             </Card>
