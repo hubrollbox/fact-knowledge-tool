@@ -55,6 +55,7 @@ import { NovaObra } from "./modules/obras/pages/NovaObra";
 import { ObraDetail } from "./modules/obras/pages/ObraDetail";
 import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
 import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
+import { OcorrenciaDetail } from "./modules/obras/pages/OcorrenciaDetail";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const App = () => (
             <Route path="/obras/nova" element={<ProtectedRoute module="obras"><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id" element={<ProtectedRoute module="obras"><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute module="obras"><RelatorioVisita /></ProtectedRoute>} />
+            <Route path="/obras/:id/ocorrencia/:ocorrenciaId" element={<ProtectedRoute module="obras"><AppLayout><OcorrenciaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute module="obras"><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/modulos" element={<ModulosHub />} />
             <Route path="/modulos/:slug" element={<ModuloDetalhe />} />

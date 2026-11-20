@@ -43,6 +43,24 @@ export function useOcorrencias(obraId?: string) {
     if (error) throw error; return data;
   } });
 }
+
+export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
+  return useQuery({
+    queryKey: ['obras_ocorrencia', obraId, ocorrenciaId],
+    enabled: !!obraId && !!ocorrenciaId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('obras_ocorrencias')
+        .select('*')
+        .eq('obra_id', obraId!)
+        .eq('id', ocorrenciaId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function useAcoes(obraId?: string) {
   return useQuery({ queryKey: ['obras_acoes', obraId], enabled: !!obraId, queryFn: async () => {
     const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
