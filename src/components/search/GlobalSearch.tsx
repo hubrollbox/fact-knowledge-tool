@@ -36,6 +36,7 @@ const TYPES = [
   { value: 'ocorrencia', label: 'Ocorrências' },
   { value: 'documento', label: 'Documentos' },
   { value: 'processo', label: 'Processos' },
+  { value: 'analise', label: 'Análises' },
   { value: 'facto', label: 'Factos' },
   { value: 'questao', label: 'Questões' },
   { value: 'fonte', label: 'Fontes' },
@@ -166,7 +167,7 @@ export function GlobalSearch() {
               {MODULES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <select aria-label="Tipo de registo" className="h-9 rounded-md border bg-background px-2 text-sm" value={recordType} onChange={(e) => setRecordType(e.target.value)}>
-              {TYPES.filter((item) => !module || item.value === '' || (module === 'works' && ['obra','visita','ocorrencia','documento'].includes(item.value)) || (module === 'lex' && ['processo','facto','questao','fonte'].includes(item.value)) || (module === 'vet' && ['animal','registo_clinico'].includes(item.value)) || (module === 'dev' && ['projecto','issue'].includes(item.value)) || (module === 'core' && ['disciplina','topico','dossier','documento','facto'].includes(item.value))).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+              {TYPES.filter((item) => !module || item.value === '' || (module === 'works' && ['obra','visita','ocorrencia','documento','analise'].includes(item.value)) || (module === 'lex' && ['processo','facto','questao','fonte','documento','analise'].includes(item.value)) || (module === 'vet' && ['animal','registo_clinico'].includes(item.value)) || (module === 'dev' && ['projecto','issue'].includes(item.value)) || (module === 'core' && ['disciplina','topico','dossier','documento','facto'].includes(item.value))).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <select aria-label="Espaço de trabalho" className="h-9 rounded-md border bg-background px-2 text-sm" value={workspaceId} onChange={(e) => { setWorkspaceId(e.target.value); setObraId(''); }}>
               <option value="">Todos os workspaces</option>
