@@ -15,6 +15,9 @@ export function Footer() {
           <Link to="/licenca" className="hover:text-foreground transition-colors">
             Licença
           </Link>
+          <Link to="/ajuda-suporte" className="hover:text-foreground transition-colors">
+            Ajuda e Suporte
+          </Link>
         </nav>
       </div>
     </footer>

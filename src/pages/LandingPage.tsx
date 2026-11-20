@@ -86,6 +86,9 @@ export default function LandingPage() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/modulos">Módulos</Link>
             </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/ajuda-suporte">Ajuda e Suporte</Link>
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link to="/login">Entrar</Link>
             </Button>
