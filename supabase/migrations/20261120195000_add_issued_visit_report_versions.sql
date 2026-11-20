@@ -12,6 +12,7 @@ CREATE TABLE public.obras_relatorios_emitidos (
   snapshot jsonb NOT NULL CHECK (jsonb_typeof(snapshot) = 'object'),
   created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   CONSTRAINT obras_relatorios_emitidos_visita_versao_uk UNIQUE (visita_id, numero_versao),
+  CONSTRAINT obras_relatorios_emitidos_id_visita_uk UNIQUE (id, visita_id),
   CONSTRAINT obras_relatorios_emitidos_previos_visita_fk
     FOREIGN KEY (relatorio_anterior_id, visita_id)
     REFERENCES public.obras_relatorios_emitidos(id, visita_id)
