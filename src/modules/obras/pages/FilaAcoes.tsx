@@ -50,8 +50,6 @@ export function FilaAcoes() {
   const abertas = acoes.filter(a => a.estado !== 'concluida');
   const atrasadas = abertas.filter(a => a.prazo && a.prazo < hoje());
   const proximas = abertas.filter(a => a.prazo && a.prazo >= hoje() && a.prazo <= new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10));
-  const semAnalise = acoes.filter(a => a.ocorrencia_id && (!a.analise || (!a.analise.interpretacao && !a.analise.conclusao && !a.analise.recomendacao)));
-  const semConclusao = acoes.filter(a => a.ocorrencia_id && a.analise && !a.analise.conclusao);
   const dataAtraso = (a: AcaoFila) => !!a.prazo && a.prazo < hoje() && a.estado !== 'concluida';
 
   const alterarResponsavel = (a: AcaoFila, id: string) => {
