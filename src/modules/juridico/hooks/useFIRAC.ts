@@ -379,7 +379,7 @@ export function useConclusaoEventos(processoId: string) {
     queryKey: ['juridico_conclusoes_eventos', processoId],
     queryFn: async () => {
       const { data, error } = await supabase.from('juridico_conclusoes_eventos')
-        .select('*').eq('processo_id', processoId).order('created_at', { ascending: true });
+        .select('*').eq('processo_id', processoId).order('created_at', { ascending: true }).order('id', { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
