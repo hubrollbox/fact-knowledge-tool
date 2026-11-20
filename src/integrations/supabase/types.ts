@@ -3276,6 +3276,17 @@ export type Database = {
         }
         Returns: string
       }
+      create_juridico_conclusao_version: {
+        Args: {
+          _aplicacao_id?: string | null
+          _estado?: string
+          _processo_id: string
+          _questao_id?: string | null
+          _texto: string
+          _workspace_id: string
+        }
+        Returns: string
+      }
       get_disciplina_user_id: {
         Args: { _disciplina_id: string }
         Returns: string
