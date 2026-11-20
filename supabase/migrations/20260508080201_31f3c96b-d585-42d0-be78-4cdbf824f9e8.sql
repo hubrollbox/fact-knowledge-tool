@@ -289,15 +289,9 @@ GRANT SELECT ON public.user_oauth_credentials_safe TO authenticated;
 
 -- 4. Revoke EXECUTE on internal SECURITY DEFINER functions from anon/authenticated
 REVOKE EXECUTE ON FUNCTION public.cleanup_expired_nonces() FROM anon, authenticated, public;
--- rls_auto_enable() existed in some manually provisioned environments but
--- is not created by any versioned migration. Revoke only when present.
-DO $
-BEGIN
-  IF to_regprocedure('public.rls_auto_enable()') IS NOT NULL THEN
-    REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM anon, authenticated, public;
-  END IF;
-END;
-$;
+-- rls_auto_enable() is not created by any versioned migration;
+-- no revoke is needed in a clean, migration-built database.
+
 REVOKE EXECUTE ON FUNCTION public.get_disciplina_user_id(uuid) FROM anon, authenticated, public;
 REVOKE EXECUTE ON FUNCTION public.get_processo_user_id(uuid) FROM anon, authenticated, public;
 REVOKE EXECUTE ON FUNCTION public.get_issue_processo_user_id(uuid) FROM anon, authenticated, public;
