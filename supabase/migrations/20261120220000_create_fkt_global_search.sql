@@ -112,7 +112,7 @@ AS $$
       '/juridico/' || p.id::text, p.created_at, p.workspace_id, NULL, p.estado
     FROM public.juridico_processos p CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'processo')
-      AND (p_workspace_id IS NULL OR p.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR p.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR p.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR p.created_at::date <= p_date_to)
       AND (p_status IS NULL OR p.estado = p_status)
@@ -123,7 +123,7 @@ AS $$
       '/juridico/' || p.id::text, f.created_at, f.workspace_id, NULL, f.estado
     FROM public.juridico_factos f JOIN public.juridico_processos p ON p.id = f.processo_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'facto')
-      AND (p_workspace_id IS NULL OR f.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR f.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR f.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR f.created_at::date <= p_date_to)
       AND (p_status IS NULL OR f.estado = p_status)
@@ -134,7 +134,7 @@ AS $$
       '/juridico/' || p.id::text, j.created_at, j.workspace_id, NULL, j.estado
     FROM public.juridico_questoes j JOIN public.juridico_processos p ON p.id = j.processo_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'questao')
-      AND (p_workspace_id IS NULL OR j.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR j.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR j.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR j.created_at::date <= p_date_to)
       AND (p_status IS NULL OR j.estado = p_status)
@@ -145,7 +145,7 @@ AS $$
       '/juridico/' || p.id::text, s.created_at, s.workspace_id, NULL, NULL
     FROM public.juridico_fontes s JOIN public.juridico_processos p ON p.id = s.processo_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'fonte')
-      AND (p_workspace_id IS NULL OR s.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR s.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR s.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR s.created_at::date <= p_date_to)
       AND p_status IS NULL
@@ -159,7 +159,7 @@ AS $$
     JOIN public.juridico_processos p ON p.id = doc.processo_id
     CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'documento')
-      AND (p_workspace_id IS NULL OR doc.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR doc.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR doc.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR doc.created_at::date <= p_date_to)
       AND p_status IS NULL
@@ -175,7 +175,7 @@ AS $$
     LEFT JOIN public.juridico_questoes qst ON qst.id = a.questao_id
     CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'lex') AND (p_record_type IS NULL OR p_record_type = 'analise')
-      AND (p_workspace_id IS NULL OR a.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR a.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR a.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR a.created_at::date <= p_date_to)
       AND (p_status IS NULL OR a.estado = p_status)
@@ -199,7 +199,7 @@ AS $$
       '/canil/animal/' || a.id::text, c.created_at, c.workspace_id, NULL, NULL
     FROM public.canil_registos_clinicos c JOIN public.canil_animais a ON a.id = c.animal_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'vet') AND (p_record_type IS NULL OR p_record_type = 'registo_clinico')
-      AND (p_workspace_id IS NULL OR c.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR c.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR c.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR c.created_at::date <= p_date_to)
       AND p_status IS NULL
@@ -211,7 +211,7 @@ AS $$
       '/dev/projecto/' || d.id::text, d.created_at, d.workspace_id, NULL, d.estado
     FROM public.dev_projectos d CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'dev') AND (p_record_type IS NULL OR p_record_type = 'projecto')
-      AND (p_workspace_id IS NULL OR d.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR d.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR d.created_at::date <= p_date_to)
       AND (p_status IS NULL OR d.estado = p_status)
@@ -222,7 +222,7 @@ AS $$
       '/dev/projecto/' || d.id::text, i.created_at, i.workspace_id, NULL, i.estado
     FROM public.dev_issues i JOIN public.dev_projectos d ON d.id = i.projecto_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'dev') AND (p_record_type IS NULL OR p_record_type = 'issue')
-      AND (p_workspace_id IS NULL OR i.workspace_id = p_workspace_id)
+      AND (p_workspace_id IS NULL OR i.workspace_id = p_workspace_id) AND p_obra_id IS NULL
       AND (p_date_from IS NULL OR i.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR i.created_at::date <= p_date_to)
       AND (p_status IS NULL OR i.estado = p_status)
