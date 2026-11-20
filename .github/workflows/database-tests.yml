@@ -1,0 +1,42 @@
+name: Supabase Database Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  database-tests:
+    name: FKT Vet database tests (local)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        id: setup_supabase
+        uses: supabase/setup-cli@v1
+        with:
+          # Pin the CLI version: "latest" requires a GitHub release lookup
+          # and previously failed due to the unauthenticated API rate limit.
+          version: 3.2.0
+
+      # No login, link, project token or database password is used.
+      # db start and --local keep all database operations on the CI runner.
+      - name: Start local Supabase database
+        run: supabase db start
+
+      - name: Rebuild local database from repository migrations
+        run: supabase db reset --local
+
+      - name: Run pgTAP database tests
+        run: supabase test db --local
+
+      - name: Stop local Supabase services
+        if: always() && steps.setup_supabase.outcome == 'success'
+        run: supabase stop --no-backup
