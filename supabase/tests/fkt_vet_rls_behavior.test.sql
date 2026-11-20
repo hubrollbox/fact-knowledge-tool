@@ -41,6 +41,13 @@ VALUES (
   'c0000000-0000-4000-8000-000000000002'
 );
 
+INSERT INTO public.canil_cachorros (id, ninhada_id, estado)
+VALUES (
+  'd1000000-0000-4000-8000-000000000001',
+  'd0000000-0000-4000-8000-000000000001',
+  'disponivel'
+);
+
 INSERT INTO public.canil_registos_clinicos
   (id, workspace_id, animal_id, tipo, data_registo)
 VALUES (
@@ -119,6 +126,10 @@ BEGIN
   WHERE id = 'f0000000-0000-4000-8000-000000000001';
   IF _count <> 1 THEN RAISE EXCEPTION 'Viewer should read its own reservations'; END IF;
 
+  SELECT count(*) INTO _count FROM public.canil_cachorros
+  WHERE id = 'd1000000-0000-4000-8000-000000000001';
+  IF _count <> 1 THEN RAISE EXCEPTION 'Viewer should read its own puppies'; END IF;
+
   SELECT count(*) INTO _count FROM public.canil_ninhadas n
   WHERE n.workspace_id = 'b0000000-0000-4000-8000-000000000002';
   IF _count <> 0 THEN RAISE EXCEPTION 'Viewer must not read litters in workspace B'; END IF;
@@ -157,6 +168,16 @@ BEGIN
   DELETE FROM public.canil_reservas WHERE id = 'f0000000-0000-4000-8000-000000000001';
   GET DIAGNOSTICS _count = ROW_COUNT;
   IF _count <> 0 THEN RAISE EXCEPTION 'Viewer must not delete reservations'; END IF;
+
+  UPDATE public.canil_cachorros SET estado = 'reservado'
+  WHERE id = 'd1000000-0000-4000-8000-000000000001';
+  GET DIAGNOSTICS _count = ROW_COUNT;
+  IF _count <> 0 THEN RAISE EXCEPTION 'Viewer must not update puppies'; END IF;
+
+  DELETE FROM public.canil_cachorros
+  WHERE id = 'd1000000-0000-4000-8000-000000000001';
+  GET DIAGNOSTICS _count = ROW_COUNT;
+  IF _count <> 0 THEN RAISE EXCEPTION 'Viewer must not delete puppies'; END IF;
 
   BEGIN
     INSERT INTO public.canil_ninhadas (workspace_id, mae_id)
