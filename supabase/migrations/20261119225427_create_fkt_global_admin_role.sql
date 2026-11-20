@@ -26,19 +26,7 @@ create policy fkt_global_admins_select_self
 on public.fkt_global_admins for select to authenticated
 using (user_id = (select auth.uid()));
 
-insert into public.fkt_global_admins (user_id, created_by, note)
-select id, id, 'Administrador Global inicial confirmado pelo proprietário da plataforma'
-from auth.users where lower(email) = lower('brandadministration@gmail.com')
-on conflict (user_id) do nothing;
 
-do $$
-begin
-  if not exists (
-    select 1 from public.fkt_global_admins a
-    join auth.users u on u.id = a.user_id
-    where lower(u.email) = lower('brandadministration@gmail.com')
-  ) then
-    raise exception 'Conta Administrador Global inicial não encontrada.';
-  end if;
-end;
-$$;
+-- Global administrator membership is provisioned separately after the
+-- intended Auth user exists. Migrations must not depend on a hard-coded
+-- production email or fail when replayed in a clean local environment.
