@@ -112,9 +112,6 @@ CREATE TRIGGER juridico_conclusoes_eventos_no_truncate
 ALTER TABLE public.juridico_conclusoes_eventos
   ENABLE ALWAYS TRIGGER juridico_conclusoes_eventos_no_truncate;
 
-REVOKE ALL ON FUNCTION public.transition_juridico_conclusao(uuid, text, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.transition_juridico_conclusao(uuid, text, text) TO authenticated;
-
 -- Lifecycle is event-sourced: no UPDATE is ever performed on the conclusion row.
 CREATE OR REPLACE FUNCTION public.transition_juridico_conclusao(
   _conclusao_id uuid,
