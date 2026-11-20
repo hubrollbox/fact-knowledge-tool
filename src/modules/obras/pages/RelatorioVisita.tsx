@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Printer } from 'lucide-react';
+import { ArrowLeft, FileCheck, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useObra, useVisita, useOcorrencias, useAcoes } from '../hooks/useObras';
 import { useFotos } from '../hooks/useFotosObra';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEmitirRelatorioVisita, useRelatoriosEmitidos } from '../hooks/useRelatoriosEmitidos';
 import { fetchAnaliseOcorrencia } from '../hooks/useAnaliseOcorrencia';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES } from '../types/obras';
 import type { Foto, Ocorrencia } from '../types/obras';
@@ -110,6 +112,9 @@ function BlocoOcorrencia({ ocorrencia, index, analise, fotos }: { ocorrencia: Oc
 
 export function RelatorioVisita() {
   const { id, visitaId } = useParams();
+  const { user } = useAuth();
+  const emitirRelatorio = useEmitirRelatorioVisita(visitaId);
+  const { data: relatoriosEmitidos = [] } = useRelatoriosEmitidos(visitaId);
   const { data: obra, isLoading: obraLoading } = useObra(id);
   const { data: visita, isLoading: visitaLoading } = useVisita(visitaId);
   const { data: ocorrencias, isLoading: ocorrenciasLoading } = useOcorrencias(id);
@@ -142,13 +147,64 @@ export function RelatorioVisita() {
   const acoesVisita = (acoes ?? []).filter((a) => a.ocorrencia_id && idsOcorrencias.has(a.ocorrencia_id));
   const acoesPendentes = acoesVisita.filter((a) => a.estado !== 'concluida');
   const gravidades = ['critica', 'alta', 'media', 'baixa'] as const;
+  const podeEmitir = !!user && !analisesError && !analisesLoading && !fotosLoading && !fotosOcorrenciasLoading;
+  const emitir = () => {
+    if (!obra || !visita || !podeEmitir) return;
+    const semUrl = (fotos: FotoRelatorio[]) => fotos.map(({ url: _url, ...foto }) => foto);
+    const snapshot = {
+      schema_version: 1,
+      obra_id: obra.id,
+      visita_id: visita.id,
+      emitido_em_cliente: new Date().toISOString(),
+      emitido_por: user.id,
+      obra,
+      visita,
+      ocorrencias: ocorrenciasVisita,
+      acoes: acoesVisita,
+      fotos_visita: semUrl(fotosVisita ?? []),
+      fotos_ocorrencias: semUrl(fotosOcorrencias ?? []),
+      analises: [...analisePorOcorrencia.entries()].map(([ocorrencia_id, dados]) => ({
+        ocorrencia_id,
+        ...dados,
+        versoes: dados.versoes.map(({ signedUrl: _signedUrl, ...versao }) => versao),
+      })),
+    };
+    emitirRelatorio.mutate(snapshot);
+  };
 
   return (
     <main className="fkt-print-report">
       <div className="report-toolbar no-print">
         <Button asChild variant="ghost" size="sm"><Link to={`/obras/${obra.id}/visita/${visita.id}`}><ArrowLeft className="h-4 w-4 mr-1" />Voltar à visita</Link></Button>
-        <Button onClick={() => window.print()} size="sm"><Printer className="h-4 w-4 mr-2" />Imprimir / Guardar PDF</Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={emitir} size="sm" disabled={!podeEmitir || emitirRelatorio.isPending}>
+            {emitirRelatorio.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
+            {emitirRelatorio.isPending ? 'A emitir…' : 'Emitir relatório'}
+          </Button>
+          <Button onClick={() => window.print()} size="sm"><Printer className="h-4 w-4 mr-2" />Imprimir / Guardar PDF</Button>
+        </div>
       </div>
+
+      <section className="report-section no-print">
+        <h2>Emissões e versões</h2>
+        {!relatoriosEmitidos.length ? <p className="report-muted">Este relatório ainda não foi emitido.</p> : (
+          <ol className="space-y-2">
+            {relatoriosEmitidos.map((relatorio) => (
+              <li key={relatorio.id} className="rounded border p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <strong>Versão {relatorio.numero_versao} · {relatorio.estado === 'emitido' ? 'Emitido' : 'Rascunho'}</strong>
+                  <span className="text-sm text-muted-foreground">{dataHoraPt(relatorio.emitido_em)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Emitido por: {relatorio.emitido_por}</p>
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-sm">Consultar snapshot desta versão</summary>
+                  <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded bg-muted p-3 text-xs">{JSON.stringify(relatorio.snapshot, null, 2)}</pre>
+                </details>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
 
       <header className="report-header">
         <div>
