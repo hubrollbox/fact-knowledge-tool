@@ -273,7 +273,7 @@ AS $$
 
     UNION ALL
     SELECT 'core', 'facto', f.id, left(f.descricao, 140), concat_ws(' · ', d.titulo, f.grau_certeza, f.observacoes),
-      '/dossiers/' || d.id::text, f.created_at, NULL::uuid, NULL::uuid, f.grau_certeza
+      '/dossiers/' || d.id::text, f.created_at, NULL::uuid, NULL::uuid, f.grau_certeza::text
     FROM public.factos f JOIN public.dossiers d ON d.id = f.dossier_id CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'facto')
       AND (p_date_from IS NULL OR f.created_at::date >= p_date_from)
