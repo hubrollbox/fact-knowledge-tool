@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Plus, Dog } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, Dog, Archive, RotateCcw } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -15,15 +15,17 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useAnimal } from '../hooks/useAnimais';
+import { useAnimal, useUpdateAnimal } from '../hooks/useAnimais';
 import { useRegistosClinicos } from '../hooks/useClinico';
 import { useNinhadasDoAnimal } from '../hooks/useNinhadas';
 import { RegistoClinicoForm } from '../components/RegistoClinicoForm';
+import { toast } from '@/hooks/use-toast';
 
 export function AnimalDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: animal, isLoading } = useAnimal(id);
+  const updateAnimal = useUpdateAnimal();
   const { data: registos } = useRegistosClinicos(id);
   const { data: ninhadas } = useNinhadasDoAnimal(id);
   const [novoRegisto, setNovoRegisto] = useState(false);
@@ -62,10 +64,33 @@ export function AnimalDetail() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <Button variant="outline" size="sm" onClick={() => navigate('/canil')}>
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Voltar
-        </Button>
+        <div className="flex items-center gap-2">
+          {animal && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={updateAnimal.isPending}
+              onClick={async () => {
+                const nextActive = !animal.activo;
+                const action = nextActive ? 'restaurar' : 'arquivar';
+                if (!window.confirm(`Pretende ${action} este animal?`)) return;
+                try {
+                  await updateAnimal.mutateAsync({ id: animal.id, activo: nextActive });
+                  toast({ title: nextActive ? 'Animal restaurado' : 'Animal arquivado' });
+                } catch (error) {
+                  toast({ title: 'Não foi possível alterar o estado do animal', description: error instanceof Error ? error.message : 'Erro inesperado', variant: 'destructive' });
+                }
+              }}
+            >
+              {animal.activo ? <Archive className="mr-1.5 h-4 w-4" /> : <RotateCcw className="mr-1.5 h-4 w-4" />}
+              {animal.activo ? 'Arquivar' : 'Restaurar'}
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => navigate('/canil')}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-start gap-4">
