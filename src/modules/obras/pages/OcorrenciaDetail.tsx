@@ -10,6 +10,7 @@ import { AnaliseOcorrencia } from '../components/AnaliseOcorrencia';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
 import { HistoricoOcorrencia } from '../components/HistoricoOcorrencia';
 import { AcompanhamentoOcorrencia } from '../components/AcompanhamentoOcorrencia';
+import { OcorrenciasRelacionadas } from '../components/OcorrenciasRelacionadas';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES, gravidadeVariant } from '../types/obras';
 
 function dataPt(value?: string | null) {
@@ -71,7 +72,12 @@ export function OcorrenciaDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">3. Documentos associados</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">3. Ocorrências relacionadas</CardTitle></CardHeader>
+        <CardContent><OcorrenciasRelacionadas ocorrenciaId={ocorrencia.id} workspaceId={ocorrencia.workspace_id} canWrite={canWrite} /></CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">4. Documentos associados</CardTitle></CardHeader>
         <CardContent><DocumentosAssociados obraId={obra.id} ocorrenciaId={ocorrencia.id} /></CardContent>
       </Card>
 
