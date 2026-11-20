@@ -131,7 +131,8 @@ CREATE TABLE public.juridico_aplicacoes (
     REFERENCES public.juridico_processos(id, workspace_id) ON DELETE CASCADE,
   FOREIGN KEY (questao_id, processo_id, workspace_id)
     REFERENCES public.juridico_questoes(id, processo_id, workspace_id) ON DELETE CASCADE,
-  CONSTRAINT juridico_aplicacoes_id_process_workspace_unique UNIQUE (id, processo_id, workspace_id)
+  CONSTRAINT juridico_aplicacoes_id_process_workspace_unique UNIQUE (id, processo_id, workspace_id),
+  CONSTRAINT juridico_aplicacoes_id_process_workspace_issue_unique UNIQUE (id, processo_id, workspace_id, questao_id)
 );
 
 CREATE TABLE public.juridico_conclusoes (
@@ -150,10 +151,17 @@ CREATE TABLE public.juridico_conclusoes (
     REFERENCES public.juridico_processos(id, workspace_id) ON DELETE CASCADE,
   FOREIGN KEY (questao_id, processo_id, workspace_id)
     REFERENCES public.juridico_questoes(id, processo_id, workspace_id) ON DELETE CASCADE,
-  FOREIGN KEY (aplicacao_id, processo_id, workspace_id)
-    REFERENCES public.juridico_aplicacoes(id, processo_id, workspace_id) ON DELETE RESTRICT,
-  UNIQUE (processo_id, questao_id, versao)
+  CHECK (aplicacao_id IS NULL OR questao_id IS NOT NULL),
+  FOREIGN KEY (aplicacao_id, processo_id, workspace_id, questao_id)
+    REFERENCES public.juridico_aplicacoes(id, processo_id, workspace_id, questao_id) ON DELETE RESTRICT
 );
+
+CREATE UNIQUE INDEX juridico_conclusoes_issue_version_unique
+  ON public.juridico_conclusoes(processo_id, questao_id, versao)
+  WHERE questao_id IS NOT NULL;
+CREATE UNIQUE INDEX juridico_conclusoes_process_version_unique
+  ON public.juridico_conclusoes(processo_id, versao)
+  WHERE questao_id IS NULL;
 
 CREATE INDEX juridico_factos_process_idx ON public.juridico_factos(workspace_id, processo_id, created_at DESC);
 CREATE INDEX juridico_questoes_process_idx ON public.juridico_questoes(workspace_id, processo_id, ordem);
