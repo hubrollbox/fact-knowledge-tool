@@ -86,3 +86,30 @@ export function useAtribuirAcao() {
     onError: (error: Error) => toast({ title: 'Não foi possível atribuir a acção', description: error.message, variant: 'destructive' }),
   });
 }
+
+export function useOcorrenciasComLacunas() {
+  const workspaceId = useObrasWorkspace();
+  return useQuery({
+    queryKey: ['obras_ocorrencias_lacunas', workspaceId],
+    enabled: !!workspaceId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('obras_ocorrencias')
+        .select('id, obra_id, titulo, estado, workspace_id, obras(nome)')
+        .eq('workspace_id', workspaceId!)
+        .neq('estado', 'resolvida')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const rows = data ?? [];
+      if (!rows.length) return [];
+      const { data: analyses, error: analysisError } = await supabase.from('obras_ocorrencia_analises')
+        .select('ocorrencia_id, interpretacao, conclusao, recomendacao')
+        .in('ocorrencia_id', rows.map(r => r.id));
+      if (analysisError) throw analysisError;
+      const byId = new Map((analyses ?? []).map(a => [a.ocorrencia_id, a]));
+      return rows.map(r => ({ ...r, analise: byId.get(r.id) ?? null })).filter(r =>
+        !r.analise || (!r.analise.interpretacao && !r.analise.conclusao && !r.analise.recomendacao)
+        || !r.analise.conclusao || !r.analise.recomendacao
+      );
+    },
+  });
+}
