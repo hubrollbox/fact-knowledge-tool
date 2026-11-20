@@ -5,13 +5,6 @@ ALTER TABLE public.obras_acoes
   ADD CONSTRAINT obras_acoes_id_ocorrencia_workspace_unique
   UNIQUE (id, ocorrencia_id, workspace_id);
 
-ALTER TABLE public.obras_ocorrencias
-  ADD CONSTRAINT obras_ocorrencias_id_workspace_unique UNIQUE (id, workspace_id);
-
-ALTER TABLE public.obras_fotos
-  ADD CONSTRAINT obras_fotos_id_ocorrencia_workspace_unique
-  UNIQUE (id, ocorrencia_id, workspace_id);
-
 CREATE TABLE public.obras_ocorrencia_causas (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ocorrencia_id uuid NOT NULL,
@@ -48,7 +41,7 @@ CREATE TABLE public.obras_acoes_verificacoes (
     REFERENCES public.obras_acoes(id, ocorrencia_id, workspace_id) ON DELETE CASCADE,
   CONSTRAINT obras_acoes_verificacoes_photo_fk
     FOREIGN KEY (evidencia_foto_id, ocorrencia_id, workspace_id)
-    REFERENCES public.obras_fotos(id, ocorrencia_id, workspace_id) ON DELETE SET NULL
+    REFERENCES public.obras_fotos(id, ocorrencia_id, workspace_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE public.obras_ocorrencia_reaberturas (
