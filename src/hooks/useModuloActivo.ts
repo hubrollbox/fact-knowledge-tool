@@ -56,7 +56,10 @@ export function useModuloActivo() {
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['workspace', user?.id] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['workspace', user?.id] }),
+        queryClient.invalidateQueries({ queryKey: ['workspace-role', user?.id] }),
+      ]);
     },
     onError: (error) => {
       toast({ title: 'Não foi possível concluir a configuração', description: error.message, variant: 'destructive' });
