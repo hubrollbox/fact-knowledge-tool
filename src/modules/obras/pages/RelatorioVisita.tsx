@@ -1,11 +1,10 @@
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useObra, useVisita, useOcorrencias, useAcoes } from '../hooks/useObras';
 import { useFotos } from '../hooks/useFotosObra';
+import { fetchAnaliseOcorrencia } from '../hooks/useAnaliseOcorrencia';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES } from '../types/obras';
 import type { Ocorrencia } from '../types/obras';
 import './relatorio-visita.css';
@@ -41,12 +40,8 @@ function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
   );
 }
 
-type Analise = Database['public']['Tables']['obras_ocorrencia_analises']['Row'];
-type Facto = Database['public']['Tables']['obras_ocorrencia_factos']['Row'];
-type Referencia = Database['public']['Tables']['obras_ocorrencia_referencias']['Row'];
-type Versao = Pick<Database['public']['Tables']['obras_documento_versoes']['Row'], 'id' | 'documento_id' | 'numero_versao' | 'nome_ficheiro' | 'storage_path'> & { signedUrl: string | null };
-type Documento = Pick<Database['public']['Tables']['obras_documentos']['Row'], 'id' | 'titulo'>;
-type AnaliseRelatorio = { analise: Analise; factos: Facto[]; referencias: Referencia[]; versoes: Versao[]; documentos: Documento[] };
+type AnaliseData = Awaited<ReturnType<typeof fetchAnaliseOcorrencia>>;
+type AnaliseRelatorio = AnaliseData & { analise: NonNullable<AnaliseData['analise']> };
 
 function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
   const { analise, factos, referencias, versoes, documentos } = dados;
@@ -98,33 +93,16 @@ export function RelatorioVisita() {
   const { data: analisesRelatorio, isLoading: analisesLoading, isError: analisesError } = useQuery({
     queryKey: ['obras_relatorio_analises', visitaId, idsOcorrenciasRelatorio],
     enabled: !!visita?.id && !ocorrenciasLoading && idsOcorrenciasRelatorio.length > 0,
-    queryFn: async () => {
-      const { data: analises, error } = await supabase.from('obras_ocorrencia_analises').select('*').in('ocorrencia_id', idsOcorrenciasRelatorio);
-      if (error) throw error;
-      const analiseIds = (analises ?? []).map((item) => item.id);
-      if (!analiseIds.length) return [];
-      const [factosResult, refsResult] = await Promise.all([
-        supabase.from('obras_ocorrencia_factos').select('*').in('analise_id', analiseIds).order('created_at'),
-        supabase.from('obras_ocorrencia_referencias').select('*').in('analise_id', analiseIds).order('created_at'),
-      ]);
-      if (factosResult.error) throw factosResult.error;
-      if (refsResult.error) throw refsResult.error;
-      const refs = refsResult.data ?? [];
-      const versaoIds = [...new Set(refs.map((ref) => ref.documento_versao_id).filter(Boolean))] as string[];
-      const versoesResult = versaoIds.length ? await supabase.from('obras_documento_versoes').select('id, documento_id, numero_versao, nome_ficheiro, storage_path').in('id', versaoIds) : { data: [], error: null };
-      if (versoesResult.error) throw versoesResult.error;
-      const paths = (versoesResult.data ?? []).map((versao) => versao.storage_path);
-      const signedResult = paths.length ? await supabase.storage.from('obras-documentos').createSignedUrls(paths, 900) : { data: [], error: null };
-      if (signedResult.error) throw signedResult.error;
-      const signedByPath = new Map((signedResult.data ?? []).map((item) => [item.path, item.signedUrl]));
-      const versoes = (versoesResult.data ?? []).map((versao) => ({ ...versao, signedUrl: signedByPath.get(versao.storage_path) ?? null }));
-      const documentoIds = [...new Set(versoes.map((versao) => versao.documento_id))];
-      const documentosResult = documentoIds.length ? await supabase.from('obras_documentos').select('id, titulo').in('id', documentoIds) : { data: [], error: null };
-      if (documentosResult.error) throw documentosResult.error;
-      return (analises ?? []).map((analise) => ({ analise, factos: (factosResult.data ?? []).filter((f) => f.analise_id === analise.id), referencias: refs.filter((ref) => ref.analise_id === analise.id), versoes, documentos: documentosResult.data ?? [] }));
-    },
+    queryFn: async () => Promise.all(idsOcorrenciasRelatorio.map(async (ocorrenciaId) => ({
+      ocorrenciaId,
+      ...(await fetchAnaliseOcorrencia(ocorrenciaId)),
+    }))),
   });
-  const analisePorOcorrencia = new Map((analisesRelatorio ?? []).map((item) => [item.analise.ocorrencia_id, item as AnaliseRelatorio]));
+  const analisePorOcorrencia = new Map(
+    (analisesRelatorio ?? [])
+      .filter((item): item is typeof item & { analise: NonNullable<typeof item.analise> } => !!item.analise)
+      .map((item) => [item.ocorrenciaId, { analise: item.analise, factos: item.factos, referencias: item.referencias, versoes: item.versoes, documentos: item.documentos } as AnaliseRelatorio]),
+  );
   const geradoEm = new Date();
 
   if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
