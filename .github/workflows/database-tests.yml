@@ -21,12 +21,12 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: 3.2.0
+          version: latest
 
       # No login, link, project token or database password is used.
-      # The CLI v3 local target is explicit in every database command.
-      - name: Start local Supabase services
-        run: supabase start -x studio,mailpit,storage-api,imgproxy,edge-runtime,logflare,vector,realtime,kong,postgrest,postgres-meta,supavisor
+      # db start and --local keep all database operations on the CI runner.
+      - name: Start local Supabase database
+        run: supabase db start
 
       - name: Rebuild local database from repository migrations
         run: supabase db reset --local
