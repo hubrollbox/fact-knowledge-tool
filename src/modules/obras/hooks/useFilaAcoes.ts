@@ -60,10 +60,17 @@ export function useMembrosFilaAcoes() {
     queryKey: ['obras_fila_membros', workspaceId],
     enabled: !!workspaceId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('workspace_members')
-        .select('user_id, role').eq('workspace_id', workspaceId!);
+      const [{ data, error }, { data: workspace, error: ownerError }] = await Promise.all([
+        supabase.from('workspace_members').select('user_id, role').eq('workspace_id', workspaceId!),
+        supabase.from('workspaces').select('user_id').eq('id', workspaceId!).maybeSingle(),
+      ]);
       if (error) throw error;
-      return data ?? [];
+      if (ownerError) throw ownerError;
+      const members = data ?? [];
+      if (workspace?.user_id && !members.some(m => m.user_id === workspace.user_id)) {
+        members.unshift({ user_id: workspace.user_id, role: 'owner' });
+      }
+      return members;
     },
   });
 }
