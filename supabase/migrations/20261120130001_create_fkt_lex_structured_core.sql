@@ -231,6 +231,38 @@ CREATE INDEX juridico_factos_documentos_document_idx ON public.juridico_factos_d
 CREATE INDEX juridico_questoes_factos_fact_idx ON public.juridico_questoes_factos(facto_id);
 CREATE INDEX juridico_questoes_fontes_fonte_idx ON public.juridico_questoes_fontes(fonte_id);
 
+-- Cover every composite and workspace foreign key for predictable delete/update performance.
+CREATE INDEX IF NOT EXISTS juridico_processos_workspace_fk_idx ON public.juridico_processos(workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_partes_process_workspace_fk_idx ON public.juridico_partes(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_partes_workspace_fk_idx ON public.juridico_partes(workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_documentos_process_workspace_fk_idx ON public.juridico_documentos(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_documentos_workspace_fk_idx ON public.juridico_documentos(workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_prazos_process_workspace_fk_idx ON public.juridico_prazos(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_prazos_workspace_fk_idx ON public.juridico_prazos(workspace_id);
+
+CREATE INDEX IF NOT EXISTS juridico_factos_process_fk_idx ON public.juridico_factos(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_questoes_process_fk_idx ON public.juridico_questoes(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_fontes_process_fk_idx ON public.juridico_fontes(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_fontes_document_fk_idx ON public.juridico_fontes(documento_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_factos_documentos_fact_fk_idx ON public.juridico_factos_documentos(facto_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_factos_documentos_document_fk_idx ON public.juridico_factos_documentos(documento_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_questoes_factos_question_fk_idx ON public.juridico_questoes_factos(questao_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_questoes_factos_fact_fk_idx ON public.juridico_questoes_factos(facto_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_questoes_fontes_question_fk_idx ON public.juridico_questoes_fontes(questao_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_questoes_fontes_source_fk_idx ON public.juridico_questoes_fontes(fonte_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_process_fk_idx ON public.juridico_aplicacoes(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_question_fk_idx ON public.juridico_aplicacoes(questao_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_factos_application_fk_idx ON public.juridico_aplicacoes_factos(aplicacao_id, processo_id, workspace_id, questao_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_factos_fact_fk_idx ON public.juridico_aplicacoes_factos(facto_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_factos_question_fact_fk_idx ON public.juridico_aplicacoes_factos(questao_id, facto_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_fontes_application_fk_idx ON public.juridico_aplicacoes_fontes(aplicacao_id, processo_id, workspace_id, questao_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_fontes_source_fk_idx ON public.juridico_aplicacoes_fontes(fonte_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_aplicacoes_fontes_question_source_fk_idx ON public.juridico_aplicacoes_fontes(questao_id, fonte_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_conclusoes_process_fk_idx ON public.juridico_conclusoes(processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_conclusoes_question_fk_idx ON public.juridico_conclusoes(questao_id, processo_id, workspace_id);
+CREATE INDEX IF NOT EXISTS juridico_conclusoes_application_fk_idx ON public.juridico_conclusoes(aplicacao_id, processo_id, workspace_id, questao_id);
+
+
 -- Harden existing legal tables and apply the same workspace permissions to all new tables.
 DO $$
 DECLARE
