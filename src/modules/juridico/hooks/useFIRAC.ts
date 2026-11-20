@@ -374,11 +374,47 @@ export function useConclusoes(processoId: string) {
   });
 }
 
+export function useConclusaoEventos(processoId: string) {
+  return useQuery({
+    queryKey: ['juridico_conclusoes_eventos', processoId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('juridico_conclusoes_eventos')
+        .select('*').eq('processo_id', processoId).order('created_at', { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!processoId,
+  });
+}
+
+export function useTransicaoConclusao(processoId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ conclusaoId, novoEstado, notas }: {
+      conclusaoId: string;
+      novoEstado: 'rascunho' | 'em_revisao' | 'final';
+      notas?: string;
+    }) => {
+      const { data, error } = await supabase.rpc('transition_juridico_conclusao', {
+        _conclusao_id: conclusaoId,
+        _novo_estado: novoEstado,
+        _notas: notas ?? null,
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['juridico_conclusoes', processoId] });
+      qc.invalidateQueries({ queryKey: ['juridico_conclusoes_eventos', processoId] });
+    },
+  });
+}
+
 export function useCreateConclusao(processoId: string) {
   const workspaceId = useWorkspaceId();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: Omit<ConclusaoInsert, 'processo_id' | 'workspace_id' | 'autor_id' | 'versao'>) => {
+    mutationFn: async (input: Pick<ConclusaoInsert, 'questao_id' | 'aplicacao_id' | 'texto'>) => {
       if (!workspaceId) throw new Error('Sem workspace activo');
       const { data, error } = await supabase.rpc('create_juridico_conclusao_version', {
         _processo_id: processoId,
@@ -386,11 +422,14 @@ export function useCreateConclusao(processoId: string) {
         _questao_id: input.questao_id ?? null,
         _aplicacao_id: input.aplicacao_id ?? null,
         _texto: input.texto,
-        _estado: input.estado ?? 'rascunho',
+        _estado: 'rascunho',
       });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_conclusoes', processoId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['juridico_conclusoes', processoId] });
+      qc.invalidateQueries({ queryKey: ['juridico_conclusoes_eventos', processoId] });
+    },
   });
 }
