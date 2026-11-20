@@ -24,7 +24,9 @@ export function useUploadDocumento() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ file, meta }: { file: File; meta: Omit<DocumentoInsert, 'ficheiro_url'> }) => {
-      const path = `juridico/${meta.workspace_id}/${meta.processo_id}/${Date.now()}_${file.name}`;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Não autenticado');
+      const path = `${user.id}/${meta.workspace_id}/${meta.processo_id}/${Date.now()}_${file.name}`;
       const { error: uploadError } = await supabase.storage.from('documentos').upload(path, file);
       if (uploadError) throw uploadError;
       const { data, error } = await supabase.from('juridico_documentos').insert({ ...meta, ficheiro_url: path }).select().single();
