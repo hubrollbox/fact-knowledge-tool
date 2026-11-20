@@ -10,7 +10,7 @@ SET search_path TO extensions, public;
 BEGIN;
 SELECT plan(1);
 
-SELECT extensions.lives_ok($test$ DO $
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE
   _table text;
   _constraint text;
@@ -183,7 +183,7 @@ BEGIN
       _policy.policyname, _policy.tablename;
   END LOOP;
 END;
-$ $test$, 'FKT Vet schema, policies and grants satisfy security invariants');
+$$ $test$, 'FKT Vet schema, policies and grants satisfy security invariants');
 
 SELECT * FROM finish();
 ROLLBACK;
