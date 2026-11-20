@@ -5,8 +5,8 @@ import { useObrasWorkspace } from './useObrasWorkspace';
 
 const MAX = 20 * 1024 * 1024;
 
-export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string }) {
-  const key = filtro.visitaId ?? filtro.ocorrenciaId;
+export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; ocorrenciaIds?: string[] }) {
+  const key = filtro.visitaId ?? filtro.ocorrenciaId ?? filtro.ocorrenciaIds?.join(',');
   return useQuery({
     queryKey: ['obras_fotos', key],
     staleTime: 4 * 60 * 1000,
@@ -14,7 +14,10 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string }) {
     enabled: !!key,
     queryFn: async () => {
       let q = supabase.from('obras_fotos').select('*').order('capturada_em', { ascending: false });
-      q = filtro.visitaId ? q.eq('visita_id', filtro.visitaId) : q.eq('ocorrencia_id', filtro.ocorrenciaId!);
+      if (filtro.visitaId) q = q.eq('visita_id', filtro.visitaId);
+      else if (filtro.ocorrenciaId) q = q.eq('ocorrencia_id', filtro.ocorrenciaId);
+      else if (filtro.ocorrenciaIds?.length) q = q.in('ocorrencia_id', filtro.ocorrenciaIds);
+      else return [];
       const { data, error } = await q;
       if (error) throw error;
       const paths = data.map((f) => f.storage_path);
