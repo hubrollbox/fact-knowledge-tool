@@ -3,7 +3,7 @@
 Âmbito: `canil_animais`, `canil_ninhadas`, `canil_cachorros`, `canil_registos_clinicos` e `canil_reservas`.
 
 Esta matriz documenta o comportamento definido pelas políticas RLS da migração
-`20261120170000_fkt_vet_workspace_integrity_and_history.sql`.
+`20261120183029_fkt_vet_workspace_integrity_and_history.sql`.
 
 | Papel | SELECT | INSERT | UPDATE | DELETE |
 |---|---:|---:|---:|---:|
