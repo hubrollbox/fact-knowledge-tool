@@ -23,7 +23,7 @@ import {
   useFontes, useCreateFonte,
   useAplicacoes, useCreateAplicacao, useAplicacaoFactos, useAplicacaoFontes,
   useLinkAplicacaoFacto, useLinkAplicacaoFonte,
-  useConclusoes, useCreateConclusao,
+  useConclusoes, useConclusaoEventos, useCreateConclusao, useTransicaoConclusao,
 } from '../hooks/useFIRAC';
 
 function EmptyState({ children }: { children: string }) {
@@ -331,6 +331,7 @@ export function AplicacoesTab({ processoId, onNavigate }: { processoId: string; 
 
 export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; onNavigate?: (tab: string, anchor: string) => void }) {
   const { data: conclusoes = [], isLoading } = useConclusoes(processoId);
+  const { data: eventos = [], isLoading: eventosLoading, isError: eventosError } = useConclusaoEventos(processoId);
   const { data: questoes = [] } = useQuestoes(processoId);
   const { data: aplicacoes = [] } = useAplicacoes(processoId);
   const { data: factos = [] } = useFactos(processoId);
@@ -338,20 +339,118 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
   const { data: appFacts = [] } = useAplicacaoFactos(processoId);
   const { data: appSources = [] } = useAplicacaoFontes(processoId);
   const create = useCreateConclusao(processoId);
+  const transition = useTransicaoConclusao(processoId);
   const [open,setOpen] = useState(false);
   const [questaoId,setQuestaoId] = useState('');
   const [aplicacaoId,setAplicacaoId] = useState('');
   const [texto,setTexto] = useState('');
-  const [estado,setEstado] = useState('rascunho');
   const availableApplications=aplicacoes.filter(a=>!questaoId || a.questao_id===questaoId);
+
+  const eventLabels: Record<string,string> = {
+    criada: 'Criada',
+    submetida_revisao: 'Submetida para revisão',
+    devolvida: 'Devolvida para correcção',
+    aprovada: 'Aprovada',
+    reaberta: 'Reaberta',
+  };
+  const stateLabels: Record<string,string> = {
+    rascunho: 'Rascunho',
+    em_revisao: 'Em revisão',
+    final: 'Final',
+    revista: 'Revista (registo anterior)',
+  };
 
   async function save(e:React.FormEvent) {
     e.preventDefault();
-    try{await create.mutateAsync({questao_id:questaoId||null,aplicacao_id:aplicacaoId||null,texto,estado});toast.success('Conclusão registada');setOpen(false);setQuestaoId('');setAplicacaoId('');setTexto('');setEstado('rascunho');}
-    catch(error){ErrorToast(error,'Não foi possível registar a conclusão');}
+    try {
+      await create.mutateAsync({questao_id:questaoId||null,aplicacao_id:aplicacaoId||null,texto});
+      toast.success('Conclusão registada como rascunho');
+      setOpen(false);setQuestaoId('');setAplicacaoId('');setTexto('');
+    } catch(error) {
+      ErrorToast(error,'Não foi possível registar a conclusão');
+    }
   }
 
-  return <Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle className="text-base">Conclusões</CardTitle><Button size="sm" onClick={()=>setOpen(true)}><Plus className="mr-1.5 h-4 w-4" />Nova conclusão</Button></CardHeader><CardContent>
-    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : conclusoes.length===0 ? <EmptyState>As conclusões devem remeter para a questão e para a aplicação que as fundamenta. A versão e o estado ficam registados.</EmptyState> : <div className="space-y-2">{conclusoes.map(c=><div key={c.id} className="rounded-md border p-3"><div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">v{c.versao}</Badge><Badge>{c.estado}</Badge><span className="text-xs text-muted-foreground">{c.questao_id ? questoes.find(q=>q.id===c.questao_id)?.titulo ?? 'Questão' : 'Conclusão do processo'}</span></div><AuthorMeta id={c.autor_id} /><p className="mt-2 whitespace-pre-wrap text-sm">{c.texto}</p>{c.aplicacao_id && <div className="mt-2 space-y-1 text-xs"><a className="text-primary underline" href={`#aplicacao-${c.aplicacao_id}`} onClick={e => { if (onNavigate) { e.preventDefault(); onNavigate("analise", `aplicacao-${c.aplicacao_id}`); } }}>Abrir aplicação que fundamenta</a><div className="flex flex-wrap gap-x-3 gap-y-1">{appFacts.filter(x=>x.aplicacao_id===c.aplicacao_id).map(x=><a key={x.facto_id} className="text-primary underline" href={`#facto-${x.facto_id}`} onClick={e => { if (onNavigate) { e.preventDefault(); onNavigate("factos", `facto-${x.facto_id}`); } }}>Facto: {factos.find(f=>f.id===x.facto_id)?.descricao.slice(0,55) ?? 'ver facto'}</a>)}{appSources.filter(x=>x.aplicacao_id===c.aplicacao_id).map(x=><a key={x.fonte_id} className="text-primary underline" href={`#fonte-${x.fonte_id}`} onClick={e => { if (onNavigate) { e.preventDefault(); onNavigate("fontes", `fonte-${x.fonte_id}`); } }}>Fonte: {fontes.find(f=>f.id===x.fonte_id)?.titulo ?? 'ver fonte'}</a>)}</div></div>}</div>)}</div>}
-  </CardContent><Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Nova conclusão</DialogTitle></DialogHeader><form onSubmit={save} className="space-y-3"><div className="space-y-1"><Label>Questão (opcional)</Label><Select value={questaoId} onValueChange={v=>{setQuestaoId(v);setAplicacaoId('');}}><SelectTrigger><SelectValue placeholder="Conclusão geral do processo" /></SelectTrigger><SelectContent>{questoes.map(q=><SelectItem key={q.id} value={q.id}>{q.titulo}</SelectItem>)}</SelectContent></Select></div><div className="space-y-1"><Label>Aplicação que fundamenta (opcional)</Label><Select value={aplicacaoId} onValueChange={setAplicacaoId} disabled={!questaoId}><SelectTrigger><SelectValue placeholder={questaoId ? "Sem aplicação associada" : "Seleccione primeiro a questão"} /></SelectTrigger><SelectContent>{availableApplications.map(a=><SelectItem key={a.id} value={a.id}>{questoes.find(q=>q.id===a.questao_id)?.titulo ?? 'Aplicação'}</SelectItem>)}</SelectContent></Select></div><div className="space-y-1"><Label>Texto da conclusão</Label><Textarea required value={texto} onChange={e=>setTexto(e.target.value)} rows={4} /></div><div className="space-y-1"><Label>Estado</Label><Select value={estado} onValueChange={setEstado}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['rascunho','revista','final'].map(v=><SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div><DialogFooter><Button type="button" variant="outline" onClick={()=>setOpen(false)}>Cancelar</Button><Button type="submit" disabled={create.isPending}>Guardar conclusão</Button></DialogFooter></form></DialogContent></Dialog></Card>;
+  async function changeState(conclusaoId:string, novoEstado:'rascunho'|'em_revisao'|'final') {
+    try {
+      await transition.mutateAsync({conclusaoId,novoEstado});
+      const messages: Record<string,string> = {
+        em_revisao:'Conclusão submetida para revisão',
+        rascunho:'Conclusão devolvida/reaberta como rascunho',
+        final:'Conclusão aprovada',
+      };
+      toast.success(messages[novoEstado]);
+    } catch(error) {
+      ErrorToast(error,'Não foi possível alterar o estado da conclusão');
+    }
+  }
+
+  return <Card>
+    <CardHeader className="flex flex-row items-center justify-between">
+      <CardTitle className="text-base">Conclusões</CardTitle>
+      <Button size="sm" onClick={()=>setOpen(true)}><Plus className="mr-1.5 h-4 w-4" />Nova conclusão</Button>
+    </CardHeader>
+    <CardContent>
+      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : conclusoes.length===0 ? <EmptyState>As conclusões devem remeter para a questão e para a aplicação que as fundamenta. Cada nova versão começa como rascunho.</EmptyState> : (
+        <div className="space-y-3">
+          {conclusoes.map(c=>{
+            const history=eventos.filter(event=>event.conclusao_id===c.id);
+            const latest=history.length ? history[history.length-1] : null;
+            const currentState=latest?.estado_novo ?? (c.estado==='revista'?'em_revisao':c.estado);
+            const canTransition=!!latest && !eventosError;
+            return <div key={c.id} className="space-y-3 rounded-md border p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">v{c.versao}</Badge>
+                <Badge>{stateLabels[currentState] ?? currentState}</Badge>
+                <span className="text-xs text-muted-foreground">{c.questao_id ? questoes.find(q=>q.id===c.questao_id)?.titulo ?? 'Questão' : 'Conclusão do processo'}</span>
+              </div>
+              <AuthorMeta id={c.autor_id} />
+              <p className="whitespace-pre-wrap text-sm">{c.texto}</p>
+              {c.aplicacao_id && <div className="space-y-1 text-xs">
+                <a className="text-primary underline" href={`#aplicacao-${c.aplicacao_id}`} onClick={e=>{if(onNavigate){e.preventDefault();onNavigate("analise",`aplicacao-${c.aplicacao_id}`);}}}>Abrir aplicação que fundamenta</a>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {appFacts.filter(x=>x.aplicacao_id===c.aplicacao_id).map(x=><a key={x.facto_id} className="text-primary underline" href={`#facto-${x.facto_id}`} onClick={e=>{if(onNavigate){e.preventDefault();onNavigate("factos",`facto-${x.facto_id}`);}}}>Facto: {factos.find(f=>f.id===x.facto_id)?.descricao.slice(0,55) ?? 'ver facto'}</a>)}
+                  {appSources.filter(x=>x.aplicacao_id===c.aplicacao_id).map(x=><a key={x.fonte_id} className="text-primary underline" href={`#fonte-${x.fonte_id}`} onClick={e=>{if(onNavigate){e.preventDefault();onNavigate("fontes",`fonte-${x.fonte_id}`);}}}>Fonte: {fontes.find(f=>f.id===x.fonte_id)?.titulo ?? 'ver fonte'}</a>)}
+                </div>
+              </div>}
+              <div className="flex flex-wrap gap-2 border-t pt-3">
+                {currentState==='rascunho' && <Button size="sm" variant="outline" disabled={!canTransition||transition.isPending} onClick={()=>changeState(c.id,'em_revisao')}>Submeter para revisão</Button>}
+                {currentState==='em_revisao' && <>
+                  <Button size="sm" variant="outline" disabled={!canTransition||transition.isPending} onClick={()=>changeState(c.id,'rascunho')}>Devolver para correcção</Button>
+                  <Button size="sm" disabled={!canTransition||transition.isPending} onClick={()=>changeState(c.id,'final')}>Aprovar conclusão</Button>
+                </>}
+                {currentState==='final' && <Button size="sm" variant="outline" disabled={!canTransition||transition.isPending} onClick={()=>changeState(c.id,'rascunho')}>Reabrir conclusão</Button>}
+                {!canTransition && <span className="self-center text-xs text-muted-foreground">{eventosError ? 'Não foi possível carregar o histórico; transições desactivadas.' : eventosLoading ? 'A carregar histórico…' : 'Sem histórico de auditoria. Esta conclusão não pode ser transitada até ser reconciliada.'}</span>}
+              </div>
+              <div className="space-y-2 rounded-md bg-muted/30 p-3">
+                <p className="text-xs font-semibold">Histórico de revisão</p>
+                {history.length===0 ? <p className="text-xs text-muted-foreground">Não existem eventos registados para esta conclusão.</p> : (
+                  <ol className="space-y-2">
+                    {[...history].reverse().map(event=><li key={event.id} className="border-l-2 pl-3">
+                      <p className="text-xs font-medium">{eventLabels[event.evento] ?? event.evento} · {stateLabels[event.estado_novo] ?? event.estado_novo}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleString('pt-PT')} · <AuthorMeta id={event.actor_id} /></p>
+                      {event.notas && <p className="text-xs">{event.notas}</p>}
+                    </li>)}
+                  </ol>
+                )}
+              </div>
+            </div>;
+          })}
+        </div>
+      )}
+      {eventosError && <p className="mt-3 text-sm text-destructive">Não foi possível consultar o histórico de auditoria. As operações de revisão ficam bloqueadas.</p>}
+    </CardContent>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Nova conclusão</DialogTitle></DialogHeader>
+        <form onSubmit={save} className="space-y-3">
+          <div className="space-y-1"><Label>Questão (opcional)</Label><Select value={questaoId} onValueChange={v=>{setQuestaoId(v);setAplicacaoId('');}}><SelectTrigger><SelectValue placeholder="Conclusão geral do processo" /></SelectTrigger><SelectContent>{questoes.map(q=><SelectItem key={q.id} value={q.id}>{q.titulo}</SelectItem>)}</SelectContent></Select></div>
+          <div className="space-y-1"><Label>Aplicação que fundamenta (opcional)</Label><Select value={aplicacaoId} onValueChange={setAplicacaoId} disabled={!questaoId}><SelectTrigger><SelectValue placeholder={questaoId?"Sem aplicação associada":"Seleccione primeiro a questão"} /></SelectTrigger><SelectContent>{availableApplications.map(a=><SelectItem key={a.id} value={a.id}>{questoes.find(q=>q.id===a.questao_id)?.titulo ?? 'Aplicação'}</SelectItem>)}</SelectContent></Select></div>
+          <div className="space-y-1"><Label>Texto da conclusão</Label><Textarea required value={texto} onChange={e=>setTexto(e.target.value)} rows={4} /></div>
+          <p className="text-xs text-muted-foreground">A conclusão será criada como rascunho. A submissão para revisão e a aprovação ficam registadas no histórico.</p>
+          <DialogFooter><Button type="button" variant="outline" onClick={()=>setOpen(false)}>Cancelar</Button><Button type="submit" disabled={create.isPending}>{create.isPending?'A guardar…':'Guardar rascunho'}</Button></DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  </Card>;
 }
