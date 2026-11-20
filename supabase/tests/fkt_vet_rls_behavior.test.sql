@@ -173,6 +173,48 @@ BEGIN
 
   _caught := false;
   BEGIN
+    INSERT INTO public.canil_ninhadas (workspace_id, mae_id)
+    VALUES (
+      'b0000000-0000-4000-8000-000000000001',
+      'c0000000-0000-4000-8000-000000000003'
+    );
+    RAISE EXCEPTION 'Cross-workspace parent/litter reference unexpectedly succeeded';
+  EXCEPTION WHEN foreign_key_violation THEN
+    _caught := true;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Cross-workspace parent/litter reference was not rejected'; END IF;
+
+  _caught := false;
+  BEGIN
+    INSERT INTO public.canil_reservas
+      (workspace_id, animal_id, data_entrada, data_saida, estado, pago)
+    VALUES (
+      'b0000000-0000-4000-8000-000000000001',
+      'c0000000-0000-4000-8000-000000000003',
+      current_date,
+      current_date + 1,
+      'confirmada',
+      false
+    );
+    RAISE EXCEPTION 'Cross-workspace reservation reference unexpectedly succeeded';
+  EXCEPTION WHEN foreign_key_violation THEN
+    _caught := true;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Cross-workspace reservation reference was not rejected'; END IF;
+
+  -- A valid puppy insert omits workspace_id; the database derives it from the litter.
+  INSERT INTO public.canil_cachorros (ninhada_id, estado)
+  VALUES (
+    'd0000000-0000-4000-8000-000000000001',
+    'disponivel'
+  );
+  SELECT count(*) INTO _count FROM public.canil_cachorros
+  WHERE ninhada_id = 'd0000000-0000-4000-8000-000000000001'
+    AND workspace_id = 'b0000000-0000-4000-8000-000000000001';
+  IF _count <> 1 THEN RAISE EXCEPTION 'Puppy workspace was not derived from its litter'; END IF;
+
+  _caught := false;
+  BEGIN
     UPDATE public.canil_animais
     SET workspace_id = 'b0000000-0000-4000-8000-000000000002'
     WHERE id = 'c0000000-0000-4000-8000-000000000001';
