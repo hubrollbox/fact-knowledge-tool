@@ -39,7 +39,7 @@ export function useCreateParte(processoId: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => invalidateProcesso(qc, processoId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_partes', processoId] }),
   });
 }
 
@@ -89,7 +89,12 @@ export function useDeleteFacto(processoId: string) {
       const { error } = await supabase.from('juridico_factos').delete().eq('id', id).eq('processo_id', processoId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['juridico_factos', processoId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['juridico_factos', processoId] });
+      qc.invalidateQueries({ queryKey: ['juridico_factos_documentos', processoId] });
+      qc.invalidateQueries({ queryKey: ['juridico_questoes_factos', processoId] });
+      qc.invalidateQueries({ queryKey: ['juridico_aplicacoes_factos', processoId] });
+    },
   });
 }
 
