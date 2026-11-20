@@ -40,7 +40,7 @@ function resumo(antes: Record<string, unknown> | null, depois: Record<string, un
     .filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at', 'created_by', 'updated_by'].includes(key))
     .filter((key) => JSON.stringify(a[key]) !== JSON.stringify(d[key]));
   return keys.slice(0, 5).map((key) => ({
-    label: CAMPOS[key] ?? key.replaceAll('_', ' '),
+    label: CAMPOS[key] ?? key.replace(/_/g, ' '),
     before: a[key],
     after: d[key],
   }));

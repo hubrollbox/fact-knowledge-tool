@@ -96,7 +96,7 @@ export function OcorrenciaDetail() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">5. Causas, acções e eficácia</CardTitle></CardHeader>
-        <CardContent><AcompanhamentoOcorrencia ocorrenciaId={ocorrencia.id} estado={ocorrencia.estado} acoes={acoesOcorrencia} canWrite={canWrite} /></CardContent>
+        <CardContent><AcompanhamentoOcorrencia ocorrenciaId={ocorrencia.id} workspaceId={ocorrencia.workspace_id} estado={ocorrencia.estado} acoes={acoesOcorrencia} canWrite={canWrite} /></CardContent>
       </Card>
 
       <Card>

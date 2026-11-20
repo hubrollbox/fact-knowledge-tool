@@ -18,8 +18,8 @@ type Verificacao = { id: string; acao_id: string; resultado: string; descricao: 
 const labels: Record<string, string> = { hipotese: 'Hipótese', confirmada: 'Confirmada', descartada: 'Descartada', eficaz: 'Eficaz', parcial: 'Parcialmente eficaz', ineficaz: 'Ineficaz' };
 const dataPt = (value: string) => new Date(value).toLocaleString('pt-PT');
 
-export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite }: {
-  ocorrenciaId: string; estado: string; acoes: Acao[]; canWrite: boolean;
+export function AcompanhamentoOcorrencia({ ocorrenciaId, workspaceId, estado, acoes, canWrite }: {
+  ocorrenciaId: string; workspaceId: string; estado: string; acoes: Acao[]; canWrite: boolean;
 }) {
   const qc = useQueryClient();
   const [causaOpen, setCausaOpen] = useState(false);
@@ -64,7 +64,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const criarCausa = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from('obras_ocorrencia_causas').insert({
-        ocorrencia_id: ocorrenciaId, descricao: descricao.trim(), fundamentacao: fundamentacao.trim(),
+        ocorrencia_id: ocorrenciaId, workspace_id: workspaceId, descricao: descricao.trim(), fundamentacao: fundamentacao.trim(),
       });
       if (error) throw error;
     },
@@ -88,7 +88,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
     mutationFn: async () => {
       if (!verificacaoAcao) throw new Error('Seleccione uma acção.');
       const { error } = await supabase.from('obras_acoes_verificacoes').insert({
-        acao_id: verificacaoAcao.id, ocorrencia_id: ocorrenciaId, resultado,
+        acao_id: verificacaoAcao.id, ocorrencia_id: ocorrenciaId, workspace_id: workspaceId, resultado,
         descricao: verificacaoDescricao.trim(), evidencia: evidencia.trim() || null,
       });
       if (error) throw error;
