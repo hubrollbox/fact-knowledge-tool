@@ -5,7 +5,7 @@ import { useModuloActivo } from '@/hooks/useModuloActivo';
 import { ModuloSlug } from '@/types/modulos';
 import { modulos } from '@/data/modulos';
 
-export function ProtectedRoute({ children, module }: { children: React.ReactNode; module?: ModuloSlug }) {
+export function ProtectedRoute({ children, module, allowNoWorkspace = false }: { children: React.ReactNode; module?: ModuloSlug; allowNoWorkspace?: boolean }) {
   const { user, loading: authLoading } = useAuth();
   const { workspace, moduloSlug, isLoading: workspaceLoading } = useModuloActivo();
 
@@ -18,7 +18,7 @@ export function ProtectedRoute({ children, module }: { children: React.ReactNode
   }
 
   if (!user) return <Navigate to="/" replace />;
-  if (!workspace || !moduloSlug) return <Navigate to="/configuracao-inicial" replace />;
+  if ((!workspace || !moduloSlug) && !allowNoWorkspace) return <Navigate to="/configuracao-inicial" replace />;
 
   if (module && moduloSlug !== module) {
     const activeModule = modulos.find((item) => item.slug === moduloSlug);
