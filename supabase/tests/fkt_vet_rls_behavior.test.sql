@@ -4,6 +4,8 @@
 --   supabase test db
 -- All fixtures are rolled back. No production records are touched.
 
+CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
+SET search_path TO extensions, public;
 BEGIN;
 
 INSERT INTO auth.users (id, aud, role, email, created_at, updated_at)
@@ -61,10 +63,12 @@ VALUES (
   false
 );
 
+SELECT plan(5);
+
 -- Viewer: read access inside workspace A, no visibility of B, no writes.
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000003', true);
-DO $$
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE
   _count integer;
 BEGIN
@@ -102,25 +106,25 @@ BEGIN
     NULL;
   END;
 END;
-$$;
+$$ $test$, 'viewer reads only its own workspace and cannot write');
 RESET ROLE;
 
 -- Workspace B owner cannot read A, but workspace A owner can manage its data.
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000002', true);
-DO $$
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE _count integer;
 BEGIN
   SELECT count(*) INTO _count FROM public.canil_animais
   WHERE id = 'c0000000-0000-4000-8000-000000000001';
   IF _count <> 0 THEN RAISE EXCEPTION 'Workspace B owner must not read workspace A'; END IF;
 END;
-$$;
+$$ $test$, 'workspace B owner cannot read workspace A');
 RESET ROLE;
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true);
-DO $$
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE _count integer;
 BEGIN
   UPDATE public.canil_animais SET nome = 'Owner managed'
@@ -128,13 +132,13 @@ BEGIN
   GET DIAGNOSTICS _count = ROW_COUNT;
   IF _count <> 1 THEN RAISE EXCEPTION 'Workspace owner must update animals'; END IF;
 END;
-$$;
+$$ $test$, 'workspace A owner can manage workspace A');
 RESET ROLE;
 
 -- Editor: allowed to create within A; cannot cross-reference B or move records.
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000004', true);
-DO $$
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE
   _count integer;
   _caught boolean := false;
@@ -254,14 +258,14 @@ BEGIN
   WHERE animal_id = 'c0000000-0000-4000-8000-000000000001';
   IF _count <> 1 THEN RAISE EXCEPTION 'Reservations were not preserved after archive'; END IF;
 END;
-$$;
+$$ $test$, 'editor cannot cross workspace references and can archive without losing history');
 RESET ROLE;
 
 -- Admin: write access in its workspace; viewer/editor/admin permissions are
 -- separately asserted so future policy changes cannot silently broaden viewer.
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000005', true);
-DO $$
+SELECT extensions.lives_ok($test$ DO $$
 DECLARE _count integer;
 BEGIN
   INSERT INTO public.canil_animais (workspace_id, nome, sexo)
@@ -269,7 +273,8 @@ BEGIN
   GET DIAGNOSTICS _count = ROW_COUNT;
   IF _count <> 1 THEN RAISE EXCEPTION 'Admin must be able to create animals'; END IF;
 END;
-$$;
+$$ $test$, 'admin can create records in its workspace');
 RESET ROLE;
 
+SELECT * FROM finish();
 ROLLBACK;
