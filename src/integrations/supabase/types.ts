@@ -928,6 +928,222 @@ export type Database = {
           },
         ]
       }
+      fkt_global_admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fkt_support_attachments: {
+        Row: {
+          content_type: string | null
+          created_at: string
+          file_name: string
+          file_size: number
+          id: string
+          storage_path: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string
+          file_name: string
+          file_size: number
+          id?: string
+          storage_path: string
+          ticket_id: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          id?: string
+          storage_path?: string
+          ticket_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fkt_support_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "fkt_support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fkt_support_faq: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_published: boolean
+          module: string
+          question: string
+          reviewed_at: string | null
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          answer: string
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          module: string
+          question: string
+          reviewed_at?: string | null
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          module?: string
+          question?: string
+          reviewed_at?: string | null
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      fkt_support_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          ticket_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fkt_support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "fkt_support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fkt_support_ticket_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          new_status: string
+          old_status: string | null
+          ticket_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          new_status: string
+          old_status?: string | null
+          ticket_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_status?: string
+          old_status?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fkt_support_ticket_events_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "fkt_support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fkt_support_tickets: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          module: string
+          reference_code: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          module: string
+          reference_code?: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          module?: string
+          reference_code?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       issues: {
         Row: {
           created_at: string | null
@@ -1409,6 +1625,70 @@ export type Database = {
           },
         ]
       }
+      obras_acoes_verificacoes: {
+        Row: {
+          acao_id: string
+          created_at: string
+          descricao: string
+          evidencia: string | null
+          evidencia_foto_id: string | null
+          id: string
+          ocorrencia_id: string
+          resultado: string
+          verificado_em: string
+          verificado_por: string
+          workspace_id: string
+        }
+        Insert: {
+          acao_id: string
+          created_at?: string
+          descricao: string
+          evidencia?: string | null
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id: string
+          resultado: string
+          verificado_em?: string
+          verificado_por?: string
+          workspace_id: string
+        }
+        Update: {
+          acao_id?: string
+          created_at?: string
+          descricao?: string
+          evidencia?: string | null
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id?: string
+          resultado?: string
+          verificado_em?: string
+          verificado_por?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_acoes_verificacoes_action_fk"
+            columns: ["acao_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_acoes"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_verificacoes_photo_fk"
+            columns: ["evidencia_foto_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_fotos"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_verificacoes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obras_documento_versoes: {
         Row: {
           created_at: string
@@ -1638,6 +1918,56 @@ export type Database = {
           },
         ]
       }
+      obras_historico_eventos: {
+        Row: {
+          actor_id: string | null
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          entidade: string
+          entidade_id: string
+          entidade_pai: string | null
+          entidade_pai_id: string | null
+          id: string
+          ocorrido_em: string
+          operacao: string
+          workspace_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade: string
+          entidade_id: string
+          entidade_pai?: string | null
+          entidade_pai_id?: string | null
+          id?: string
+          ocorrido_em?: string
+          operacao: string
+          workspace_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade?: string
+          entidade_id?: string
+          entidade_pai?: string | null
+          entidade_pai_id?: string | null
+          id?: string
+          ocorrido_em?: string
+          operacao?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_historico_eventos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obras_ocorrencia_analises: {
         Row: {
           conclusao: string | null
@@ -1688,6 +2018,63 @@ export type Database = {
           },
           {
             foreignKeyName: "obras_ocorrencia_analises_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_causas: {
+        Row: {
+          confirmado_em: string | null
+          confirmado_por: string | null
+          created_at: string
+          criado_por: string | null
+          descricao: string
+          estado: string
+          fundamentacao: string
+          id: string
+          ocorrencia_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          confirmado_em?: string | null
+          confirmado_por?: string | null
+          created_at?: string
+          criado_por?: string | null
+          descricao: string
+          estado?: string
+          fundamentacao: string
+          id?: string
+          ocorrencia_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          confirmado_em?: string | null
+          confirmado_por?: string | null
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string
+          estado?: string
+          fundamentacao?: string
+          id?: string
+          ocorrencia_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_causas_ocorrencia_fk"
+            columns: ["ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_causas_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -1772,6 +2159,48 @@ export type Database = {
           },
           {
             foreignKeyName: "obras_ocorrencia_factos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_reaberturas: {
+        Row: {
+          id: string
+          motivo: string
+          ocorrencia_id: string
+          reaberta_em: string
+          reaberta_por: string
+          workspace_id: string
+        }
+        Insert: {
+          id?: string
+          motivo: string
+          ocorrencia_id: string
+          reaberta_em?: string
+          reaberta_por?: string
+          workspace_id: string
+        }
+        Update: {
+          id?: string
+          motivo?: string
+          ocorrencia_id?: string
+          reaberta_em?: string
+          reaberta_por?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_reaberturas_occurrence_fk"
+            columns: ["ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_reaberturas_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -2290,6 +2719,11 @@ export type Database = {
         Returns: string
       }
       get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
+      is_fkt_global_admin: { Args: never; Returns: boolean }
+      reabrir_obras_ocorrencia: {
+        Args: { _motivo: string; _ocorrencia_id: string }
+        Returns: string
+      }
       workspace_can_manage_members: {
         Args: { _uid: string; _ws: string }
         Returns: boolean
