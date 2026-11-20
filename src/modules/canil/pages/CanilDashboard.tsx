@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAnimais } from '../hooks/useAnimais';
+import { useAnimais, useAnimaisArquivados } from '../hooks/useAnimais';
 import { useReservasHoje } from '../hooks/useReservas';
 import { useAlertasVacinas } from '../hooks/useClinico';
 import { AnimalCard } from '../components/AnimalCard';
@@ -12,6 +12,7 @@ import { AnimalCard } from '../components/AnimalCard';
 export function CanilDashboard() {
   const navigate = useNavigate();
   const { data: animais, isLoading: loadingA } = useAnimais();
+  const { data: animaisArquivados } = useAnimaisArquivados();
   const { data: reservas } = useReservasHoje();
   const { data: alertas } = useAlertasVacinas();
   const hoje = new Date().toISOString().split('T')[0];
@@ -122,6 +123,22 @@ export function CanilDashboard() {
           </div>
         )}
       </div>
+
+      {!!animaisArquivados?.length && (
+        <div>
+          <h2 className="mb-3 text-lg font-semibold">Animais arquivados</h2>
+          <p className="mb-3 text-sm text-muted-foreground">Os registos foram preservados. Abra a ficha para restaurar um animal.</p>
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+            {animaisArquivados.map((a) => (
+              <AnimalCard
+                key={a.id}
+                animal={a}
+                onClick={() => navigate(`/canil/animal/${a.id}`)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
