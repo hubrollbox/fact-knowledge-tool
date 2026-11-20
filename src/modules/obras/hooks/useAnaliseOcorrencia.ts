@@ -11,31 +11,57 @@ import type {
 const onErr = (error: Error) =>
   toast({ title: 'Não foi guardado', description: error.message, variant: 'destructive' });
 
+export async function fetchAnaliseOcorrencia(ocorrenciaId: string) {
+  const { data: analise, error } = await supabase
+    .from('obras_ocorrencia_analises')
+    .select('*')
+    .eq('ocorrencia_id', ocorrenciaId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!analise) return { analise: null, factos: [], referencias: [], versoes: [], documentos: [] };
+
+  const [factosResult, referenciasResult] = await Promise.all([
+    supabase.from('obras_ocorrencia_factos').select('*').eq('analise_id', analise.id).order('created_at'),
+    supabase.from('obras_ocorrencia_referencias').select('*').eq('analise_id', analise.id).order('created_at'),
+  ]);
+  if (factosResult.error) throw factosResult.error;
+  if (referenciasResult.error) throw referenciasResult.error;
+
+  const versaoIds = [...new Set((referenciasResult.data ?? []).map((ref) => ref.documento_versao_id).filter((id): id is string => !!id))];
+  const versoesResult = versaoIds.length
+    ? await supabase.from('obras_documento_versoes').select('id, documento_id, numero_versao, nome_ficheiro, storage_path').in('id', versaoIds)
+    : { data: [], error: null };
+  if (versoesResult.error) throw versoesResult.error;
+
+  const versoesBase = versoesResult.data ?? [];
+  const paths = versoesBase.map((version) => version.storage_path);
+  const signedResult = paths.length
+    ? await supabase.storage.from('obras-documentos').createSignedUrls(paths, 900)
+    : { data: [], error: null };
+  if (signedResult.error) throw signedResult.error;
+  const signedByPath = new Map((signedResult.data ?? []).map((item) => [item.path, item.signedUrl]));
+  const versoes = versoesBase.map((version) => ({ ...version, signedUrl: signedByPath.get(version.storage_path) ?? null }));
+
+  const documentoIds = [...new Set(versoes.map((version) => version.documento_id))];
+  const documentosResult = documentoIds.length
+    ? await supabase.from('obras_documentos').select('id, titulo').in('id', documentoIds)
+    : { data: [], error: null };
+  if (documentosResult.error) throw documentosResult.error;
+
+  return {
+    analise,
+    factos: factosResult.data ?? [],
+    referencias: referenciasResult.data ?? [],
+    versoes,
+    documentos: documentosResult.data ?? [],
+  };
+}
+
 export function useAnaliseOcorrencia(ocorrenciaId: string) {
   return useQuery({
     queryKey: ['obras_ocorrencia_analise', ocorrenciaId],
     enabled: !!ocorrenciaId,
-    queryFn: async () => {
-      const { data: analise, error } = await supabase
-        .from('obras_ocorrencia_analises')
-        .select('*')
-        .eq('ocorrencia_id', ocorrenciaId)
-        .maybeSingle();
-      if (error) throw error;
-      if (!analise) return { analise: null, factos: [], referencias: [] };
-
-      const [factosResult, referenciasResult] = await Promise.all([
-        supabase.from('obras_ocorrencia_factos').select('*').eq('analise_id', analise.id).order('created_at'),
-        supabase.from('obras_ocorrencia_referencias').select('*').eq('analise_id', analise.id).order('created_at'),
-      ]);
-      if (factosResult.error) throw factosResult.error;
-      if (referenciasResult.error) throw referenciasResult.error;
-      return {
-        analise,
-        factos: factosResult.data ?? [],
-        referencias: referenciasResult.data ?? [],
-      };
-    },
+    queryFn: () => fetchAnaliseOcorrencia(ocorrenciaId),
   });
 }
 
