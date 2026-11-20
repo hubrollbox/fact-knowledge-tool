@@ -302,3 +302,23 @@ create trigger validate_processo_conclusao_trigger
 
 -- RLS and authorization policies are established by the subsequent
 -- 20260301165200 migration. Storage is configured by 20260301165039.
+
+-- These legacy learning tables are not covered by the 20260301165200
+-- policy migration, so their original ownership protections are retained here.
+ALTER TABLE public.quizzes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own quizzes" ON public.quizzes
+  FOR ALL TO authenticated
+  USING (disciplina_id IN (SELECT id FROM public.disciplinas WHERE user_id = auth.uid()))
+  WITH CHECK (disciplina_id IN (SELECT id FROM public.disciplinas WHERE user_id = auth.uid()));
+
+ALTER TABLE public.discussoes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own discussoes" ON public.discussoes
+  FOR ALL TO authenticated
+  USING (disciplina_id IN (SELECT id FROM public.disciplinas WHERE user_id = auth.uid()))
+  WITH CHECK (disciplina_id IN (SELECT id FROM public.disciplinas WHERE user_id = auth.uid()));
+
+ALTER TABLE public.progressos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own progressos" ON public.progressos
+  FOR ALL TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
