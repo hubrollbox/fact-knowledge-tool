@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, RotateCcw, ShieldCheck } from 'lucide-react';
+import { RotateCcw, ShieldCheck } from 'lucide-react';
 
 type Acao = { id: string; descricao: string; estado: string };
 type Causa = { id: string; descricao: string; estado: string; fundamentacao: string; confirmado_em: string | null };
@@ -27,6 +27,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const [fundamentacao, setFundamentacao] = useState('');
   const [verificacaoAcao, setVerificacaoAcao] = useState<Acao | null>(null);
   const [resultado, setResultado] = useState('eficaz');
+  const [causaEstados, setCausaEstados] = useState<Record<string, string>>({});
   const [verificacaoDescricao, setVerificacaoDescricao] = useState('');
   const [evidencia, setEvidencia] = useState('');
   const [reabrirOpen, setReabrirOpen] = useState(false);
@@ -35,7 +36,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const causas = useQuery({
     queryKey: ['obras_ocorrencia_causas', ocorrenciaId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from('obras_ocorrencia_causas')
+      const { data, error } = await supabase.from('obras_ocorrencia_causas')
         .select('*').eq('ocorrencia_id', ocorrenciaId).order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as Causa[];
@@ -44,7 +45,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
   const verificacoes = useQuery({
     queryKey: ['obras_acoes_verificacoes', ocorrenciaId],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from('obras_acoes_verificacoes')
+      const { data, error } = await supabase.from('obras_acoes_verificacoes')
         .select('*').eq('ocorrencia_id', ocorrenciaId).order('verificado_em', { ascending: false });
       if (error) throw error;
       return (data ?? []) as Verificacao[];
@@ -77,7 +78,7 @@ export function AcompanhamentoOcorrencia({ ocorrenciaId, estado, acoes, canWrite
 
   const actualizarCausa = useMutation({
     mutationFn: async ({ id, estado }: { id: string; estado: string }) => {
-      const { error } = await (supabase as any).from('obras_ocorrencia_causas').update({ estado }).eq('id', id);
+      const { error } = await supabase.from('obras_ocorrencia_causas').update({ estado }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: refresh,
