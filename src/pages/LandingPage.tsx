@@ -129,6 +129,87 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* DEMONSTRAÇÃO VISUAL FKT WORKS */}
+      <section className="border-t border-border bg-secondary/30 px-6 py-20 md:py-24">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-center">
+          <div className="space-y-5">
+            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
+              Exemplo ilustrativo · Relatório de visita
+            </span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Da observação à decisão, com o contexto preservado.
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              A informação recolhida durante a visita pode ser organizada por ocorrência, ligada à análise técnica, às referências consultadas e às acções de acompanhamento.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              A demonstração seguinte representa a estrutura do relatório. Não contém dados de uma obra real.
+            </p>
+            <Button asChild variant="outline">
+              <Link to="/modulos/obras">Explorar o FKT Works <ArrowRight className="h-4 w-4 ml-2" /></Link>
+            </Button>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm" aria-label="Pré-visualização ilustrativa de um relatório de visita">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.14em] text-muted-foreground">FKT WORKS · FISCALIZAÇÃO</p>
+                <h3 className="mt-1 text-lg font-bold">Relatório de Visita</h3>
+                <p className="text-xs text-muted-foreground">Exemplo de estrutura · Sem dados reais</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] font-semibold tracking-wider text-muted-foreground">DATA DA VISITA</p>
+                <p className="text-sm font-semibold">—</p>
+                <p className="text-[10px] text-muted-foreground">Obra demonstrativa</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 py-4 text-xs">
+              <div><p className="text-muted-foreground">Obra</p><p className="font-semibold">Identificação da obra</p></div>
+              <div><p className="text-muted-foreground">Técnico / Fiscal</p><p className="font-semibold">Responsável pela visita</p></div>
+            </div>
+
+            <div className="border-y border-border py-3">
+              <p className="text-[10px] font-bold tracking-wider text-muted-foreground">OCORRÊNCIA</p>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold">Descrição do facto observado</p>
+                <span className="rounded border border-border px-2 py-1 text-[9px] font-semibold">Estado</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
+                  <div className="flex h-14 items-center justify-center text-muted-foreground"><FileText className="h-5 w-5" /></div>
+                  <p className="text-center text-[9px] text-muted-foreground">Evidência fotográfica</p>
+                </div>
+                <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
+                  <div className="flex h-14 items-center justify-center text-muted-foreground"><BookOpen className="h-5 w-5" /></div>
+                  <p className="text-center text-[9px] text-muted-foreground">Referência documental</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3 py-4">
+              <div className="rounded-md bg-secondary/50 p-3">
+                <p className="text-[10px] font-bold">Análise técnica</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">Interpretação e factos associados à ocorrência.</p>
+              </div>
+              <div className="rounded-md bg-secondary/50 p-3">
+                <p className="text-[10px] font-bold">Conclusão e recomendação</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">Conclusão fundamentada e orientação registada.</p>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-bold tracking-wider text-muted-foreground">PLANO DE ACÇÕES</p>
+                <span className="text-[9px] text-muted-foreground">Responsável · Prazo · Estado</span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full w-2/3 rounded-full bg-primary/60" /></div>
+              <p className="mt-2 text-[9px] text-muted-foreground">Estrutura ilustrativa — sem acções ou progresso reais</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FKT WORKS */}
       <section className="border-t border-border px-6 py-20 md:py-24">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
