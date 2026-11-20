@@ -1,31 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useModuloActivo } from '@/hooks/useModuloActivo';
 
 export type WorkspaceRole = 'owner' | 'admin' | 'editor' | 'viewer' | null;
 
+/** Resolve the role for the active workspace, not the first workspace found for the account. */
 export function useWorkspaceRole() {
   const { user } = useAuth();
+  const { workspace } = useModuloActivo();
+  const workspaceId = workspace?.id ?? null;
 
   const { data, isLoading } = useQuery({
-    queryKey: ['workspace-role', user?.id],
+    queryKey: ['workspace-role', workspaceId, user?.id],
     queryFn: async (): Promise<WorkspaceRole> => {
-      if (!user) return null;
-      const { data: ws, error: workspaceError } = await supabase
-        .from('workspaces').select('id, user_id').eq('user_id', user.id).maybeSingle();
-      if (workspaceError) throw workspaceError;
-      if (ws) return 'owner';
-      const { data: m, error: membershipError } = await supabase
+      if (!user || !workspaceId) return null;
+      if (workspace?.user_id === user.id) return 'owner';
+
+      const { data: membership, error } = await supabase
         .from('workspace_members')
-        .select('workspace_id, role')
+        .select('role')
+        .eq('workspace_id', workspaceId)
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
-        .limit(1)
         .maybeSingle();
-      if (membershipError) throw membershipError;
-      return (m?.role as WorkspaceRole) ?? null;
+
+      if (error) throw error;
+      return (membership?.role as WorkspaceRole) ?? null;
     },
-    enabled: !!user,
+    enabled: !!user && !!workspaceId,
   });
 
   const role = data ?? null;
