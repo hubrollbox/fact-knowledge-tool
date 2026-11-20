@@ -65,6 +65,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS canil_ninhadas_workspace_id_id_uidx
 ALTER TABLE public.canil_registos_clinicos
   DROP CONSTRAINT IF EXISTS canil_registos_clinicos_animal_id_fkey;
 ALTER TABLE public.canil_registos_clinicos
+  DROP CONSTRAINT IF EXISTS canil_registos_clinicos_workspace_animal_fkey;
+ALTER TABLE public.canil_registos_clinicos
   ADD CONSTRAINT canil_registos_clinicos_workspace_animal_fkey
   FOREIGN KEY (workspace_id, animal_id)
   REFERENCES public.canil_animais (workspace_id, id)
@@ -72,6 +74,8 @@ ALTER TABLE public.canil_registos_clinicos
 
 ALTER TABLE public.canil_reservas
   DROP CONSTRAINT IF EXISTS canil_reservas_animal_id_fkey;
+ALTER TABLE public.canil_reservas
+  DROP CONSTRAINT IF EXISTS canil_reservas_workspace_animal_fkey;
 ALTER TABLE public.canil_reservas
   ADD CONSTRAINT canil_reservas_workspace_animal_fkey
   FOREIGN KEY (workspace_id, animal_id)
@@ -81,7 +85,11 @@ ALTER TABLE public.canil_reservas
 ALTER TABLE public.canil_ninhadas
   DROP CONSTRAINT IF EXISTS canil_ninhadas_mae_id_fkey;
 ALTER TABLE public.canil_ninhadas
+  DROP CONSTRAINT IF EXISTS canil_ninhadas_workspace_mae_fkey;
+ALTER TABLE public.canil_ninhadas
   DROP CONSTRAINT IF EXISTS canil_ninhadas_pai_id_fkey;
+ALTER TABLE public.canil_ninhadas
+  DROP CONSTRAINT IF EXISTS canil_ninhadas_workspace_pai_fkey;
 ALTER TABLE public.canil_ninhadas
   ADD CONSTRAINT canil_ninhadas_workspace_mae_fkey
   FOREIGN KEY (workspace_id, mae_id)
@@ -96,7 +104,11 @@ ALTER TABLE public.canil_ninhadas
 ALTER TABLE public.canil_cachorros
   DROP CONSTRAINT IF EXISTS canil_cachorros_animal_id_fkey;
 ALTER TABLE public.canil_cachorros
+  DROP CONSTRAINT IF EXISTS canil_cachorros_workspace_animal_fkey;
+ALTER TABLE public.canil_cachorros
   DROP CONSTRAINT IF EXISTS canil_cachorros_ninhada_id_fkey;
+ALTER TABLE public.canil_cachorros
+  DROP CONSTRAINT IF EXISTS canil_cachorros_workspace_ninhada_fkey;
 ALTER TABLE public.canil_cachorros
   ADD CONSTRAINT canil_cachorros_workspace_ninhada_fkey
   FOREIGN KEY (workspace_id, ninhada_id)
