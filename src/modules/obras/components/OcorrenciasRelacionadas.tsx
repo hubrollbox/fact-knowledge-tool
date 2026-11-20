@@ -115,7 +115,10 @@ export function OcorrenciasRelacionadas({
         .eq('id', relationId).eq('workspace_id', workspaceId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['obras-ocorrencias-relacoes', workspaceId, ocorrenciaId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['obras-ocorrencias-relacoes', workspaceId, ocorrenciaId] });
+      qc.invalidateQueries({ queryKey: ['obras-ocorrencias-pesquisa', workspaceId] });
+    },
     onError: (error: Error) => toast({ title: 'Não foi possível desligar', description: error.message, variant: 'destructive' }),
   });
 
