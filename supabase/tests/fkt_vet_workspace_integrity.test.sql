@@ -131,7 +131,8 @@ BEGIN
     SELECT 1
     FROM pg_default_acl d
     CROSS JOIN LATERAL aclexplode(d.defaclacl) acl
-    WHERE d.defaclnamespace = 'public'::regnamespace
+    WHERE d.defaclrole = 'postgres'::regrole
+      AND d.defaclnamespace = 'public'::regnamespace
       AND d.defaclobjtype IN ('r', 'S', 'f')
       AND acl.grantee IN (0, 'anon'::regrole)
       AND (acl.privilege_type IN ('SELECT','INSERT','UPDATE','DELETE','TRUNCATE','USAGE','EXECUTE'))
