@@ -129,6 +129,10 @@ BEGIN
       USING ERRCODE = '23503';
   END IF;
 
+  IF TG_OP = 'UPDATE' AND OLD.workspace_id IS DISTINCT FROM _workspace_id THEN
+    RAISE EXCEPTION 'Não é permitido mover um cachorro entre workspaces';
+  END IF;
+
   NEW.workspace_id := _workspace_id;
   RETURN NEW;
 END;
@@ -142,6 +146,43 @@ FOR EACH ROW
 EXECUTE FUNCTION public.canil_set_cachorro_workspace();
 
 REVOKE ALL ON FUNCTION public.canil_set_cachorro_workspace() FROM PUBLIC, anon, authenticated;
+
+-- Workspace ownership is immutable after creation. Reassignment must be an
+-- explicit, separately designed transfer workflow rather than a normal UPDATE.
+CREATE OR REPLACE FUNCTION public.canil_prevent_workspace_change()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $
+BEGIN
+  IF NEW.workspace_id IS DISTINCT FROM OLD.workspace_id THEN
+    RAISE EXCEPTION 'Não é permitido mover registos do FKT Vet entre workspaces';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+DROP TRIGGER IF EXISTS canil_animais_workspace_immutable ON public.canil_animais;
+CREATE TRIGGER canil_animais_workspace_immutable
+BEFORE UPDATE OF workspace_id ON public.canil_animais
+FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_workspace_change();
+
+DROP TRIGGER IF EXISTS canil_ninhadas_workspace_immutable ON public.canil_ninhadas;
+CREATE TRIGGER canil_ninhadas_workspace_immutable
+BEFORE UPDATE OF workspace_id ON public.canil_ninhadas
+FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_workspace_change();
+
+DROP TRIGGER IF EXISTS canil_clinico_workspace_immutable ON public.canil_registos_clinicos;
+CREATE TRIGGER canil_clinico_workspace_immutable
+BEFORE UPDATE OF workspace_id ON public.canil_registos_clinicos
+FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_workspace_change();
+
+DROP TRIGGER IF EXISTS canil_reservas_workspace_immutable ON public.canil_reservas;
+CREATE TRIGGER canil_reservas_workspace_immutable
+BEFORE UPDATE OF workspace_id ON public.canil_reservas
+FOR EACH ROW EXECUTE FUNCTION public.canil_prevent_workspace_change();
+
+REVOKE ALL ON FUNCTION public.canil_prevent_workspace_change() FROM PUBLIC, anon, authenticated;
 
 -- Supporting indexes for the composite foreign keys and workspace-scoped reads.
 CREATE INDEX IF NOT EXISTS idx_canil_clinico_workspace_animal
