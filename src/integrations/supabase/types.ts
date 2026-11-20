@@ -292,7 +292,7 @@ export type Database = {
             columns: ["workspace_id", "ninhada_id"]
             isOneToOne: false
             referencedRelation: "canil_ninhadas"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
         ]
       }
@@ -346,7 +346,7 @@ export type Database = {
             columns: ["workspace_id", "pai_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
         ]
       }
