@@ -40,11 +40,12 @@ function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
   );
 }
 
-type AnaliseRelatorio = { analise: any; factos: any[]; referencias: any[]; versoes: any[] };
+type AnaliseRelatorio = { analise: any; factos: any[]; referencias: any[]; versoes: any[]; documentos: any[] };
 
 function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
   const { analise, factos, referencias, versoes } = dados;
   const versaoPorId = new Map(versoes.map((item) => [item.id, item]));
+  const documentoPorId = new Map(documentos.map((item) => [item.id, item]));
   const confirmados = factos.filter((facto) => facto.estado === 'confirmado');
   const porConfirmar = factos.filter((facto) => facto.estado === 'por_confirmar');
   return (
@@ -56,7 +57,7 @@ function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
         <div><strong>Factos por confirmar ({porConfirmar.length})</strong>{porConfirmar.length ? <ul>{porConfirmar.map((f) => <li key={f.id}>{f.descricao}</li>)}</ul> : <p className="report-muted">Não existem factos assinalados como por confirmar.</p>}</div>
       </div>
       {analise.informacao_em_falta && <div className="report-analysis-block"><strong>Informação em falta / pontos por confirmar</strong><p>{analise.informacao_em_falta}</p></div>}
-      {referencias.length > 0 && <div className="report-analysis-block"><strong>Normas e referências técnicas</strong><ul className="report-references">{referencias.map((ref) => { const versao = ref.documento_versao_id ? versaoPorId.get(ref.documento_versao_id) : null; return <li key={ref.id}><span>{ref.titulo}</span><small>{[ref.tipo, ref.entidade_origem, ref.identificador, ref.versao, ref.data_documento ? dataPt(ref.data_documento) : null].filter(Boolean).join(' · ')}</small>{versao && <small>Documento arquivado: {versao.nome_ficheiro} — versão {versao.numero_versao}</small>}{ref.notas && <small>{ref.notas}</small>}{ref.url && <a href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}</li>; })}</ul></div>}
+      {referencias.length > 0 && <div className="report-analysis-block"><strong>Normas e referências técnicas</strong><ul className="report-references">{referencias.map((ref) => { const versao = ref.documento_versao_id ? versaoPorId.get(ref.documento_versao_id) : null; const documento = versao ? documentoPorId.get(versao.documento_id) : null; return <li key={ref.id}><span>{ref.titulo}</span><small>{[ref.tipo, ref.entidade_origem, ref.identificador, ref.versao, ref.data_documento ? dataPt(ref.data_documento) : null].filter(Boolean).join(' · ')}</small>{versao && <small>Documento arquivado: {documento?.titulo || versao.nome_ficheiro} — versão {versao.numero_versao} ({versao.nome_ficheiro})</small>}{versao?.signedUrl && <a href={versao.signedUrl} target="_blank" rel="noreferrer">Abrir documento arquivado</a>}{ref.notas && <small>{ref.notas}</small>}{ref.url && <a href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}</li>; })}</ul></div>}
       {analise.conclusao && <div className="report-analysis-block"><strong>Conclusão</strong><p>{analise.conclusao}</p></div>}
       {analise.recomendacao && <div className="report-analysis-block"><strong>Recomendação</strong><p>{analise.recomendacao}</p></div>}
     </div>
@@ -104,9 +105,17 @@ export function RelatorioVisita() {
       if (refsResult.error) throw refsResult.error;
       const refs = refsResult.data ?? [];
       const versaoIds = [...new Set(refs.map((ref) => ref.documento_versao_id).filter(Boolean))] as string[];
-      const versoesResult = versaoIds.length ? await supabase.from('obras_documento_versoes').select('id, numero_versao, nome_ficheiro').in('id', versaoIds) : { data: [], error: null };
+      const versoesResult = versaoIds.length ? await supabase.from('obras_documento_versoes').select('id, documento_id, numero_versao, nome_ficheiro, storage_path').in('id', versaoIds) : { data: [], error: null };
       if (versoesResult.error) throw versoesResult.error;
-      return (analises ?? []).map((analise) => ({ analise, factos: (factosResult.data ?? []).filter((f) => f.analise_id === analise.id), referencias: refs.filter((ref) => ref.analise_id === analise.id), versoes: versoesResult.data ?? [] }));
+      const paths = (versoesResult.data ?? []).map((versao) => versao.storage_path);
+      const signedResult = paths.length ? await supabase.storage.from('obras-documentos').createSignedUrls(paths, 900) : { data: [], error: null };
+      if (signedResult.error) throw signedResult.error;
+      const signedByPath = new Map((signedResult.data ?? []).map((item) => [item.path, item.signedUrl]));
+      const versoes = (versoesResult.data ?? []).map((versao) => ({ ...versao, signedUrl: signedByPath.get(versao.storage_path) ?? null }));
+      const documentoIds = [...new Set(versoes.map((versao) => versao.documento_id))];
+      const documentosResult = documentoIds.length ? await supabase.from('obras_documentos').select('id, titulo').in('id', documentoIds) : { data: [], error: null };
+      if (documentosResult.error) throw documentosResult.error;
+      return (analises ?? []).map((analise) => ({ analise, factos: (factosResult.data ?? []).filter((f) => f.analise_id === analise.id), referencias: refs.filter((ref) => ref.analise_id === analise.id), versoes, documentos: documentosResult.data ?? [] }));
     },
   });
   const analisePorOcorrencia = new Map((analisesRelatorio ?? []).map((item) => [item.analise.ocorrencia_id, item as AnaliseRelatorio]));
