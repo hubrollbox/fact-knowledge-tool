@@ -244,6 +244,21 @@ BEGIN
   END;
   IF NOT _caught THEN RAISE EXCEPTION 'Animal history deletion was not blocked'; END IF;
 
+  -- A litter that records parents is breeding history and cannot be deleted
+  -- to bypass the animal's descendant-preservation rule.
+  _caught := false;
+  BEGIN
+    DELETE FROM public.canil_ninhadas
+    WHERE id = 'd0000000-0000-4000-8000-000000000001';
+    RAISE EXCEPTION 'Litter with recorded parents was unexpectedly deleted';
+  EXCEPTION WHEN raise_exception THEN
+    SELECT count(*) INTO _count FROM public.canil_ninhadas
+    WHERE id = 'd0000000-0000-4000-8000-000000000001';
+    IF _count <> 1 THEN RAISE; END IF;
+    _caught := true;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Litter history deletion was not blocked'; END IF;
+
   -- Logical archive is permitted and leaves all historical relations intact.
   UPDATE public.canil_animais SET activo = false
   WHERE id = 'c0000000-0000-4000-8000-000000000001';
