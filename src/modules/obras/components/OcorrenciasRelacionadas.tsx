@@ -21,6 +21,8 @@ type Candidate = {
   titulo: string;
   descricao: string | null;
   localizacao: string | null;
+  tipo: string | null;
+  especialidade: string | null;
   gravidade: string;
   estado: string;
   obras: { nome: string } | null;
@@ -53,7 +55,7 @@ export function OcorrenciasRelacionadas({
       );
       if (!ids.length) return [];
       const { data: occurrences, error: occurrenceError } = await db.from('obras_ocorrencias')
-        .select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)')
+        .select('id, obra_id, titulo, descricao, localizacao, tipo, especialidade, gravidade, estado, obras(nome)')
         .eq('workspace_id', workspaceId).in('id', ids);
       if (occurrenceError) throw occurrenceError;
       const byId = new Map((occurrences ?? []).map((o: Candidate) => [o.id, o]));
@@ -70,13 +72,13 @@ export function OcorrenciasRelacionadas({
     enabled: canWrite && termo.trim().length >= 2,
     queryFn: async () => {
       const search = `%${termo.trim()}%`;
-      const [titles, descriptions, locations, works] = await Promise.all([
+      const [titles, descriptions, locations, types, specialties, works] = await Promise.all([
         db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('titulo', search).limit(20),
         db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('descricao', search).limit(20),
         db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).ilike('localizacao', search).limit(20),
         db.from('obras').select('id').eq('workspace_id', workspaceId).ilike('nome', search).limit(20),
       ]);
-      for (const result of [titles, descriptions, locations, works]) if (result.error) throw result.error;
+      for (const result of [titles, descriptions, locations, types, specialties, works]) if (result.error) throw result.error;
       const workIds = (works.data ?? []).map((w: { id: string }) => w.id);
       const workOccurrences = workIds.length
         ? await db.from('obras_ocorrencias').select('id, obra_id, titulo, descricao, localizacao, gravidade, estado, obras(nome)').eq('workspace_id', workspaceId).in('obra_id', workIds).limit(20)
@@ -143,7 +145,7 @@ export function OcorrenciasRelacionadas({
           <label className="text-sm font-medium" htmlFor={`pesquisa-ocorrencias-${ocorrenciaId}`}>Pesquisar ocorrências anteriores</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input id={`pesquisa-ocorrencias-${ocorrenciaId}`} value={termo} onChange={(e) => setTermo(e.target.value)} className="pl-9" placeholder="Título, descrição, localização ou obra…" />
+            <Input id={`pesquisa-ocorrencias-${ocorrenciaId}`} value={termo} onChange={(e) => setTermo(e.target.value)} className="pl-9" placeholder="Título, descrição, tipo, especialidade, localização ou obra…" />
           </div>
           {termo.trim().length > 0 && termo.trim().length < 2 && <p className="text-xs text-muted-foreground">Introduza pelo menos dois caracteres.</p>}
           {candidates.isFetching && <p className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" />A pesquisar…</p>}
@@ -152,7 +154,7 @@ export function OcorrenciasRelacionadas({
             <ul className="space-y-2">
               {candidates.data.filter((o: Candidate) => !linkedIds.has(o.id)).map((o: Candidate) => (
                 <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
-                  <div className="min-w-0"><p className="text-sm font-medium">{o.titulo}</p><p className="text-xs text-muted-foreground">{o.obras?.nome ?? 'Obra'}{o.localizacao ? ` · ${o.localizacao}` : ''}</p></div>
+                  <div className="min-w-0"><p className="text-sm font-medium">{o.titulo}</p><p className="text-xs text-muted-foreground">{o.obras?.nome ?? 'Obra'}{o.localizacao ? ` · ${o.localizacao}` : ''}{o.tipo ? ` · ${o.tipo}` : ''}{o.especialidade ? ` · ${o.especialidade}` : ''}</p></div>
                   <Button size="sm" variant="outline" disabled={add.isPending} onClick={() => add.mutate(o.id)}><Link2 className="mr-1 h-4 w-4" />Relacionar</Button>
                 </li>
               ))}
