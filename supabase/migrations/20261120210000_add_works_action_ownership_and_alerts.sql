@@ -37,6 +37,8 @@ BEGIN
     RAISE EXCEPTION 'É necessário iniciar sessão';
   END IF;
 
+  IF v_user IS NULL THEN RETURN NEW; END IF;
+
   INSERT INTO public.alertas (
     workspace_id, user_id, modulo, tipo, titulo, descricao,
     data_alerta, referencia_id, referencia_tipo
