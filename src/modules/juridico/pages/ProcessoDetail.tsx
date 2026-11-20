@@ -1,6 +1,6 @@
 import { useProcesso, useUpdateProcesso } from '../hooks/useProcessos';
+import { PartesTab, DocumentosTab, FactosTab, QuestoesTab, FontesTab, AplicacoesTab, ConclusoesTab } from '../components/FIRACSections';
 import { usePrazos } from '../hooks/usePrazos';
-import { useDocumentos } from '../hooks/useDocumentos';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ArrowLeft, Plus, Calendar, FileText, Users, Scale } from 'lucide-react';
+import { Loader2, ArrowLeft, Calendar, FileText, Users, Scale } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useState } from 'react';
@@ -46,7 +46,6 @@ interface Props {
 export function ProcessoDetail({ processoId, onBack }: Props) {
   const { data: processo, isLoading } = useProcesso(processoId);
   const { data: prazos } = usePrazos(processoId);
-  const { data: documentos } = useDocumentos(processoId);
   const update = useUpdateProcesso();
   const navigate = useNavigate();
 
@@ -107,7 +106,11 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
       <Tabs defaultValue="resumo">
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="resumo"><Scale className="mr-1.5 h-3.5 w-3.5" />Resumo</TabsTrigger>
-          <TabsTrigger value="analise"><FileText className="mr-1.5 h-3.5 w-3.5" />Análise</TabsTrigger>
+          <TabsTrigger value="factos">Factos</TabsTrigger>
+          <TabsTrigger value="questoes">Questões</TabsTrigger>
+          <TabsTrigger value="fontes">Fontes</TabsTrigger>
+          <TabsTrigger value="analise"><FileText className="mr-1.5 h-3.5 w-3.5" />Aplicação</TabsTrigger>
+          <TabsTrigger value="conclusoes">Conclusões</TabsTrigger>
           <TabsTrigger value="partes"><Users className="mr-1.5 h-3.5 w-3.5" />Partes</TabsTrigger>
           <TabsTrigger value="documentos"><FileText className="mr-1.5 h-3.5 w-3.5" />Documentos</TabsTrigger>
           <TabsTrigger value="prazos"><Calendar className="mr-1.5 h-3.5 w-3.5" />Prazos</TabsTrigger>
@@ -119,9 +122,11 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
         </TabsContent>
 
         {/* Tab Análise */}
-        <TabsContent value="analise">
-          <AnaliseTab processo={processo} onUpdate={update} />
-        </TabsContent>
+        <TabsContent value="factos"><FactosTab processoId={processoId} /></TabsContent>
+        <TabsContent value="questoes"><QuestoesTab processoId={processoId} /></TabsContent>
+        <TabsContent value="fontes"><FontesTab processoId={processoId} /></TabsContent>
+        <TabsContent value="analise"><div className="space-y-4"><AplicacoesTab processoId={processoId} /><AnaliseTab processo={processo} onUpdate={update} /></div></TabsContent>
+        <TabsContent value="conclusoes"><ConclusoesTab processoId={processoId} /></TabsContent>
 
         {/* Tab Partes */}
         <TabsContent value="partes">
@@ -129,9 +134,7 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
         </TabsContent>
 
         {/* Tab Documentos */}
-        <TabsContent value="documentos">
-          <DocumentosTab documentos={documentos ?? []} processoId={processoId} />
-        </TabsContent>
+        <TabsContent value="documentos"><DocumentosTab processoId={processoId} /></TabsContent>
 
         {/* Tab Prazos */}
         <TabsContent value="prazos">
@@ -261,7 +264,7 @@ function AnaliseTab({ processo, onUpdate }: { processo: any; onUpdate: any }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Análise Jurídica</CardTitle>
+        <CardTitle className="text-base">Análise anterior — texto livre</CardTitle>
         <Button variant="outline" size="sm" onClick={() => editing ? save() : setEditing(true)}>
           {editing ? 'Guardar' : 'Editar'}
         </Button>
@@ -286,60 +289,10 @@ function AnaliseTab({ processo, onUpdate }: { processo: any; onUpdate: any }) {
   );
 }
 
-function PartesTab({ processoId }: { processoId: string }) {
-  // Placeholder — hook usePartes a criar
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Partes</CardTitle>
-        <Button size="sm"><Plus className="mr-1.5 h-3.5 w-3.5" />Adicionar</Button>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">Nenhuma parte registada.</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function DocumentosTab({ documentos, processoId }: { documentos: any[]; processoId: string }) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Documentos</CardTitle>
-        <Button size="sm"><Plus className="mr-1.5 h-3.5 w-3.5" />Upload</Button>
-      </CardHeader>
-      <CardContent>
-        {documentos.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum documento.</p>
-        ) : (
-          <div className="space-y-2">
-            {documentos.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
-                <div>
-                  <p className="font-medium">{doc.nome}</p>
-                  {doc.categoria && <p className="text-xs text-muted-foreground capitalize">{doc.categoria}</p>}{doc.signed_url && <a href={doc.signed_url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Abrir documento</a>}
-                </div>
-                {doc.data_documento && (
-                  <span className="text-xs text-muted-foreground">
-                    {format(parseISO(doc.data_documento), "d MMM yyyy", { locale: pt })}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 function PrazosTab({ prazos, processoId }: { prazos: any[]; processoId: string }) {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Prazos</CardTitle>
-        <Button size="sm"><Plus className="mr-1.5 h-3.5 w-3.5" />Adicionar</Button>
-      </CardHeader>
+      <CardHeader><CardTitle className="text-base">Prazos</CardTitle></CardHeader>
       <CardContent>
         {prazos.length === 0 ? (
           <p className="text-sm text-muted-foreground">Nenhum prazo definido.</p>
