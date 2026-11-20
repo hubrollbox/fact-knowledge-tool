@@ -235,6 +235,7 @@ SELECT set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000004
 SELECT extensions.lives_ok($test$ DO $$
 DECLARE
   _count integer;
+  _derived_workspace uuid;
   _caught boolean := false;
 BEGIN
   INSERT INTO public.canil_animais (workspace_id, nome, sexo)
@@ -305,11 +306,11 @@ BEGIN
   VALUES (
     'd0000000-0000-4000-8000-000000000001',
     'disponivel'
-  );
-  SELECT count(*) INTO _count FROM public.canil_cachorros
-  WHERE ninhada_id = 'd0000000-0000-4000-8000-000000000001'
-    AND workspace_id = 'b0000000-0000-4000-8000-000000000001';
-  IF _count <> 1 THEN RAISE EXCEPTION 'Puppy workspace was not derived from its litter'; END IF;
+  )
+  RETURNING workspace_id INTO _derived_workspace;
+  IF _derived_workspace IS DISTINCT FROM 'b0000000-0000-4000-8000-000000000001'::uuid THEN
+    RAISE EXCEPTION 'Puppy workspace was not derived from its litter';
+  END IF;
 
   _caught := false;
   BEGIN
