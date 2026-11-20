@@ -1,0 +1,3 @@
+GRANT SELECT, UPDATE (status) ON public.pilot_access_requests TO authenticated;
+CREATE POLICY "Global admins read pilot requests" ON public.pilot_access_requests FOR SELECT TO authenticated USING (private.is_fkt_global_admin());
+CREATE POLICY "Global admins update pilot request status" ON public.pilot_access_requests FOR UPDATE TO authenticated USING (private.is_fkt_global_admin()) WITH CHECK (private.is_fkt_global_admin());

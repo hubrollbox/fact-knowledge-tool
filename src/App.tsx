@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import PedidosPiloto from "@/pages/gestao/PedidosPiloto";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -89,6 +90,7 @@ const App = () => (
             <Route path="/gestao/arquivo" element={<ProtectedRoute><Arquivo /></ProtectedRoute>} />
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
+            <Route path="/gestao/pedidos-piloto" element={<ProtectedRoute><PedidosPiloto /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
             <Route path="/ajuda-suporte" element={<AjudaSuporte />} />
             <Route path="/juridico" element={<ProtectedRoute module="juridico"><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />

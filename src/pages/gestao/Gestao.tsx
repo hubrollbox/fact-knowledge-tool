@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Users, Archive, FileText, UserCircle, ChevronRight, Landmark } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Users, Archive, FileText, UserCircle, ChevronRight, Landmark, Inbox } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -8,10 +10,12 @@ const cards = [
   { label: 'Clientes', desc: 'Gerir clientes e os seus processos', href: '/gestao/clientes', icon: Users },
   { label: 'Arquivo', desc: 'Processos arquivados e restauração', href: '/gestao/arquivo', icon: Archive },
   { label: 'Relatórios', desc: 'Gerar relatórios FIRAC e exportar', href: '/gestao/relatorios', icon: FileText },
-  { label: 'Tesouraria', desc: 'Gestão da conta corrente e movimentos', href: '/gestao/tesouraria', icon: Landmark },
+  { label: 'Tesouraria', desc: 'Gestão da conta corrente e movimentos', href: '/gestao/tesouraria', icon: Landmark, Inbox },
 ];
 
 export default function Gestao() {
+  const { data: isGlobalAdmin } = useQuery({ queryKey: ['is-fkt-global-admin'], queryFn: async () => { const { data } = await supabase.rpc('is_fkt_global_admin'); return data === true; } });
+  const visible = isGlobalAdmin ? [...cards, { label: 'Pedidos de piloto', desc: 'Contactos recebidos e estado de admissão', href: '/gestao/pedidos-piloto', icon: Inbox }] : cards;
   return (
     <AppLayout>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -20,7 +24,7 @@ export default function Gestao() {
           <p className="text-sm text-muted-foreground mt-0.5">Hub de gestão e administração</p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cards.map(({ label, desc, href, icon: Icon }) => (
+          {visible.map(({ label, desc, href, icon: Icon }) => (
             <Link key={label} to={href}>
               <Card className="border-border hover:border-foreground/20 transition-colors h-full cursor-pointer">
                 <CardContent className="p-6 flex flex-col gap-4">
