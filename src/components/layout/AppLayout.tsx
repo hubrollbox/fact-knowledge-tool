@@ -130,7 +130,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut } = useAuth();
-  const { moduloSlug, moduloActivo, workspace } = useModuloActivo();
+  const { moduloSlug, moduloActivo } = useModuloActivo();
   const dynamicNavItems: NavItem[] = [
     ...navItems,
     ...(moduloSlug === 'juridico'
