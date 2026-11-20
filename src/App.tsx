@@ -39,6 +39,7 @@ import ModuloDetalhe from "./pages/modulos/ModuloDetalhe";
 
 import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
 import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
+import { RelatorioFIRAC } from "./modules/juridico/pages/RelatorioFIRAC";
 
 import { CanilDashboard } from "./modules/canil/pages/CanilDashboard";
 import { AnimalDetail } from "./modules/canil/pages/AnimalDetail";
@@ -94,6 +95,7 @@ const App = () => (
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
             <Route path="/ajuda-suporte" element={<AjudaSuporte />} />
             <Route path="/juridico" element={<ProtectedRoute module="juridico"><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico/:id/relatorio" element={<ProtectedRoute module="juridico"><RelatorioFIRAC /></ProtectedRoute>} />
             <Route path="/juridico/:id" element={<ProtectedRoute module="juridico"><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
             <Route path="/canil" element={<ProtectedRoute module="canil"><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/canil/agenda" element={<ProtectedRoute module="canil"><AppLayout><AgendaDiaria /></AppLayout></ProtectedRoute>} />

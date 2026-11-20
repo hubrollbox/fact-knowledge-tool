@@ -126,6 +126,9 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
             <p className="text-sm text-muted-foreground">Proc. {processo.numero_processo}</p>
           )}
         </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/juridico/${processoId}/relatorio`}><FileText className="mr-1.5 h-4 w-4" />Relatório PDF</Link>
+        </Button>
       </div>
 
 
