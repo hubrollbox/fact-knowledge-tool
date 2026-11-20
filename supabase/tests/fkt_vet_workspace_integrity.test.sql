@@ -98,6 +98,7 @@ BEGIN
   END IF;
 
   -- Anonymous role must not retain any direct table privilege on Canil tables.
+  -- Authenticated users receive only the DML privileges required by the client.
   FOREACH _table IN ARRAY ARRAY[
     'canil_animais',
     'canil_registos_clinicos',
@@ -112,6 +113,16 @@ BEGIN
       OR has_table_privilege('anon', format('public.%I', _table), 'TRUNCATE') THEN
       RAISE EXCEPTION 'anon retains a direct privilege on public.%', _table;
     END IF;
+
+    IF NOT has_table_privilege('authenticated', format('public.%I', _table), 'SELECT')
+      OR NOT has_table_privilege('authenticated', format('public.%I', _table), 'INSERT')
+      OR NOT has_table_privilege('authenticated', format('public.%I', _table), 'UPDATE')
+      OR NOT has_table_privilege('authenticated', format('public.%I', _table), 'DELETE')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'TRUNCATE')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'REFERENCES')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'TRIGGER') THEN
+      RAISE EXCEPTION 'authenticated has missing or excessive direct privileges on public.%', _table;
+    END IF;
   END LOOP;
 
 
@@ -122,7 +133,7 @@ BEGIN
     CROSS JOIN LATERAL aclexplode(d.defaclacl) acl
     WHERE d.defaclnamespace = 'public'::regnamespace
       AND d.defaclobjtype IN ('r', 'S', 'f')
-      AND acl.grantee IN (0, 'anon'::regrole)
+      AND acl.grantee IN (0, 'anon'::regrole, 'authenticated'::regrole, 'service_role'::regrole)
       AND (acl.privilege_type IN ('SELECT','INSERT','UPDATE','DELETE','TRUNCATE','USAGE','EXECUTE'))
   ) THEN
     RAISE EXCEPTION 'Default privileges still grant access to PUBLIC/anon in public schema';
