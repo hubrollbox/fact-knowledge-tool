@@ -2,12 +2,15 @@
 -- Run against the local Supabase database after applying migrations:
 --   supabase db reset
 --   supabase test db
--- This file deliberately performs catalog assertions only; behavioural RLS
--- tests with authenticated users belong in the application integration suite.
+-- This file performs catalog assertions; behavioural RLS scenarios are in
+-- fkt_vet_rls_behavior.test.sql.
 
+CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
+SET search_path TO extensions, public;
 BEGIN;
+SELECT plan(1);
 
-DO $$
+SELECT extensions.lives_ok($test$ DO $
 DECLARE
   _table text;
   _constraint text;
@@ -160,6 +163,7 @@ BEGIN
       _policy.policyname, _policy.tablename;
   END LOOP;
 END;
-$$;
+$ $test$, 'FKT Vet schema, policies and grants satisfy security invariants');
 
+SELECT * FROM finish();
 ROLLBACK;
