@@ -1,5 +1,15 @@
 -- Issue #28: manually confirmed relationships between occurrences.
 -- Relationships are symmetric, workspace-scoped and never imply a shared cause.
+-- Type and specialty are free-text labels until the product taxonomy is agreed.
+
+ALTER TABLE public.obras_ocorrencias
+  ADD COLUMN tipo text,
+  ADD COLUMN especialidade text;
+
+CREATE INDEX obras_ocorrencias_workspace_tipo_idx
+  ON public.obras_ocorrencias(workspace_id, tipo);
+CREATE INDEX obras_ocorrencias_workspace_especialidade_idx
+  ON public.obras_ocorrencias(workspace_id, especialidade);
 
 CREATE TABLE public.obras_ocorrencias_relacoes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
