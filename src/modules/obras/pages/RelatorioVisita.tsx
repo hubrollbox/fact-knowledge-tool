@@ -43,7 +43,7 @@ function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
 type AnaliseRelatorio = { analise: any; factos: any[]; referencias: any[]; versoes: any[]; documentos: any[] };
 
 function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
-  const { analise, factos, referencias, versoes } = dados;
+  const { analise, factos, referencias, versoes, documentos } = dados;
   const versaoPorId = new Map(versoes.map((item) => [item.id, item]));
   const documentoPorId = new Map(documentos.map((item) => [item.id, item]));
   const confirmados = factos.filter((facto) => facto.estado === 'confirmado');
