@@ -11,6 +11,7 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AjudaSuporte from "./pages/AjudaSuporte";
 
 import DossiersList from "./pages/dossiers/DossiersList";
 import DossierNovo from "./pages/dossiers/DossierNovo";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
             <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/ajuda-suporte" element={<ProtectedRoute><AppLayout><AjudaSuporte /></AppLayout></ProtectedRoute>} />
             <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
             <Route path="/canil" element={<ProtectedRoute><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />

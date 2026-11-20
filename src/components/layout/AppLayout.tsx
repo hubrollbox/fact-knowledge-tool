@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3, HardHat
+  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
@@ -23,6 +23,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { label: 'Ajuda e Suporte', href: '/ajuda-suporte', icon: LifeBuoy },
   {
     label: 'Dossiers', href: '/dossiers', icon: FolderOpen, children: [
       { label: 'Cronologia', href: '/dossiers/cronologia', icon: Clock },
