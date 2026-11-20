@@ -57,9 +57,9 @@ function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
         <div><strong>Factos por confirmar ({porConfirmar.length})</strong>{porConfirmar.length ? <ul>{porConfirmar.map((f) => <li key={f.id}>{f.descricao}</li>)}</ul> : <p className="report-muted">Não existem factos assinalados como por confirmar.</p>}</div>
       </div>
       {analise.informacao_em_falta && <div className="report-analysis-block"><strong>Informação em falta / pontos por confirmar</strong><p>{analise.informacao_em_falta}</p></div>}
-      {referencias.length > 0 && <div className="report-analysis-block"><strong>Normas e referências técnicas</strong><ul className="report-references">{referencias.map((ref) => { const versao = ref.documento_versao_id ? versaoPorId.get(ref.documento_versao_id) : null; const documento = versao ? documentoPorId.get(versao.documento_id) : null; return <li key={ref.id}><span>{ref.titulo}</span><small>{[ref.tipo, ref.entidade_origem, ref.identificador, ref.versao, ref.data_documento ? dataPt(ref.data_documento) : null].filter(Boolean).join(' · ')}</small>{versao && <small>Documento arquivado: {documento?.titulo || versao.nome_ficheiro} — versão {versao.numero_versao} ({versao.nome_ficheiro})</small>}{versao?.signedUrl && <a href={versao.signedUrl} target="_blank" rel="noreferrer">Abrir documento arquivado</a>}{ref.notas && <small>{ref.notas}</small>}{ref.url && <a href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}</li>; })}</ul></div>}
-      {analise.conclusao && <div className="report-analysis-block"><strong>Conclusão</strong><p>{analise.conclusao}</p></div>}
-      {analise.recomendacao && <div className="report-analysis-block"><strong>Recomendação</strong><p>{analise.recomendacao}</p></div>}
+      <div className="report-analysis-block"><strong>Normas e referências técnicas</strong>{referencias.length ? <ul className="report-references">{referencias.map((ref) => { const versao = ref.documento_versao_id ? versaoPorId.get(ref.documento_versao_id) : null; const documento = versao ? documentoPorId.get(versao.documento_id) : null; return <li key={ref.id}><span>{ref.titulo}</span><small>{[ref.tipo, ref.entidade_origem, ref.identificador, ref.versao, ref.data_documento ? dataPt(ref.data_documento) : null].filter(Boolean).join(' · ')}</small>{versao && <small>Documento arquivado: {documento?.titulo || versao.nome_ficheiro} — versão {versao.numero_versao} ({versao.nome_ficheiro})</small>}{versao?.signedUrl && <a href={versao.signedUrl} target="_blank" rel="noreferrer">Abrir documento arquivado</a>}{ref.notas && <small>{ref.notas}</small>}{ref.url && <a href={ref.url} target="_blank" rel="noreferrer">{ref.url}</a>}</li>; })}</ul> : <p className="report-muted">Não foram registadas referências técnicas ou documentais.</p>}</div>
+      <div className="report-analysis-block"><strong>Conclusão</strong><p>{analise.conclusao || 'Não foi registada uma conclusão.'}</p></div>
+      <div className="report-analysis-block"><strong>Recomendação</strong><p>{analise.recomendacao || 'Não foi registada uma recomendação.'}</p></div>
     </div>
   );
 }
@@ -76,7 +76,7 @@ function BlocoOcorrencia({ ocorrencia, index, analise }: { ocorrencia: Ocorrenci
       </dl>
       {ocorrencia.descricao && <p className="report-description">{ocorrencia.descricao}</p>}
       <FotosOcorrencia ocorrenciaId={ocorrencia.id} />
-      {analise && <BlocoAnalise dados={analise} />}
+      {analise ? <BlocoAnalise dados={analise} /> : <div className="report-analysis"><h4>Análise técnica</h4><p className="report-muted">Não foi registada análise técnica para esta ocorrência.</p></div>}
     </article>
   );
 }
