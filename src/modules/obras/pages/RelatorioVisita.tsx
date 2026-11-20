@@ -163,7 +163,11 @@ export function RelatorioVisita() {
       acoes: acoesVisita,
       fotos_visita: semUrl(fotosVisita ?? []),
       fotos_ocorrencias: semUrl(fotosOcorrencias ?? []),
-      analises: [...analisePorOcorrencia.entries()].map(([ocorrencia_id, dados]) => ({ ocorrencia_id, ...dados })),
+      analises: [...analisePorOcorrencia.entries()].map(([ocorrencia_id, dados]) => ({
+        ocorrencia_id,
+        ...dados,
+        versoes: dados.versoes.map(({ signedUrl: _signedUrl, ...versao }) => versao),
+      })),
     };
     emitirRelatorio.mutate(snapshot);
   };
