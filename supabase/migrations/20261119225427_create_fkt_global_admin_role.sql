@@ -27,6 +27,10 @@ on public.fkt_global_admins for select to authenticated
 using (user_id = (select auth.uid()));
 
 
--- Global administrator membership is provisioned separately after the
--- intended Auth user exists. Migrations must not depend on a hard-coded
--- production email or fail when replayed in a clean local environment.
+-- Bootstrap the configured administrator when that Auth account exists.
+-- A clean local database may not contain it; that must not block migrations.
+insert into public.fkt_global_admins (user_id, created_by, note)
+select id, id, 'Administrador Global inicial confirmado pelo proprietário da plataforma'
+from auth.users
+where lower(email) = lower('brandadministration@gmail.com')
+on conflict (user_id) do nothing;
