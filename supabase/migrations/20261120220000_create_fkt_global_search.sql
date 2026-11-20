@@ -257,7 +257,7 @@ AS $$
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'dossier')
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
       AND (p_date_to IS NULL OR d.created_at::date <= p_date_to)
-      AND (p_status IS NULL OR d.estado = p_status)
+      AND (p_status IS NULL OR d.estado::text = p_status)
       AND p_workspace_id IS NULL AND p_obra_id IS NULL
       AND concat_ws(' ', d.titulo, d.tipo, d.estado, d.materia, d.descricao) ILIKE q.pattern
 
