@@ -121,7 +121,7 @@ export function RelatorioVisita() {
   const analisePorOcorrencia = new Map((analisesRelatorio ?? []).map((item) => [item.analise.ocorrencia_id, item as AnaliseRelatorio]));
   const geradoEm = new Date();
 
-  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
+  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
   if (!obra || !visita || visita.obra_id !== obra.id) {
     return <div className="p-8 space-y-3"><p className="text-sm text-muted-foreground">Não foi possível localizar esta visita e a respectiva obra.</p><Button asChild variant="outline"><Link to={id ? `/obras/${id}` : '/obras'}>Voltar</Link></Button></div>;
   }
