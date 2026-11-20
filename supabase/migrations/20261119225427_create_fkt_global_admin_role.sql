@@ -1,0 +1,44 @@
+create table if not exists public.fkt_global_admins (
+  user_id uuid primary key references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users(id) on delete set null,
+  note text
+);
+alter table public.fkt_global_admins enable row level security;
+revoke all on table public.fkt_global_admins from anon, authenticated;
+grant select on table public.fkt_global_admins to authenticated;
+
+create or replace function public.is_fkt_global_admin()
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.fkt_global_admins a
+    where a.user_id = auth.uid()
+  );
+$$;
+revoke all on function public.is_fkt_global_admin() from public;
+grant execute on function public.is_fkt_global_admin() to authenticated;
+
+drop policy if exists fkt_global_admins_select_self_or_admin on public.fkt_global_admins;
+create policy fkt_global_admins_select_self
+on public.fkt_global_admins for select to authenticated
+using (user_id = (select auth.uid()));
+
+insert into public.fkt_global_admins (user_id, created_by, note)
+select id, id, 'Administrador Global inicial confirmado pelo proprietário da plataforma'
+from auth.users where lower(email) = lower('brandadministration@gmail.com')
+on conflict (user_id) do nothing;
+
+do $$
+begin
+  if not exists (
+    select 1 from public.fkt_global_admins a
+    join auth.users u on u.id = a.user_id
+    where lower(u.email) = lower('brandadministration@gmail.com')
+  ) then
+    raise exception 'Conta Administrador Global inicial não encontrada.';
+  end if;
+end;
+$$;
