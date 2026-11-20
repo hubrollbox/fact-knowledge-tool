@@ -1,90 +1,70 @@
 import { Link } from 'react-router-dom';
-import { useState, type FormEvent } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { validatePilotAccessRequest } from '@/lib/pilotAccessValidation';
-import { FileText, BookOpen, Timer, Shield, ArrowRight } from 'lucide-react';
+import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, Scale, Dog, Code, HardHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
 
-const sections = [
+const principles = [
   {
-    icon: FileText,
-    title: 'Registo',
-    description: 'Visitas, ocorrências e informação relevante ficam registadas no contexto da obra.',
+    icon: FolderKanban,
+    title: 'Um workspace principal',
+    description: 'Cada conta trabalha num espaço de trabalho central, com a sua equipa e informação organizada.',
   },
   {
-    icon: BookOpen,
-    title: 'Estrutura',
-    description: 'A informação é organizada de acordo com o contexto e o fluxo de cada módulo.',
+    icon: Boxes,
+    title: 'Módulos especializados',
+    description: 'O FKT reúne módulos distintos. Cada um responde às necessidades próprias da sua área.',
   },
   {
-    icon: Timer,
-    title: 'Acompanhamento',
-    description: 'As ações registadas ficam associadas a responsáveis, prazos e estados.',
+    icon: ShieldCheck,
+    title: 'Acesso e permissões',
+    description: 'A informação é disponibilizada de acordo com as permissões atribuídas a cada membro.',
   },
   {
-    icon: Shield,
-    title: 'Organização',
-    description: 'A informação recolhida no terreno pode ser organizada e completada posteriormente.',
+    icon: Network,
+    title: 'Estrutura e rastreabilidade',
+    description: 'Registos, documentos, decisões e ações mantêm-se ligados ao respetivo contexto.',
+  },
+];
+
+const modules = [
+  {
+    name: 'FKT Works',
+    description: 'Registo de visitas, ocorrências e acompanhamento de ações de fiscalização.',
+    icon: HardHat,
+    href: '/modulos/obras',
+  },
+  {
+    name: 'FKT Lex',
+    description: 'Organização de processos, factos, documentos e prazos.',
+    icon: Scale,
+    href: '/modulos/juridico',
+  },
+  {
+    name: 'FKT Vet',
+    description: 'Gestão de informação sobre animais, registos e ninhadas.',
+    icon: Dog,
+    href: '/modulos/canil',
+  },
+  {
+    name: 'FKT Dev',
+    description: 'Organização de projetos, tarefas, issues e decisões técnicas.',
+    icon: Code,
+    href: '/modulos/dev',
   },
 ];
 
 export default function LandingPage() {
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [formError, setFormError] = useState('');
-
-  async function handlePilotRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formElement = event.currentTarget;
-    setFormError('');
-    setSubmitting(true);
-    const form = new FormData(formElement);
-    const request = {
-      name: String(form.get('name') ?? '').trim(),
-      email: String(form.get('email') ?? '').trim().toLowerCase(),
-      roleCompany: String(form.get('role_company') ?? '').trim(),
-      worksCount: Number(form.get('works_count')),
-      privacyConsent: form.get('privacy_consent') === 'on',
-    };
-    const validationError = validatePilotAccessRequest(request);
-    if (validationError) {
-      setFormError(validationError);
-      setSubmitting(false);
-      return;
-    }
-
-    try {
-      const { error } = await supabase.from('pilot_access_requests').insert({
-        name: request.name,
-        email: request.email,
-        role_company: request.roleCompany,
-        works_count: request.worksCount,
-        privacy_consent: request.privacyConsent,
-        privacy_consent_at: new Date().toISOString(),
-      });
-      if (error) {
-        setFormError('Não foi possível enviar o pedido. Verifica os dados e tenta novamente.');
-        return;
-      }
-      setSubmitted(true);
-      formElement.reset();
-    } catch {
-      setFormError('Não foi possível enviar o pedido. Verifica a ligação à internet e tenta novamente.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-
-      {/* HEADER */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
           <span className="text-lg font-bold tracking-tight">FKT</span>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-2" aria-label="Navegação principal">
             <Button asChild variant="ghost" size="sm">
-              <Link to="/modulos">Módulos</Link>
+              <a href="#core">O Core</a>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <a href="#modulos">Módulos</a>
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/ajuda-suporte">Ajuda e Suporte</Link>
@@ -92,366 +72,108 @@ export default function LandingPage() {
             <Button asChild variant="outline" size="sm">
               <Link to="/login">Entrar</Link>
             </Button>
-          </div>
+          </nav>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="flex-1 flex items-center justify-center px-6 py-20 md:py-32">
-        <div className="max-w-3xl text-center space-y-6">
-
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-2">
-            <Shield className="h-3 w-3" />
-            Sistema privado e estruturado
+      <main className="flex-1">
+        <section className="px-6 py-24 md:py-36">
+          <div className="max-w-4xl mx-auto text-center space-y-7">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground">
+              <ShieldCheck className="h-3 w-3" />
+              Uma plataforma. Diferentes áreas de trabalho.
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
+              Factos organizados.
+              <br />
+              <span className="text-muted-foreground">Conhecimento estruturado.</span>
+              <br />
+              Decisões com contexto.
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              O FKT é uma plataforma de trabalho estruturado que reúne módulos especializados numa base comum de organização, acesso e rastreabilidade.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <a href="#modulos">Explorar módulos <ArrowRight className="h-4 w-4 ml-2" /></a>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                <a href="#core">Conhecer o FKT Core</a>
+              </Button>
+            </div>
           </div>
+        </section>
 
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-            Factos registados.
-            <br />
-            Nada perdido.
-            <br />
-            <span className="text-muted-foreground">Decisões justificadas.</span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Regista a visita no terreno, organiza a análise e acompanha as decisões. O primeiro módulo do FKT é dedicado à fiscalização de obras.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <a href="#pedido-piloto">Pedir acesso ao piloto <ArrowRight className="h-4 w-4 ml-2" /></a>
-            </Button>
-
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-              <a href="#como-funciona">Como funciona</a>
-            </Button>
+        <section id="core" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-24">
+          <div className="max-w-6xl mx-auto space-y-12">
+            <div className="max-w-3xl mx-auto text-center space-y-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">A plataforma</p>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">O FKT Core</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                O Core é a base comum da plataforma. Dá estrutura ao workspace, à equipa, às permissões e à forma como cada módulo é utilizado, sem misturar os dados e os processos próprios de cada área.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {principles.map(({ icon: Icon, title, description }) => (
+                <article key={title} className="rounded-lg border border-border bg-card p-6">
+                  <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-primary text-primary-foreground mb-4">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* DEMONSTRAÇÃO VISUAL FKT WORKS */}
-      <section className="border-t border-border bg-secondary/30 px-6 py-20 md:py-24">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-center">
-          <div className="space-y-5">
-            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
-              Exemplo ilustrativo · Relatório de visita
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Da observação à decisão, com o contexto preservado.
-            </h2>
+        <section className="px-6 py-20 md:py-24">
+          <div className="max-w-4xl mx-auto text-center space-y-5">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Uma experiência comum, com módulos independentes</h2>
             <p className="text-muted-foreground leading-relaxed">
-              A informação recolhida durante a visita pode ser organizada por ocorrência, ligada à análise técnica, às referências consultadas e às acções de acompanhamento.
+              A conta utiliza um workspace principal e seleciona um módulo de cada vez. A navegação e a gestão do espaço são comuns; as funcionalidades e os dados de cada módulo mantêm-se separados.
             </p>
-            <p className="text-sm text-muted-foreground">
-              A demonstração seguinte representa a estrutura do relatório. Não contém dados de uma obra real.
-            </p>
-            <Button asChild variant="outline">
-              <Link to="/modulos/obras">Explorar o FKT Works <ArrowRight className="h-4 w-4 ml-2" /></Link>
-            </Button>
           </div>
+        </section>
 
-          <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm" aria-label="Pré-visualização ilustrativa de um relatório de visita">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
-              <div>
-                <p className="text-[10px] font-bold tracking-[0.14em] text-muted-foreground">FKT WORKS · FISCALIZAÇÃO</p>
-                <h3 className="mt-1 text-lg font-bold">Relatório de Visita</h3>
-                <p className="text-xs text-muted-foreground">Exemplo de estrutura · Sem dados reais</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] font-semibold tracking-wider text-muted-foreground">DATA DA VISITA</p>
-                <p className="text-sm font-semibold">—</p>
-                <p className="text-[10px] text-muted-foreground">Obra demonstrativa</p>
-              </div>
+        <section id="modulos" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-24">
+          <div className="max-w-6xl mx-auto space-y-10">
+            <div className="text-center space-y-3">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Áreas de aplicação</p>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Módulos FKT</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Cada módulo tem uma página própria, onde são explicadas as suas funcionalidades, o seu âmbito e o seu estado de desenvolvimento.
+              </p>
             </div>
-
-            <div className="grid grid-cols-2 gap-3 py-4 text-xs">
-              <div><p className="text-muted-foreground">Obra</p><p className="font-semibold">Identificação da obra</p></div>
-              <div><p className="text-muted-foreground">Técnico / Fiscal</p><p className="font-semibold">Responsável pela visita</p></div>
-            </div>
-
-            <div className="border-y border-border py-3">
-              <p className="text-[10px] font-bold tracking-wider text-muted-foreground">OCORRÊNCIA</p>
-              <div className="mt-2 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold">Descrição do facto observado</p>
-                <span className="rounded border border-border px-2 py-1 text-[9px] font-semibold">Estado</span>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
-                  <div className="flex h-14 items-center justify-center text-muted-foreground"><FileText className="h-5 w-5" /></div>
-                  <p className="text-center text-[9px] text-muted-foreground">Evidência fotográfica</p>
-                </div>
-                <div className="rounded-md border border-dashed border-border bg-secondary/40 p-3">
-                  <div className="flex h-14 items-center justify-center text-muted-foreground"><BookOpen className="h-5 w-5" /></div>
-                  <p className="text-center text-[9px] text-muted-foreground">Referência documental</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-3 py-4">
-              <div className="rounded-md bg-secondary/50 p-3">
-                <p className="text-[10px] font-bold">Análise técnica</p>
-                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">Interpretação e factos associados à ocorrência.</p>
-              </div>
-              <div className="rounded-md bg-secondary/50 p-3">
-                <p className="text-[10px] font-bold">Conclusão e recomendação</p>
-                <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">Conclusão fundamentada e orientação registada.</p>
-              </div>
-            </div>
-
-            <div className="border-t border-border pt-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] font-bold tracking-wider text-muted-foreground">PLANO DE ACÇÕES</p>
-                <span className="text-[9px] text-muted-foreground">Responsável · Prazo · Estado</span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full w-2/3 rounded-full bg-primary/60" /></div>
-              <p className="mt-2 text-[9px] text-muted-foreground">Estrutura ilustrativa — sem acções ou progresso reais</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {modules.map(({ name, description, icon: Icon, href }) => (
+                <article key={name} className="flex flex-col rounded-lg border border-border bg-card p-6">
+                  <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-primary text-primary-foreground mb-4">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold">{name}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-2 flex-1">{description}</p>
+                  <Button asChild variant="outline" className="mt-5 w-full">
+                    <Link to={href}>Conhecer módulo <ArrowRight className="h-4 w-4 ml-2" /></Link>
+                  </Button>
+                </article>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FKT WORKS */}
-      <section className="border-t border-border px-6 py-20 md:py-24">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-5">
-            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">
-              Primeiro módulo · Piloto fechado
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">FKT Works</h2>
+        <section className="px-6 py-20 md:py-24">
+          <div className="max-w-3xl mx-auto text-center space-y-5">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Uma base. Diferentes formas de trabalhar.</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Em vez de reconstruir uma visita a partir de fotografias, WhatsApp e Word, o técnico regista os factos no momento,
-              organiza a análise e gera um relatório partilhável com ações, responsáveis e prazos.
+              O FKT procura reduzir a dispersão da informação e preservar o contexto que permite compreender, acompanhar e rever o trabalho realizado. O detalhe de cada processo pertence ao módulo correspondente.
             </p>
-            <p className="text-sm text-muted-foreground">
-              Não é um ERP nem gere toda a obra. É uma ferramenta de apoio ao registo, à análise e ao acompanhamento da fiscalização.
-            </p>
-            <Button asChild variant="outline">
-              <Link to="/modulos/obras">
-                Conhecer o FKT Works
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
+            <Button asChild size="lg">
+              <Link to="/modulos">Ver todos os módulos <ArrowRight className="h-4 w-4 ml-2" /></Link>
             </Button>
           </div>
-          <ol className="border border-border rounded-lg bg-card divide-y divide-border text-sm">
-            {[
-              ['Obra', 'Cliente, morada e responsável'],
-              ['Visita', 'Data, hora e notas gerais'],
-              ['Ocorrência', 'Fotografia e descrição curta'],
-              ['Análise', 'Organização da informação'],
-              ['Decisão', 'Registo da orientação técnica'],
-              ['Ação', 'Responsável e prazo'],
-            ].map(([t, d], i) => (
-              <li key={t} className="flex items-center gap-4 px-5 py-3">
-                <span className="h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">{i + 1}</span>
-                <span className="font-medium">{t}</span>
-                <span className="text-muted-foreground ml-auto text-right">{d}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* PEDIDO DE ACESSO AO PILOTO */}
-      <section id="pedido-piloto" className="border-t border-border px-6 py-20 md:py-24">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="text-center space-y-3">
-            <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">FKT Works · Piloto fechado</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pedir acesso ao piloto</h2>
-            <p className="text-muted-foreground">Estamos a reunir fiscais e equipas de fiscalização para testar o fluxo de registo de visitas, ocorrências e acompanhamento de ações.</p>
-          </div>
-          {submitted ? (
-            <div className="rounded-lg border border-border bg-card p-6 text-center space-y-2" role="status">
-              <h3 className="font-semibold">Pedido recebido</h3>
-              <p className="text-sm text-muted-foreground">Obrigado pelo interesse. Os dados foram registados para análise e eventual contacto.</p>
-            </div>
-          ) : (
-            <form onSubmit={handlePilotRequest} className="rounded-lg border border-border bg-card p-6 space-y-4">
-              <div className="space-y-1">
-                <label htmlFor="pilot-name" className="text-sm font-medium">Nome</label>
-                <input id="pilot-name" name="name" required minLength={2} maxLength={120} autoComplete="name" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="pilot-email" className="text-sm font-medium">Email</label>
-                <input id="pilot-email" name="email" type="email" required maxLength={254} autoComplete="email" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="pilot-role" className="text-sm font-medium">Função / Empresa</label>
-                <input id="pilot-role" name="role_company" required minLength={2} maxLength={180} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Ex.: Fiscal de obra independente" />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="pilot-works" className="text-sm font-medium">Quantas obras acompanha habitualmente?</label>
-                <select id="pilot-works" name="works_count" required defaultValue="" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="" disabled>Selecciona uma opção</option>
-                  <option value="0">Ainda não acompanho obras</option>
-                  <option value="1">1</option>
-                  <option value="3">2 a 3</option>
-                  <option value="5">4 a 5</option>
-                  <option value="10">6 a 10</option>
-                  <option value="11">Mais de 10</option>
-                </select>
-              </div>
-              <label className="flex items-start gap-2 text-xs text-muted-foreground">
-                <input type="checkbox" name="privacy_consent" required className="mt-0.5" />
-                <span>Autorizo o tratamento destes dados para análise do pedido e eventual contacto sobre o piloto. Consulte a <Link to="/privacidade" className="underline">Política de Privacidade</Link>.</span>
-              </label>
-              {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
-              <Button type="submit" size="lg" className="w-full" disabled={submitting}>{submitting ? 'A enviar…' : 'Enviar pedido'}</Button>
-              <p className="text-xs text-muted-foreground">O envio do pedido não garante acesso ao piloto nem cria uma conta.</p>
-            </form>
-          )}
-        </div>
-      </section>
-
-      {/* COMO FUNCIONA */}
-      <section id="como-funciona" className="border-t border-border bg-secondary/30 px-6 py-20 md:py-28">
-        <div className="max-w-6xl mx-auto">
-
-          <div className="text-center mb-14">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Como funciona
-            </h2>
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              Um fluxo de trabalho para registar visitas, organizar ocorrências e acompanhar ações de fiscalização.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {sections.map(({ icon: Icon, title, description }) => (
-              <div
-                key={title}
-                className="group rounded-lg border border-border bg-card p-6 transition-all hover:shadow-md hover:border-foreground/20"
-              >
-                <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-primary text-primary-foreground mb-4">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ESTRUTURA */}
-      <section className="px-6 py-20 md:py-28">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Uma estrutura adaptada a cada módulo
-          </h2>
-
-          <p className="text-muted-foreground">
-            Cada módulo tem a sua própria estrutura. No FKT Lex, por exemplo, a análise pode ser organizada em cinco elementos:
-          </p>
-
-          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
-            <p><strong>Contexto:</strong> enquadramento da situação</p>
-            <p><strong>Problema:</strong> questão a resolver</p>
-            <p><strong>Referências:</strong> regras, normas ou informação relevante</p>
-            <p><strong>Análise:</strong> interpretação da informação</p>
-            <p><strong>Decisão:</strong> conclusão fundamentada</p>
-          </div>
-
-          <p className="text-muted-foreground">
-            Evita perda de informação, reduz erros e permite justificar qualquer decisão com base no que foi registado.
-          </p>
-
-        </div>
-      </section>
-
-      {/* EXEMPLO */}
-      <section className="px-6 py-20 md:py-28 border-t border-border">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Exemplo simples
-          </h2>
-
-          <p className="text-muted-foreground">
-            O trabalho de fiscalização decorre em dois momentos:
-          </p>
-
-          <div className="grid sm:grid-cols-2 gap-4 text-left">
-            <div className="border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
-              <h3 className="font-semibold">No terreno</h3>
-              <p>Regista a visita, acrescenta fotografias e descreve as ocorrências identificadas.</p>
-            </div>
-            <div className="border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
-              <h3 className="font-semibold">No escritório</h3>
-              <p>Completa a informação, organiza a análise e acompanha as ações, os responsáveis e os prazos.</p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* APLICAÇÃO */}
-      <section className="px-6 py-20 md:py-28 border-t border-border">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Uma base comum, módulos especializados
-          </h2>
-
-          <p className="text-muted-foreground">
-            O FKT partilha uma base de organização, evidência e rastreabilidade. Cada módulo adapta essa base às necessidades concretas do seu domínio.
-          </p>
-
-          <div className="grid sm:grid-cols-2 gap-4 text-sm text-left">
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Works</strong><p className="text-muted-foreground mt-1">Primeiro módulo em piloto fechado.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Lex</strong><p className="text-muted-foreground mt-1">Processos, factos, documentos e prazos.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Vet</strong><p className="text-muted-foreground mt-1">Animais, registos e ninhadas.</p></div>
-            <div className="border border-border rounded-lg p-4 bg-card"><strong>FKT Dev</strong><p className="text-muted-foreground mt-1">Projectos, issues e decisões técnicas.</p></div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* PORQUE FUNCIONA */}
-      <section className="px-6 py-20 md:py-28">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Porque funciona
-          </h2>
-
-          <div className="text-left border border-border rounded-lg p-6 bg-card space-y-2 text-sm">
-            <p>• Separa informação de interpretação</p>
-            <p>• Obriga a definir claramente o problema</p>
-            <p>• Mantém evidência e decisões ligadas ao respetivo contexto</p>
-            <p>• Regista o acompanhamento e o estado das ações</p>
-            <p>• Permite justificar e rever decisões</p>
-          </div>
-
-          <p className="text-muted-foreground">
-            O objetivo é reduzir a dispersão da informação e facilitar o acompanhamento do trabalho.
-          </p>
-
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 py-20 md:py-28 border-t border-border">
-        <div className="max-w-2xl mx-auto text-center space-y-6">
-
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Um sistema simples para controlar processos e decisões
-          </h2>
-
-          <p className="text-muted-foreground">
-            O FKT está a preparar o seu primeiro piloto operacional: o FKT Works. Os restantes módulos encontram-se em diferentes fases de preparação.
-          </p>
-
-          <Button asChild size="lg">
-            <a href="#pedido-piloto">
-              Pedir acesso ao piloto
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </a>
-          </Button>
-
-        </div>
-      </section>
-
+        </section>
+      </main>
       <Footer />
     </div>
   );
