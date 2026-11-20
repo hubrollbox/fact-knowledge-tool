@@ -19,9 +19,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Supabase CLI
+        id: setup_supabase
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pin the CLI version: "latest" requires a GitHub release lookup
+          # and previously failed due to the unauthenticated API rate limit.
+          version: 3.2.0
 
       # No login, link, project token or database password is used.
       # db start and --local keep all database operations on the CI runner.
@@ -35,5 +38,5 @@ jobs:
         run: supabase test db --local
 
       - name: Stop local Supabase services
-        if: always()
+        if: always() && steps.setup_supabase.outcome == 'success'
         run: supabase stop --no-backup
