@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CountdownFab } from '@/components/dashboard/CountdownFab';
 import { AlertasBadge } from '@/components/AlertasBadge';
 import { Footer } from '@/components/layout/Footer';
+import { GlobalSearch } from '@/components/search/GlobalSearch';
 
 interface NavItem {
   label: string;
@@ -275,6 +276,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Button>
 
           <div className="flex-1" />
+          <GlobalSearch />
 
           {moduloActivo && (
             <Button asChild variant="outline" size="sm" className="max-w-[150px]">
