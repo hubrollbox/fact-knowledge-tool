@@ -135,7 +135,7 @@ export function useActualizarEstado() {
       if (error) throw error;
       return table;
     },
-    onSuccess: (t) => { qc.invalidateQueries({ queryKey: [t] }); qc.invalidateQueries({ queryKey: ['obra'] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }); },
+    onSuccess: (t) => { qc.invalidateQueries({ queryKey: [t] }); qc.invalidateQueries({ queryKey: ['obra'] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }); qc.invalidateQueries({ queryKey: ['obras_fila_acoes'] }); },
     onError: onErr,
   });
 }

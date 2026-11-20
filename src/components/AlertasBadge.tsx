@@ -14,6 +14,7 @@ const MODULO_LABEL: Record<AlertaModulo, string> = {
   juridico: 'Jurídico',
   canil: 'Canil',
   dev: 'Dev',
+  obras: 'Obras',
 };
 
 export function AlertasBadge() {

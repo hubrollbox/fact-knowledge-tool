@@ -1,44 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useModuloActivo } from '@/hooks/useModuloActivo';
+import { useObrasWorkspace } from '@/modules/obras/hooks/useObrasWorkspace';
 import { Tables } from '@/integrations/supabase/types';
 
 export type Alerta = Tables<'alertas'>;
-export type AlertaModulo = 'juridico' | 'canil' | 'dev';
+export type AlertaModulo = 'juridico' | 'canil' | 'dev' | 'obras';
 
 export function useAlertas() {
-  const { user } = useAuth();
-
-  const { data: workspace } = useQuery({
-    queryKey: ['workspace', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase
-        .from('workspaces')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user,
-  });
-
+  const workspaceId = useObrasWorkspace();
   const query = useQuery({
-    queryKey: ['alertas', workspace?.id],
+    queryKey: ['alertas', workspaceId],
     queryFn: async () => {
-      if (!workspace?.id) return [] as Alerta[];
+      if (!workspaceId) return [] as Alerta[];
       const { data, error } = await supabase
         .from('alertas')
         .select('*')
-        .eq('workspace_id', workspace.id)
+        .eq('workspace_id', workspaceId)
         .eq('lido', false)
         .order('data_alerta', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as Alerta[];
     },
-    enabled: !!workspace?.id,
+    enabled: !!workspaceId,
   });
 
   const alertas = query.data ?? [];
@@ -46,6 +30,7 @@ export function useAlertas() {
     juridico: alertas.filter((a) => a.modulo === 'juridico'),
     canil: alertas.filter((a) => a.modulo === 'canil'),
     dev: alertas.filter((a) => a.modulo === 'dev'),
+    obras: alertas.filter((a) => a.modulo === 'obras'),
   };
 
   return {
@@ -53,7 +38,7 @@ export function useAlertas() {
     grupos,
     total: alertas.length,
     isLoading: query.isLoading,
-    workspaceId: workspace?.id ?? null,
+    workspaceId,
   };
 }
 
@@ -84,6 +69,8 @@ export function rotaParaAlerta(a: Alerta): string {
       return a.referencia_id ? `/canil/animal/${a.referencia_id}` : '/canil';
     case 'canil_reservas':
       return '/canil/agenda';
+    case 'obras_acoes':
+      return '/obras/acoes';
     case 'dev_issues':
     case 'dev_projectos':
     case 'dev_adrs':
@@ -109,5 +96,3 @@ export async function criarAlerta(input: {
   if (error) throw error;
 }
 
-// silence unused import lint when not consumed elsewhere
-void useModuloActivo;
