@@ -173,7 +173,6 @@ BEGIN
   RETURN NEW;
 END;
 $;
-
 DROP TRIGGER IF EXISTS canil_animais_workspace_immutable ON public.canil_animais;
 CREATE TRIGGER canil_animais_workspace_immutable
 BEFORE UPDATE OF workspace_id ON public.canil_animais
@@ -216,7 +215,6 @@ BEGIN
   RETURN OLD;
 END;
 $;
-
 DROP TRIGGER IF EXISTS canil_ninhadas_preserve_history ON public.canil_ninhadas;
 CREATE TRIGGER canil_ninhadas_preserve_history
 BEFORE DELETE ON public.canil_ninhadas
