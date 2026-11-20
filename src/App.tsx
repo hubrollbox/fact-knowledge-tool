@@ -2,18 +2,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-import ProcessosList from "./pages/processos/ProcessosList";
-import ProcessoNovo from "./pages/processos/ProcessoNovo";
-import ProcessoDetalhe from "./pages/processos/ProcessoDetalhe";
-import Cronologia from "./pages/processos/Cronologia";
+import DossiersList from "./pages/dossiers/DossiersList";
+import DossierNovo from "./pages/dossiers/DossierNovo";
+import DossierDetalhe from "./pages/dossiers/DossierDetalhe";
+import Cronologia from "./pages/dossiers/Cronologia";
 
 import Conhecimento from "./pages/conhecimento/Conhecimento";
 import DisciplinaDetalhe from "./pages/conhecimento/DisciplinaDetalhe";
@@ -23,30 +25,88 @@ import Clientes from "./pages/gestao/Clientes";
 import Arquivo from "./pages/gestao/Arquivo";
 import Relatorios from "./pages/gestao/Relatorios";
 import Perfil from "./pages/gestao/Perfil";
+import Tesouraria from "./pages/gestao/Tesouraria";
+
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
+import Licenca from "./pages/Licenca";
+import Analytics from "./pages/Analytics";
+import ModulosHub from "./pages/modulos/ModulosHub";
+import ModuloDetalhe from "./pages/modulos/ModuloDetalhe";
+
+import { JuridicoDashboard } from "./modules/juridico/pages/JuridicoDashboard";
+import { ProcessoDetail } from "./modules/juridico/pages/ProcessoDetail";
+
+import { CanilDashboard } from "./modules/canil/pages/CanilDashboard";
+import { AnimalDetail } from "./modules/canil/pages/AnimalDetail";
+import { AgendaDiaria } from "./modules/canil/pages/AgendaDiaria";
+import { NovoAnimal } from "./modules/canil/pages/NovoAnimal";
+import { NovaReserva } from "./modules/canil/pages/NovaReserva";
+
+import { DevDashboard } from "./modules/dev/pages/DevDashboard";
+import { ProjectoDetail } from "./modules/dev/pages/ProjectoDetail";
+import { NovoProjecto } from "./modules/dev/pages/NovoProjecto";
+import { NovoADR } from "./modules/dev/pages/NovoADR";
+
+import { ObrasDashboard } from "./modules/obras/pages/ObrasDashboard";
+import { NovaObra } from "./modules/obras/pages/NovaObra";
+import { ObraDetail } from "./modules/obras/pages/ObraDetail";
+import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
+import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
 
 const queryClient = new QueryClient();
+
+function ProcessoDetailRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  return <ProcessoDetail processoId={id!} onBack={() => navigate('/juridico')} />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <Toaster />
+          <Sonner />
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/processos" element={<ProtectedRoute><ProcessosList /></ProtectedRoute>} />
-            <Route path="/processos/novo" element={<ProtectedRoute><ProcessoNovo /></ProtectedRoute>} />
-            <Route path="/processos/cronologia" element={<ProtectedRoute><Cronologia /></ProtectedRoute>} />
-            <Route path="/processos/:id" element={<ProtectedRoute><ProcessoDetalhe /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/dossiers" element={<ProtectedRoute><DossiersList /></ProtectedRoute>} />
+            <Route path="/dossiers/novo" element={<ProtectedRoute><DossierNovo /></ProtectedRoute>} />
+            <Route path="/dossiers/cronologia" element={<ProtectedRoute><Cronologia /></ProtectedRoute>} />
+            <Route path="/dossiers/:id" element={<ProtectedRoute><DossierDetalhe /></ProtectedRoute>} />
             <Route path="/conhecimento" element={<ProtectedRoute><Conhecimento /></ProtectedRoute>} />
             <Route path="/conhecimento/disciplinas/:id" element={<ProtectedRoute><DisciplinaDetalhe /></ProtectedRoute>} />
             <Route path="/gestao" element={<ProtectedRoute><Gestao /></ProtectedRoute>} />
             <Route path="/gestao/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
             <Route path="/gestao/arquivo" element={<ProtectedRoute><Arquivo /></ProtectedRoute>} />
             <Route path="/gestao/relatorios" element={<ProtectedRoute><Relatorios /></ProtectedRoute>} />
+            <Route path="/gestao/tesouraria" element={<ProtectedRoute><Tesouraria /></ProtectedRoute>} />
             <Route path="/gestao/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+            <Route path="/juridico" element={<ProtectedRoute><AppLayout><JuridicoDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/juridico/:id" element={<ProtectedRoute><AppLayout><ProcessoDetailRoute /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil" element={<ProtectedRoute><AppLayout><CanilDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/agenda" element={<ProtectedRoute><AppLayout><AgendaDiaria /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/novo" element={<ProtectedRoute><AppLayout><NovoAnimal /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/animal/:id" element={<ProtectedRoute><AppLayout><AnimalDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/canil/reserva/nova" element={<ProtectedRoute><AppLayout><NovaReserva /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev" element={<ProtectedRoute><AppLayout><DevDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/novo" element={<ProtectedRoute><AppLayout><NovoProjecto /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/projecto/:id" element={<ProtectedRoute><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/dev/adr/novo" element={<ProtectedRoute><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras" element={<ProtectedRoute><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/nova" element={<ProtectedRoute><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id" element={<ProtectedRoute><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute><RelatorioVisita /></ProtectedRoute>} />
+            <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/modulos" element={<ModulosHub />} />
+            <Route path="/modulos/:slug" element={<ModuloDetalhe />} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/licenca" element={<Licenca />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

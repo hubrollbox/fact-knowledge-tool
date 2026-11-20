@@ -183,12 +183,18 @@ alter table public.factos
 
 -- disciplinas
 create table public.disciplinas (
-  id         uuid primary key default gen_random_uuid(),
-  user_id    uuid not null references auth.users(id) on delete cascade,
-  nome       text not null,
-  descricao  text,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  nome          text not null,
+  descricao     text,
+  docente       text,
+  docente_telm  text,
+  docente_email text,
+  regente       text,
+  regente_telm  text,
+  regente_email text,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
 );
 
 create trigger disciplinas_updated_at before update on public.disciplinas

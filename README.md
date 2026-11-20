@@ -1,66 +1,61 @@
-FKT — Fact Knowledge Tool
-Aplicação web para análise jurídica estruturada.
-O FKT operacionaliza um método formal que impõe a separação rigorosa entre:
-Factos
-Normas
-Raciocínio jurídico
-O sistema garante que qualquer conclusão seja rastreável, reconstruível e estruturalmente validada.
-MVP funcional em produção.
-Repositório: https://github.com/hubrollbox/fact-knowledge-tool�
-Propósito
-O FKT não é software de aconselhamento jurídico.
-É uma infraestrutura metodológica que impõe:
-Registo factual explícito
-Referenciação normativa verificável
-Estrutura obrigatória de raciocínio (FIRAC)
-Cadeia analítica rastreável
-O objetivo é impedir a confusão entre facto, interpretação e conclusão.
-Como Funciona
-O FKT organiza o trabalho em dois domínios distintos:
-Base de Conhecimentos
-Espaço dedicado ao estudo teórico e organização estruturada de normas, conceitos e apontamentos.
-Processos
-Análise estruturada de casos concretos segundo método formal obrigatório.
-Os dois domínios são logicamente separados.
-Método FIRAC
-Cada processo segue obrigatoriamente a estrutura:
-F — Factos
-I — Issue (Questão jurídica)
-R — Rules (Normas aplicáveis)
-A — Application (Aplicação das normas aos factos)
-C — Conclusion (Conclusão fundamentada)
-Regras do sistema:
-Factos são registados separadamente da qualificação jurídica.
-Normas exigem referência explícita.
-Conclusões só existem se ligadas a factos e normas.
-Um processo só pode ser considerado concluído se cumprir os requisitos estruturais.
-Funcionalidades Atuais (MVP)
-Autenticação de utilizadores
-Criação estruturada de processos
-Modelo formal para:
-Factos
-Normas
-Processos
-Fluxo FIRAC obrigatório
-Geração automática de cronologia factual
-Separação entre Base de Conhecimentos e Processos
-Estado do Projeto
-MVP funcional em produção.
-Em desenvolvimento contínuo.
-Propriedade Intelectual
-Não é concedida licença open source.
-Todos os direitos reservados.
+# FKT — Fact Knowledge Tool
 
+Plataforma modular que transforma informação dispersa em decisões claras, justificadas e acompanhadas.
 
-Configuração de autenticação (Supabase)
-Para o login funcionar em ambiente local, copie `.env.example` para `.env.local` e preencha as credenciais:
+O FKT organiza factos, documentos e referências, ajuda a fundamentar decisões e acompanha as ações até ao fim.
 
-VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-VITE_SUPABASE_ANON_KEY=SEU_ANON_OU_PUBLISHABLE_KEY
+## Como funciona
 
-Também é aceite `VITE_SUPABASE_PUBLISHABLE_KEY` como alternativa ao `VITE_SUPABASE_ANON_KEY`.
+O FKT tem um **Core** transversal e **módulos** especializados por domínio.
 
-Erros comuns de login
-- `Auth session missing!`: utilizador não autenticado ao aceder rotas protegidas. Faça login primeiro.
-- `Invalid login credentials`: email ou palavra-passe inválidos.
-- `Email not confirmed`: confirme o registo no email antes de entrar.
+### Core
+Capacidades comuns a todos os módulos:
+- Organizações e workspaces
+- Documentos e evidências
+- Fontes e referências
+- Histórico e rastreabilidade
+- Ações, responsáveis e prazos
+- Exportação e auditoria
+
+### Módulos
+
+| Módulo | Estado | Foco principal |
+|--------|--------|----------------|
+| **FKT Works** | Piloto / Validação comercial | Visitas, ocorrências, evidência, decisão e relatório |
+| FKT Lex | Em preparação | Processos, referências e análise estruturada (FIRAC) |
+| FKT Vet | Em preparação | Histórico, cuidados e operações em pecuária |
+| FKT Dev | Em preparação | Decisões técnicas, incidentes e documentação |
+
+O **FKT Works** é o primeiro módulo selecionado para validação comercial e lançamento controlado.
+
+## Método
+
+Todos os módulos partilham a mesma lógica de trabalho:
+
+1. **Organizar** — reunir o assunto num contexto
+2. **Registar** — separar factos e evidência
+3. **Referenciar** — ligar a regras, normas ou fontes
+4. **Decidir** — registar análise e decisão de forma explícita
+5. **Agir** — atribuir ações, responsáveis e prazos
+
+No módulo FKT Lex esta lógica é aplicada através do método **FIRAC** (Factos, Issue, Rules, Application, Conclusion).
+
+## Estado do projeto
+
+MVP funcional em produção.  
+Foco comercial atual: **FKT Works** (piloto controlado).
+
+## Stack
+
+- React + TypeScript + Vite
+- Tailwind + shadcn/ui
+- Supabase (Auth, Database, Storage, RLS)
+- Vercel
+
+## Propriedade Intelectual
+
+Todos os direitos reservados. Não é concedida licença open source.
+
+## Configuração de autenticação (Supabase)
+
+Para o login funcionar em ambiente local, copie `.env.example` para `.env.local` e preencha as credenciais.

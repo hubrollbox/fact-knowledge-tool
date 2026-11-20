@@ -1,9 +1,10 @@
-export type ProcessoTipo = 'academico' | 'profissional';
-export type ProcessoEstado = 'em_analise' | 'em_progresso' | 'concluido' | 'arquivado';
+export type DossierTipo = 'academico' | 'profissional';
+export type DossierEstado = 'em_analise' | 'em_progresso' | 'concluido' | 'arquivado';
 export type IssuePrioridade = 'alta' | 'media' | 'baixa';
 export type IssueEstado = 'aberta' | 'resolvida';
 export type ApplicationTipo = 'pro' | 'contra';
 export type GrauCerteza = 'alto' | 'medio' | 'baixo' | 'desconhecido';
+export type ActionEstado = 'ativo' | 'a_aguardar' | 'concluido';
 
 export interface Cliente {
   id: string;
@@ -16,12 +17,12 @@ export interface Cliente {
   updated_at: string;
 }
 
-export interface Processo {
+export interface Dossier {
   id: string;
   user_id: string;
   titulo: string;
-  tipo: ProcessoTipo;
-  estado: ProcessoEstado;
+  tipo: DossierTipo;
+  estado: DossierEstado;
   materia: string | null;
   descricao: string | null;
   cliente_id: string | null;
@@ -35,9 +36,23 @@ export interface Processo {
   };
 }
 
+/** @deprecated Use Dossier instead */
+export type Processo = Dossier;
+
+export interface Action {
+  id: string;
+  dossier_id: string;
+  titulo: string;
+  data: string | null;
+  estado: ActionEstado;
+  created_at: string;
+  updated_at: string;
+  dossier?: Dossier;
+}
+
 export interface Facto {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   descricao: string;
   data_facto: string | null;
   grau_certeza: GrauCerteza;
@@ -49,7 +64,7 @@ export interface Facto {
 
 export interface Issue {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   descricao: string;
   prioridade: IssuePrioridade;
   estado: IssueEstado;
@@ -60,7 +75,7 @@ export interface Issue {
 
 export interface Rule {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   referencia: string;
   texto: string;
   vigencia_inicio: string | null;
@@ -72,7 +87,7 @@ export interface Rule {
 
 export interface Application {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   issue_id: string;
   rule_id: string;
   argumento: string;
@@ -104,7 +119,7 @@ export interface Conclusao {
 
 export interface Documento {
   id: string;
-  processo_id: string;
+  dossier_id: string;
   titulo: string;
   tipo: string | null;
   data_documento: string | null;
@@ -121,6 +136,12 @@ export interface Disciplina {
   user_id: string;
   nome: string;
   descricao: string | null;
+  docente: string | null;
+  docente_telm: string | null;
+  docente_email: string | null;
+  regente: string | null;
+  regente_telm: string | null;
+  regente_email: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -138,6 +159,6 @@ export interface Topico {
 export interface DisciplinaProcesso {
   id: string;
   disciplina_id: string;
-  processo_id: string;
-  processo?: Processo;
+  dossier_id: string;
+  processo?: Dossier;
 }

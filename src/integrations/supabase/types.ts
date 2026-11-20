@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      actions: {
+        Row: {
+          created_at: string
+          data: string | null
+          dossier_id: string
+          estado: string
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string | null
+          dossier_id: string
+          estado?: string
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string | null
+          dossier_id?: string
+          estado?: string
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actions_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alertas: {
+        Row: {
+          created_at: string
+          data_alerta: string | null
+          descricao: string | null
+          id: string
+          lido: boolean
+          modulo: string
+          referencia_id: string | null
+          referencia_tipo: string | null
+          tipo: string
+          titulo: string
+          user_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_alerta?: string | null
+          descricao?: string | null
+          id?: string
+          lido?: boolean
+          modulo: string
+          referencia_id?: string | null
+          referencia_tipo?: string | null
+          tipo: string
+          titulo: string
+          user_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          data_alerta?: string | null
+          descricao?: string | null
+          id?: string
+          lido?: boolean
+          modulo?: string
+          referencia_id?: string | null
+          referencia_tipo?: string | null
+          tipo?: string
+          titulo?: string
+          user_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       application_factos: {
         Row: {
           application_id: string
@@ -51,9 +134,9 @@ export type Database = {
         Row: {
           argumento: string
           created_at: string | null
+          dossier_id: string
           id: string
           issue_id: string
-          processo_id: string
           rule_id: string
           tipo: string
           updated_at: string | null
@@ -61,9 +144,9 @@ export type Database = {
         Insert: {
           argumento: string
           created_at?: string | null
+          dossier_id: string
           id?: string
           issue_id: string
-          processo_id: string
           rule_id: string
           tipo?: string
           updated_at?: string | null
@@ -71,14 +154,21 @@ export type Database = {
         Update: {
           argumento?: string
           created_at?: string | null
+          dossier_id?: string
           id?: string
           issue_id?: string
-          processo_id?: string
           rule_id?: string
           tipo?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_issue_id_fkey"
             columns: ["issue_id"]
@@ -87,17 +177,278 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "applications_processo_id_fkey"
-            columns: ["processo_id"]
-            isOneToOne: false
-            referencedRelation: "processos"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "applications_rule_id_fkey"
             columns: ["rule_id"]
             isOneToOne: false
             referencedRelation: "rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_animais: {
+        Row: {
+          activo: boolean
+          created_at: string
+          data_nascimento: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          numero_chip: string | null
+          numero_lop: string | null
+          observacoes: string | null
+          proprietario_contacto: string | null
+          proprietario_nome: string | null
+          raca: string | null
+          sexo: string | null
+          workspace_id: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          numero_chip?: string | null
+          numero_lop?: string | null
+          observacoes?: string | null
+          proprietario_contacto?: string | null
+          proprietario_nome?: string | null
+          raca?: string | null
+          sexo?: string | null
+          workspace_id: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          data_nascimento?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          numero_chip?: string | null
+          numero_lop?: string | null
+          observacoes?: string | null
+          proprietario_contacto?: string | null
+          proprietario_nome?: string | null
+          raca?: string | null
+          sexo?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
+      canil_cachorros: {
+        Row: {
+          animal_id: string | null
+          comprador_contacto: string | null
+          comprador_nome: string | null
+          cor: string | null
+          created_at: string
+          data_saida: string | null
+          estado: string
+          id: string
+          ninhada_id: string
+          preco_venda: number | null
+          sexo: string | null
+        }
+        Insert: {
+          animal_id?: string | null
+          comprador_contacto?: string | null
+          comprador_nome?: string | null
+          cor?: string | null
+          created_at?: string
+          data_saida?: string | null
+          estado?: string
+          id?: string
+          ninhada_id: string
+          preco_venda?: number | null
+          sexo?: string | null
+        }
+        Update: {
+          animal_id?: string | null
+          comprador_contacto?: string | null
+          comprador_nome?: string | null
+          cor?: string | null
+          created_at?: string
+          data_saida?: string | null
+          estado?: string
+          id?: string
+          ninhada_id?: string
+          preco_venda?: number | null
+          sexo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_cachorros_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canil_cachorros_ninhada_id_fkey"
+            columns: ["ninhada_id"]
+            isOneToOne: false
+            referencedRelation: "canil_ninhadas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_ninhadas: {
+        Row: {
+          created_at: string
+          data_cobertura: string | null
+          data_parto: string | null
+          id: string
+          mae_id: string | null
+          numero_cachorros: number | null
+          numero_sobreviventes: number | null
+          observacoes: string | null
+          pai_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_cobertura?: string | null
+          data_parto?: string | null
+          id?: string
+          mae_id?: string | null
+          numero_cachorros?: number | null
+          numero_sobreviventes?: number | null
+          observacoes?: string | null
+          pai_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          data_cobertura?: string | null
+          data_parto?: string | null
+          id?: string
+          mae_id?: string | null
+          numero_cachorros?: number | null
+          numero_sobreviventes?: number | null
+          observacoes?: string | null
+          pai_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_ninhadas_mae_id_fkey"
+            columns: ["mae_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canil_ninhadas_pai_id_fkey"
+            columns: ["pai_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_registos_clinicos: {
+        Row: {
+          animal_id: string
+          created_at: string
+          custo: number | null
+          data_proxima: string | null
+          data_registo: string
+          descricao: string | null
+          id: string
+          produto: string | null
+          tipo: string
+          veterinario: string | null
+          workspace_id: string
+        }
+        Insert: {
+          animal_id: string
+          created_at?: string
+          custo?: number | null
+          data_proxima?: string | null
+          data_registo: string
+          descricao?: string | null
+          id?: string
+          produto?: string | null
+          tipo: string
+          veterinario?: string | null
+          workspace_id: string
+        }
+        Update: {
+          animal_id?: string
+          created_at?: string
+          custo?: number | null
+          data_proxima?: string | null
+          data_registo?: string
+          descricao?: string | null
+          id?: string
+          produto?: string | null
+          tipo?: string
+          veterinario?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_registos_clinicos_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canil_reservas: {
+        Row: {
+          animal_id: string
+          box: string | null
+          created_at: string
+          data_entrada: string
+          data_saida: string
+          estado: string
+          id: string
+          instrucoes: string | null
+          observacoes_estadia: string | null
+          pago: boolean
+          preco_dia: number | null
+          total: number | null
+          workspace_id: string
+        }
+        Insert: {
+          animal_id: string
+          box?: string | null
+          created_at?: string
+          data_entrada: string
+          data_saida: string
+          estado?: string
+          id?: string
+          instrucoes?: string | null
+          observacoes_estadia?: string | null
+          pago?: boolean
+          preco_dia?: number | null
+          total?: number | null
+          workspace_id: string
+        }
+        Update: {
+          animal_id?: string
+          box?: string | null
+          created_at?: string
+          data_entrada?: string
+          data_saida?: string
+          estado?: string
+          id?: string
+          instrucoes?: string | null
+          observacoes_estadia?: string | null
+          pago?: boolean
+          preco_dia?: number | null
+          total?: number | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canil_reservas_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "canil_animais"
             referencedColumns: ["id"]
           },
         ]
@@ -203,21 +554,176 @@ export type Database = {
         }
         Relationships: []
       }
+      dev_adrs: {
+        Row: {
+          alternativas: string | null
+          analise: string | null
+          contexto: string | null
+          created_at: string
+          decisao: string | null
+          estado: string
+          id: string
+          numero: number
+          problema: string | null
+          projecto_id: string
+          substitui_id: string | null
+          titulo: string
+          workspace_id: string
+        }
+        Insert: {
+          alternativas?: string | null
+          analise?: string | null
+          contexto?: string | null
+          created_at?: string
+          decisao?: string | null
+          estado?: string
+          id?: string
+          numero?: number
+          problema?: string | null
+          projecto_id: string
+          substitui_id?: string | null
+          titulo: string
+          workspace_id: string
+        }
+        Update: {
+          alternativas?: string | null
+          analise?: string | null
+          contexto?: string | null
+          created_at?: string
+          decisao?: string | null
+          estado?: string
+          id?: string
+          numero?: number
+          problema?: string | null
+          projecto_id?: string
+          substitui_id?: string | null
+          titulo?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dev_adrs_projecto_id_fkey"
+            columns: ["projecto_id"]
+            isOneToOne: false
+            referencedRelation: "dev_projectos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dev_adrs_substitui_id_fkey"
+            columns: ["substitui_id"]
+            isOneToOne: false
+            referencedRelation: "dev_adrs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dev_issues: {
+        Row: {
+          assignee: string | null
+          created_at: string
+          descricao: string | null
+          estado: string
+          id: string
+          milestone: string | null
+          prioridade: string
+          projecto_id: string
+          tipo: string
+          titulo: string
+          workspace_id: string
+        }
+        Insert: {
+          assignee?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          milestone?: string | null
+          prioridade?: string
+          projecto_id: string
+          tipo?: string
+          titulo: string
+          workspace_id: string
+        }
+        Update: {
+          assignee?: string | null
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          id?: string
+          milestone?: string | null
+          prioridade?: string
+          projecto_id?: string
+          tipo?: string
+          titulo?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dev_issues_projecto_id_fkey"
+            columns: ["projecto_id"]
+            isOneToOne: false
+            referencedRelation: "dev_projectos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dev_projectos: {
+        Row: {
+          created_at: string
+          deploy_url: string | null
+          descricao: string | null
+          docs_url: string | null
+          estado: string
+          id: string
+          nome: string
+          repo_url: string | null
+          stack: string[]
+          versao_actual: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          deploy_url?: string | null
+          descricao?: string | null
+          docs_url?: string | null
+          estado?: string
+          id?: string
+          nome: string
+          repo_url?: string | null
+          stack?: string[]
+          versao_actual?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          deploy_url?: string | null
+          descricao?: string | null
+          docs_url?: string | null
+          estado?: string
+          id?: string
+          nome?: string
+          repo_url?: string | null
+          stack?: string[]
+          versao_actual?: string | null
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       disciplina_processos: {
         Row: {
           disciplina_id: string
+          dossier_id: string
           id: string
-          processo_id: string
         }
         Insert: {
           disciplina_id: string
+          dossier_id: string
           id?: string
-          processo_id: string
         }
         Update: {
           disciplina_id?: string
+          dossier_id?: string
           id?: string
-          processo_id?: string
         }
         Relationships: [
           {
@@ -228,10 +734,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "disciplina_processos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "disciplina_processos_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
@@ -240,24 +746,42 @@ export type Database = {
         Row: {
           created_at: string | null
           descricao: string | null
+          docente: string | null
+          docente_email: string | null
+          docente_telm: string | null
           id: string
           nome: string
+          regente: string | null
+          regente_email: string | null
+          regente_telm: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           descricao?: string | null
+          docente?: string | null
+          docente_email?: string | null
+          docente_telm?: string | null
           id?: string
           nome: string
+          regente?: string | null
+          regente_email?: string | null
+          regente_telm?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           descricao?: string | null
+          docente?: string | null
+          docente_email?: string | null
+          docente_telm?: string | null
           id?: string
           nome?: string
+          regente?: string | null
+          regente_email?: string | null
+          regente_telm?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -268,10 +792,10 @@ export type Database = {
           created_at: string | null
           data_documento: string | null
           descricao: string | null
+          dossier_id: string
           entidade_origem: string | null
           id: string
           localizacao: string | null
-          processo_id: string
           storage_path: string | null
           tipo: string | null
           titulo: string
@@ -281,10 +805,10 @@ export type Database = {
           created_at?: string | null
           data_documento?: string | null
           descricao?: string | null
+          dossier_id: string
           entidade_origem?: string | null
           id?: string
           localizacao?: string | null
-          processo_id: string
           storage_path?: string | null
           tipo?: string | null
           titulo: string
@@ -294,10 +818,10 @@ export type Database = {
           created_at?: string | null
           data_documento?: string | null
           descricao?: string | null
+          dossier_id?: string
           entidade_origem?: string | null
           id?: string
           localizacao?: string | null
-          processo_id?: string
           storage_path?: string | null
           tipo?: string | null
           titulo?: string
@@ -305,97 +829,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "documentos_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "documentos_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
       }
-      factos: {
-        Row: {
-          created_at: string | null
-          data_facto: string | null
-          descricao: string
-          documento_id: string | null
-          grau_certeza: string
-          id: string
-          observacoes: string | null
-          processo_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          data_facto?: string | null
-          descricao: string
-          documento_id?: string | null
-          grau_certeza?: string
-          id?: string
-          observacoes?: string | null
-          processo_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          data_facto?: string | null
-          descricao?: string
-          documento_id?: string | null
-          grau_certeza?: string
-          id?: string
-          observacoes?: string | null
-          processo_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "factos_processo_id_fkey"
-            columns: ["processo_id"]
-            isOneToOne: false
-            referencedRelation: "processos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      issues: {
-        Row: {
-          created_at: string | null
-          descricao: string
-          estado: string
-          id: string
-          prioridade: string
-          processo_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          descricao: string
-          estado?: string
-          id?: string
-          prioridade?: string
-          processo_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          descricao?: string
-          estado?: string
-          id?: string
-          prioridade?: string
-          processo_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "issues_processo_id_fkey"
-            columns: ["processo_id"]
-            isOneToOne: false
-            referencedRelation: "processos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      processos: {
+      dossiers: {
         Row: {
           cliente_id: string | null
           created_at: string | null
@@ -434,7 +876,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "processos_cliente_id_fkey"
+            foreignKeyName: "dossiers_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "clientes"
@@ -442,12 +884,1146 @@ export type Database = {
           },
         ]
       }
+      factos: {
+        Row: {
+          created_at: string | null
+          data_facto: string | null
+          descricao: string
+          documento_id: string | null
+          dossier_id: string
+          grau_certeza: string
+          id: string
+          observacoes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_facto?: string | null
+          descricao: string
+          documento_id?: string | null
+          dossier_id: string
+          grau_certeza?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_facto?: string | null
+          descricao?: string
+          documento_id?: string | null
+          dossier_id?: string
+          grau_certeza?: string
+          id?: string
+          observacoes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factos_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issues: {
+        Row: {
+          created_at: string | null
+          descricao: string
+          dossier_id: string
+          estado: string
+          id: string
+          prioridade: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao: string
+          dossier_id: string
+          estado?: string
+          id?: string
+          prioridade?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string
+          dossier_id?: string
+          estado?: string
+          id?: string
+          prioridade?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_documentos: {
+        Row: {
+          categoria: string | null
+          created_at: string
+          data_documento: string | null
+          ficheiro_url: string | null
+          id: string
+          nome: string
+          notas: string | null
+          processo_id: string
+          updated_at: string
+          versao: number
+          workspace_id: string
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string
+          data_documento?: string | null
+          ficheiro_url?: string | null
+          id?: string
+          nome: string
+          notas?: string | null
+          processo_id: string
+          updated_at?: string
+          versao?: number
+          workspace_id: string
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string
+          data_documento?: string | null
+          ficheiro_url?: string | null
+          id?: string
+          nome?: string
+          notas?: string | null
+          processo_id?: string
+          updated_at?: string
+          versao?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_documentos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_documentos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_partes: {
+        Row: {
+          contacto: string | null
+          created_at: string
+          id: string
+          mandatario: string | null
+          nif: string | null
+          nome: string
+          notas: string | null
+          processo_id: string
+          tipo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          contacto?: string | null
+          created_at?: string
+          id?: string
+          mandatario?: string | null
+          nif?: string | null
+          nome: string
+          notas?: string | null
+          processo_id: string
+          tipo?: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          contacto?: string | null
+          created_at?: string
+          id?: string
+          mandatario?: string | null
+          nif?: string | null
+          nome?: string
+          notas?: string | null
+          processo_id?: string
+          tipo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_partes_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_partes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_prazos: {
+        Row: {
+          antecedencia_alerta: number
+          created_at: string
+          data_limite: string
+          descricao: string
+          estado: string
+          id: string
+          notas: string | null
+          processo_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          antecedencia_alerta?: number
+          created_at?: string
+          data_limite: string
+          descricao: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          processo_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          antecedencia_alerta?: number
+          created_at?: string
+          data_limite?: string
+          descricao?: string
+          estado?: string
+          id?: string
+          notas?: string | null
+          processo_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_prazos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "juridico_prazos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      juridico_processos: {
+        Row: {
+          analise: string | null
+          conclusao: string | null
+          contexto: string | null
+          created_at: string
+          estado: string
+          id: string
+          numero_processo: string | null
+          questao: string | null
+          referencia: string | null
+          referencias: string | null
+          tipo: string | null
+          titulo: string
+          tribunal: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          analise?: string | null
+          conclusao?: string | null
+          contexto?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          numero_processo?: string | null
+          questao?: string | null
+          referencia?: string | null
+          referencias?: string | null
+          tipo?: string | null
+          titulo: string
+          tribunal?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          analise?: string | null
+          conclusao?: string | null
+          contexto?: string | null
+          created_at?: string
+          estado?: string
+          id?: string
+          numero_processo?: string | null
+          questao?: string | null
+          referencia?: string | null
+          referencias?: string | null
+          tipo?: string | null
+          titulo?: string
+          tribunal?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_processos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimentos: {
+        Row: {
+          created_at: string | null
+          data: string
+          descricao: string
+          id: string
+          tipo: string
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string
+          descricao: string
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id: string
+          valor: number
+        }
+        Update: {
+          created_at?: string | null
+          data?: string
+          descricao?: string
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      oauth_state_nonces: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          nonce: string
+          provider: string
+          service: string
+          service_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce: string
+          provider?: string
+          service: string
+          service_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+          provider?: string
+          service?: string
+          service_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      oauth_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          provider: string
+          refresh_token: string | null
+          scopes: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      obras: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          data_inicio: string | null
+          data_prevista_fim: string | null
+          dono_obra: string | null
+          estado: string
+          id: string
+          morada: string | null
+          nome: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prevista_fim?: string | null
+          dono_obra?: string | null
+          estado?: string
+          id?: string
+          morada?: string | null
+          nome: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_prevista_fim?: string | null
+          dono_obra?: string | null
+          estado?: string
+          id?: string
+          morada?: string | null
+          nome?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_acoes: {
+        Row: {
+          created_at: string
+          descricao: string
+          estado: string
+          id: string
+          obra_id: string
+          ocorrencia_id: string | null
+          prazo: string | null
+          responsavel: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao: string
+          estado?: string
+          id?: string
+          obra_id: string
+          ocorrencia_id?: string | null
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          estado?: string
+          id?: string
+          obra_id?: string
+          ocorrencia_id?: string | null
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_acoes_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_ocorrencia_id_fkey"
+            columns: ["ocorrencia_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_acoes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_documento_versoes: {
+        Row: {
+          created_at: string
+          documento_id: string
+          id: string
+          mime_type: string
+          nome_ficheiro: string
+          notas: string | null
+          numero_versao: number
+          obra_id: string
+          storage_path: string
+          tamanho_bytes: number
+          uploaded_by: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          documento_id: string
+          id?: string
+          mime_type: string
+          nome_ficheiro: string
+          notas?: string | null
+          numero_versao: number
+          obra_id: string
+          storage_path: string
+          tamanho_bytes: number
+          uploaded_by?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          documento_id?: string
+          id?: string
+          mime_type?: string
+          nome_ficheiro?: string
+          notas?: string | null
+          numero_versao?: number
+          obra_id?: string
+          storage_path?: string
+          tamanho_bytes?: number
+          uploaded_by?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documento_versoes_doc_workspace_obra_fkey"
+            columns: ["documento_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documentos"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+        ]
+      }
+      obras_documentos: {
+        Row: {
+          categoria: string
+          created_at: string
+          created_by: string
+          data_documento: string | null
+          entidade_origem: string | null
+          id: string
+          identificador: string | null
+          notas: string | null
+          obra_id: string
+          titulo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          categoria?: string
+          created_at?: string
+          created_by?: string
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          obra_id: string
+          titulo: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          created_by?: string
+          data_documento?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          obra_id?: string
+          titulo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documentos_obra_workspace_fkey"
+            columns: ["obra_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_workspace_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_documentos_ligacoes: {
+        Row: {
+          created_at: string
+          created_by: string
+          documento_id: string
+          id: string
+          obra_id: string
+          ocorrencia_id: string | null
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          documento_id: string
+          id?: string
+          obra_id: string
+          ocorrencia_id?: string | null
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          documento_id?: string
+          id?: string
+          obra_id?: string
+          ocorrencia_id?: string | null
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_documentos_ligacoes_documento_fkey"
+            columns: ["documento_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documentos"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_ligacoes_ocorrencia_fkey"
+            columns: ["ocorrencia_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+          {
+            foreignKeyName: "obras_documentos_ligacoes_visita_fkey"
+            columns: ["visita_id", "workspace_id", "obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id", "workspace_id", "obra_id"]
+          },
+        ]
+      }
+      obras_fotos: {
+        Row: {
+          capturada_em: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          legenda: string | null
+          longitude: number | null
+          ocorrencia_id: string | null
+          storage_path: string
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          capturada_em?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          legenda?: string | null
+          longitude?: number | null
+          ocorrencia_id?: string | null
+          storage_path: string
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          capturada_em?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          legenda?: string | null
+          longitude?: number | null
+          ocorrencia_id?: string | null
+          storage_path?: string
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_fotos_ocorrencia_id_fkey"
+            columns: ["ocorrencia_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_fotos_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_fotos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_analises: {
+        Row: {
+          conclusao: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          informacao_em_falta: string | null
+          interpretacao: string | null
+          ocorrencia_id: string
+          recomendacao: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          conclusao?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          informacao_em_falta?: string | null
+          interpretacao?: string | null
+          ocorrencia_id: string
+          recomendacao?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          conclusao?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          informacao_em_falta?: string | null
+          interpretacao?: string | null
+          ocorrencia_id?: string
+          recomendacao?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_analises_ocorrencia_workspace_fkey"
+            columns: ["ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_analises_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_factos: {
+        Row: {
+          analise_id: string
+          created_at: string
+          created_by: string | null
+          descricao: string
+          estado: string
+          evidencia_foto_id: string | null
+          id: string
+          ocorrencia_id: string
+          referencia_id: string | null
+          updated_at: string
+          updated_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          analise_id: string
+          created_at?: string
+          created_by?: string | null
+          descricao: string
+          estado?: string
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id: string
+          referencia_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          analise_id?: string
+          created_at?: string
+          created_by?: string | null
+          descricao?: string
+          estado?: string
+          evidencia_foto_id?: string | null
+          id?: string
+          ocorrencia_id?: string
+          referencia_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_factos_analise_fkey"
+            columns: ["analise_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_analises"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_evidencia_foto_fkey"
+            columns: ["evidencia_foto_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_fotos"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_referencia_fkey"
+            columns: [
+              "referencia_id",
+              "analise_id",
+              "ocorrencia_id",
+              "workspace_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_referencias"
+            referencedColumns: [
+              "id",
+              "analise_id",
+              "ocorrencia_id",
+              "workspace_id",
+            ]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_factos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencia_referencias: {
+        Row: {
+          analise_id: string
+          created_at: string
+          created_by: string | null
+          data_documento: string | null
+          documento_versao_id: string | null
+          entidade_origem: string | null
+          id: string
+          identificador: string | null
+          notas: string | null
+          ocorrencia_id: string
+          tipo: string
+          titulo: string
+          updated_at: string
+          updated_by: string | null
+          url: string | null
+          versao: string | null
+          workspace_id: string
+        }
+        Insert: {
+          analise_id: string
+          created_at?: string
+          created_by?: string | null
+          data_documento?: string | null
+          documento_versao_id?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          ocorrencia_id: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          versao?: string | null
+          workspace_id: string
+        }
+        Update: {
+          analise_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_documento?: string | null
+          documento_versao_id?: string | null
+          entidade_origem?: string | null
+          id?: string
+          identificador?: string | null
+          notas?: string | null
+          ocorrencia_id?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+          updated_by?: string | null
+          url?: string | null
+          versao?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_analise_fkey"
+            columns: ["analise_id", "ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencia_analises"
+            referencedColumns: ["id", "ocorrencia_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_documento_versao_fkey"
+            columns: ["documento_versao_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_documento_versoes"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencia_referencias_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencias: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          estado: string
+          gravidade: string
+          id: string
+          localizacao: string | null
+          obra_id: string
+          titulo: string
+          updated_at: string
+          visita_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          gravidade?: string
+          id?: string
+          localizacao?: string | null
+          obra_id: string
+          titulo: string
+          updated_at?: string
+          visita_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          estado?: string
+          gravidade?: string
+          id?: string
+          localizacao?: string | null
+          obra_id?: string
+          titulo?: string
+          updated_at?: string
+          visita_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencias_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_visitas: {
+        Row: {
+          condicoes_meteo: string | null
+          created_at: string
+          data_visita: string
+          hora_fim: string | null
+          hora_inicio: string | null
+          id: string
+          notas: string | null
+          obra_id: string
+          tecnico: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          condicoes_meteo?: string | null
+          created_at?: string
+          data_visita?: string
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          notas?: string | null
+          obra_id: string
+          tecnico?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          condicoes_meteo?: string | null
+          created_at?: string
+          data_visita?: string
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          notas?: string | null
+          obra_id?: string
+          tecnico?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_visitas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_visitas_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pilot_access_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          privacy_consent: boolean
+          privacy_consent_at: string
+          role_company: string
+          status: string
+          works_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          privacy_consent?: boolean
+          privacy_consent_at?: string
+          role_company: string
+          status?: string
+          works_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          privacy_consent?: boolean
+          privacy_consent_at?: string
+          role_company?: string
+          status?: string
+          works_count?: number | null
+        }
+        Relationships: []
+      }
       rules: {
         Row: {
           created_at: string | null
+          dossier_id: string
           fonte: string | null
           id: string
-          processo_id: string
           referencia: string
           texto: string
           updated_at: string | null
@@ -456,9 +2032,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          dossier_id: string
           fonte?: string | null
           id?: string
-          processo_id: string
           referencia: string
           texto: string
           updated_at?: string | null
@@ -467,9 +2043,9 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          dossier_id?: string
           fonte?: string | null
           id?: string
-          processo_id?: string
           referencia?: string
           texto?: string
           updated_at?: string | null
@@ -478,10 +2054,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "rules_processo_id_fkey"
-            columns: ["processo_id"]
+            foreignKeyName: "rules_dossier_id_fkey"
+            columns: ["dossier_id"]
             isOneToOne: false
-            referencedRelation: "processos"
+            referencedRelation: "dossiers"
             referencedColumns: ["id"]
           },
         ]
@@ -524,6 +2100,36 @@ export type Database = {
           },
         ]
       }
+      user_oauth_credentials: {
+        Row: {
+          client_id: string
+          client_secret: string
+          created_at: string | null
+          id: string
+          provider: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          client_secret: string
+          created_at?: string | null
+          id?: string
+          provider: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          created_at?: string | null
+          id?: string
+          provider?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_services: {
         Row: {
           connected: boolean
@@ -557,12 +2163,154 @@ export type Database = {
         }
         Relationships: []
       }
+      workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          id: string
+          modulo: string
+          name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          modulo?: string
+          name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          modulo?: string
+          name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      user_oauth_credentials_safe: {
+        Row: {
+          client_id: string | null
+          client_secret: string | null
+          created_at: string | null
+          id: string | null
+          provider: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          client_secret?: never
+          created_at?: string | null
+          id?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          client_secret?: never
+          created_at?: string | null
+          id?: string | null
+          provider?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      create_application_with_factos: {
+        Args: {
+          _argumento: string
+          _dossier_id: string
+          _facto_ids?: string[]
+          _issue_id: string
+          _rule_id: string
+          _tipo?: string
+        }
+        Returns: string
+      }
+      create_obras_documento_versao: {
+        Args: {
+          _documento_id: string
+          _mime_type: string
+          _nome_ficheiro: string
+          _notas?: string
+          _storage_path: string
+          _tamanho_bytes: number
+        }
+        Returns: string
+      }
+      get_disciplina_user_id: {
+        Args: { _disciplina_id: string }
+        Returns: string
+      }
+      get_issue_processo_user_id: {
+        Args: { _issue_id: string }
+        Returns: string
+      }
+      get_processo_user_id: { Args: { _processo_id: string }; Returns: string }
+      workspace_can_manage_members: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_can_read: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_can_write: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_is_owner: {
+        Args: { _uid: string; _ws: string }
+        Returns: boolean
+      }
+      workspace_owner_id: { Args: { _ws: string }; Returns: string }
+      workspace_role_for_user: {
+        Args: { _uid: string; _ws: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -581,12 +2329,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -610,11 +2358,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -635,11 +2383,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -660,11 +2408,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -677,11 +2425,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

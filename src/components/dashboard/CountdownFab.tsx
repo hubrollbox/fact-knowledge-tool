@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Timer, Plus, Trash2, Pencil, X } from 'lucide-react';
+import { Timer, Plus, Trash2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,12 @@ function timeLeft(target: string) {
   return `${m}m`;
 }
 
-export function CountdownFab() {
+type CountdownFabProps = {
+  className?: string;
+  contentSide?: 'top' | 'right' | 'bottom' | 'left';
+};
+
+export function CountdownFab({ className, contentSide = 'top' }: CountdownFabProps) {
   const { user } = useAuth();
   const [events, setEvents] = useState<CountdownEvent[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -68,7 +73,7 @@ export function CountdownFab() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={cn('z-50', className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -78,7 +83,7 @@ export function CountdownFab() {
             <Timer className="h-5 w-5" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="end" side="top" className="w-80 p-0">
+        <PopoverContent align="end" side={contentSide} className="w-80 p-0">
           <div className="flex items-center justify-between border-b px-4 py-3">
             <h3 className="text-sm font-semibold">Countdowns</h3>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowForm(f => !f)}>

@@ -8,54 +8,147 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { formatarData } from '@/lib/utils-fkt';
 import type { Disciplina } from '@/types';
 
 export default function Conhecimento() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Disciplina | null>(null);
-  const [form, setForm] = useState({ nome: '', descricao: '' });
+  const [form, setForm] = useState({
+    nome: '',
+    descricao: '',
+    docente: '',
+    docente_telm: '',
+    docente_email: '',
+    regente: '',
+    regente_telm: '',
+    regente_email: '',
+  });
   const [saving, setSaving] = useState(false);
 
   const fetch = async () => {
-    if (!user) return;
-    const { data } = await supabase.from('disciplinas').select('*').eq('user_id', user.id).order('nome');
-    setDisciplinas((data as Disciplina[]) || []);
-    setLoading(false);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('disciplinas')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('nome');
+
+      if (error) throw error;
+      setDisciplinas((data as Disciplina[]) || []);
+    } catch (error) {
+      console.error('Erro ao carregar disciplinas:', error);
+      toast({
+        title: 'Erro ao carregar disciplinas',
+        description: 'Não foi possível carregar as disciplinas. Tenta novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetch(); }, [user]);
 
-  const openNew = () => { setEditing(null); setForm({ nome: '', descricao: '' }); setDialogOpen(true); };
-  const openEdit = (d: Disciplina) => { setEditing(d); setForm({ nome: d.nome, descricao: d.descricao || '' }); setDialogOpen(true); };
+  const openNew = () => {
+    setEditing(null);
+    setForm({
+      nome: '',
+      descricao: '',
+      docente: '',
+      docente_telm: '',
+      docente_email: '',
+      regente: '',
+      regente_telm: '',
+      regente_email: '',
+    });
+    setDialogOpen(true);
+  };
+  const openEdit = (d: Disciplina) => {
+    setEditing(d);
+    setForm({
+      nome: d.nome,
+      descricao: d.descricao || '',
+      docente: d.docente || '',
+      docente_telm: d.docente_telm || '',
+      docente_email: d.docente_email || '',
+      regente: d.regente || '',
+      regente_telm: d.regente_telm || '',
+      regente_email: d.regente_email || '',
+    });
+    setDialogOpen(true);
+  };
 
   const handleSave = async () => {
     if (!form.nome.trim() || !user) return;
     setSaving(true);
-    if (editing) {
-      await supabase.from('disciplinas').update({ nome: form.nome.trim(), descricao: form.descricao.trim() || null }).eq('id', editing.id);
-    } else {
-      await supabase.from('disciplinas').insert({ user_id: user.id, nome: form.nome.trim(), descricao: form.descricao.trim() || null });
+    const disciplinaPayload = {
+      nome: form.nome.trim(),
+      descricao: form.descricao.trim() || null,
+      docente: form.docente.trim() || null,
+      docente_telm: form.docente_telm.trim() || null,
+      docente_email: form.docente_email.trim() || null,
+      regente: form.regente.trim() || null,
+      regente_telm: form.regente_telm.trim() || null,
+      regente_email: form.regente_email.trim() || null,
+    };
+    try {
+      if (editing) {
+        const { error } = await supabase.from('disciplinas').update(disciplinaPayload).eq('id', editing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('disciplinas').insert({ user_id: user.id, ...disciplinaPayload });
+        if (error) throw error;
+      }
+
+      await fetch();
+      setDialogOpen(false);
+      toast({ title: editing ? 'Disciplina atualizada' : 'Disciplina criada' });
+    } catch (error) {
+      console.error('Erro ao guardar disciplina:', error);
+      toast({
+        title: 'Erro ao guardar disciplina',
+        description: 'Não foi possível guardar a disciplina. Verifica as permissões e tenta novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
     }
-    await fetch();
-    setSaving(false);
-    setDialogOpen(false);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminar esta disciplina e todos os seus tópicos?')) return;
-    await supabase.from('disciplinas').delete().eq('id', id);
-    setDisciplinas(prev => prev.filter(d => d.id !== id));
+    try {
+      const { error } = await supabase.from('disciplinas').delete().eq('id', id);
+      if (error) throw error;
+
+      setDisciplinas(prev => prev.filter(d => d.id !== id));
+      toast({ title: 'Disciplina eliminada' });
+    } catch (error) {
+      console.error('Erro ao eliminar disciplina:', error);
+      toast({
+        title: 'Erro ao eliminar disciplina',
+        description: 'Não foi possível eliminar a disciplina. Tenta novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-6 max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Conhecimento</h1>
@@ -110,6 +203,34 @@ export default function Conhecimento() {
             <div className="space-y-2">
               <Label>Descrição</Label>
               <Textarea value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} placeholder="Descrição da disciplina..." rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Docente</Label>
+              <Input value={form.docente} onChange={e => setForm(f => ({ ...f, docente: e.target.value }))} placeholder="Nome do docente" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Contacto telm. (Docente)</Label>
+                <Input value={form.docente_telm} onChange={e => setForm(f => ({ ...f, docente_telm: e.target.value }))} placeholder="+351 9xx xxx xxx" />
+              </div>
+              <div className="space-y-2">
+                <Label>Email (Docente)</Label>
+                <Input type="email" value={form.docente_email} onChange={e => setForm(f => ({ ...f, docente_email: e.target.value }))} placeholder="docente@exemplo.pt" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Regente</Label>
+              <Input value={form.regente} onChange={e => setForm(f => ({ ...f, regente: e.target.value }))} placeholder="Nome do regente" />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Contacto telm. (Regente)</Label>
+                <Input value={form.regente_telm} onChange={e => setForm(f => ({ ...f, regente_telm: e.target.value }))} placeholder="+351 9xx xxx xxx" />
+              </div>
+              <div className="space-y-2">
+                <Label>Email (Regente)</Label>
+                <Input type="email" value={form.regente_email} onChange={e => setForm(f => ({ ...f, regente_email: e.target.value }))} placeholder="regente@exemplo.pt" />
+              </div>
             </div>
           </div>
           <DialogFooter>

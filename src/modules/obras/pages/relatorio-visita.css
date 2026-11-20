@@ -1,0 +1,370 @@
+@page {
+  size: A4;
+  margin: 13mm 13mm 15mm;
+}
+
+.fkt-print-report {
+  box-sizing: border-box;
+  width: min(100%, 210mm);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 28px 32px 40px;
+  background: #fff;
+  color: #17212b;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.report-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.report-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #17212b;
+}
+
+.report-eyebrow {
+  margin: 0 0 7px;
+  color: #526273;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.report-header h1 {
+  margin: 0;
+  font-size: 27px;
+  line-height: 1.15;
+  font-weight: 750;
+}
+
+.report-subtitle {
+  margin: 7px 0 0;
+  color: #526273;
+  font-size: 12px;
+}
+
+.report-number {
+  min-width: 120px;
+  text-align: right;
+}
+
+.report-number span,
+.report-grid span,
+.report-notes > span {
+  display: block;
+  color: #526273;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.report-number strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+.report-number small {
+  display: block;
+  margin-top: 3px;
+  color: #526273;
+}
+
+.report-section {
+  margin-top: 22px;
+}
+
+.report-section h2 {
+  margin: 0 0 11px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #cbd3da;
+  color: #17212b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 22px;
+}
+
+.report-grid strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.report-notes {
+  margin-top: 14px;
+}
+
+.report-notes p,
+.report-description {
+  margin: 5px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.report-summary > div {
+  min-height: 58px;
+  padding: 9px 7px;
+  border: 1px solid #cbd3da;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.report-summary strong {
+  display: block;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.report-summary span {
+  display: block;
+  margin-top: 4px;
+  color: #526273;
+  font-size: 9px;
+}
+
+.report-occurrences {
+  display: grid;
+  gap: 12px;
+}
+
+.report-occurrence {
+  padding: 11px;
+  border: 1px solid #cbd3da;
+  border-radius: 4px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.report-occurrence-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-occurrence-heading h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-severity {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid #9aa6b2;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.severity-critica, .severity-alta {
+  border-color: #b42318;
+  color: #b42318;
+}
+
+.report-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 8px 0 0;
+}
+
+.report-facts div {
+  display: flex;
+  gap: 5px;
+  font-size: 10px;
+}
+
+.report-facts dt {
+  color: #526273;
+  font-weight: 700;
+}
+
+.report-facts dd {
+  margin: 0;
+}
+
+.report-description {
+  font-size: 11px;
+}
+
+.report-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.report-photo {
+  min-width: 0;
+  margin: 0;
+  padding: 6px;
+  border: 1px solid #d7dde2;
+  border-radius: 3px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.report-photo img {
+  display: block;
+  width: 100%;
+  max-height: 88mm;
+  object-fit: contain;
+  background: #f3f5f6;
+}
+
+.report-photo figcaption {
+  margin-top: 5px;
+  color: #526273;
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+
+.report-photo-missing {
+  display: grid;
+  min-height: 45mm;
+  place-items: center;
+  background: #f3f5f6;
+  color: #526273;
+  font-size: 10px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.report-table th,
+.report-table td {
+  padding: 7px 6px;
+  border: 1px solid #cbd3da;
+  text-align: left;
+  vertical-align: top;
+}
+
+.report-table th {
+  background: #f0f3f5;
+  font-weight: 700;
+}
+
+.report-validation {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.report-muted {
+  margin: 5px 0;
+  color: #526273;
+  font-size: 11px;
+}
+
+.report-signatures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px;
+  margin-top: 22px;
+}
+
+.report-signatures > div {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  min-height: 115px;
+}
+
+.report-signatures strong {
+  font-size: 11px;
+}
+
+.report-signatures span,
+.report-signatures small {
+  padding-bottom: 4px;
+  border-bottom: 1px solid #8b969f;
+  color: #526273;
+  font-size: 10px;
+}
+
+.report-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 26px;
+  padding-top: 8px;
+  border-top: 1px solid #cbd3da;
+  color: #526273;
+  font-size: 9px;
+}
+
+@media print {
+  html, body, #root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .fkt-print-report {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #17212b !important;
+    background: #fff !important;
+    font-size: 10pt;
+  }
+
+  .report-section h2,
+  .report-occurrence,
+  .report-photo,
+  .report-table tr,
+  .report-validation {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-photo img {
+    max-height: 82mm;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

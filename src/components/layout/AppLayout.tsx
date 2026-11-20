@@ -3,12 +3,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Settings, Users,
   Archive, FileText, Clock, ChevronDown, ChevronRight,
-  LogOut, Menu, X, Scale, Sun, Moon, UserCircle
+  LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Landmark, Dog, Code, Calendar, BarChart3, HardHat
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useModuloActivo } from '@/hooks/useModuloActivo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { CountdownFab } from '@/components/dashboard/CountdownFab';
+import { AlertasBadge } from '@/components/AlertasBadge';
+import { Footer } from '@/components/layout/Footer';
 
 interface NavItem {
   label: string;
@@ -18,18 +21,23 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   {
-    label: 'Projectos', href: '/processos', icon: FolderOpen, children: [
-      { label: 'Cronologia', href: '/processos/cronologia', icon: Clock },
+    label: 'Dossiers', href: '/dossiers', icon: FolderOpen, children: [
+      { label: 'Cronologia', href: '/dossiers/cronologia', icon: Clock },
     ]
   },
-  { label: 'Conhecimento', href: '/conhecimento', icon: BookOpen },
+  {
+    label: 'Conhecimento', href: '/conhecimento', icon: BookOpen, children: [
+      { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
+    ]
+  },
   {
     label: 'Gestão', icon: Settings, children: [
       { label: 'Clientes', href: '/gestao/clientes', icon: Users },
-      { label: 'Arquivo', href: '/gestao/arquivo', icon: Archive },
       { label: 'Relatórios', href: '/gestao/relatorios', icon: FileText },
+      { label: 'Tesouraria', href: '/gestao/tesouraria', icon: Landmark },
     ]
   },
 ];
@@ -43,7 +51,7 @@ function NavItemComponent({ item, collapsed }: { item: NavItem; collapsed: boole
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    if (href === '/') return location.pathname === '/';
+    if (href === '/dashboard') return location.pathname === '/dashboard';
     return location.pathname.startsWith(href);
   };
 
@@ -139,8 +147,28 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut } = useAuth();
+  const { moduloSlug } = useModuloActivo();
+  const dynamicNavItems: NavItem[] = [
+    ...navItems,
+    ...(moduloSlug === 'juridico'
+      ? [{ label: 'FKT Lex', href: '/juridico', icon: Scale } as NavItem]
+      : []),
+    ...(moduloSlug === 'canil'
+      ? [{
+          label: 'FKT Vet', href: '/canil', icon: Dog, children: [
+            { label: 'Agenda', href: '/canil/agenda', icon: Calendar },
+          ],
+        } as NavItem]
+      : []),
+    ...(moduloSlug === 'obras'
+      ? [{ label: 'FKT Works', href: '/obras', icon: HardHat } as NavItem]
+      : []),
+    ...(moduloSlug === 'dev'
+      ? [{ label: 'FKT Dev', href: '/dev', icon: Code } as NavItem]
+      : []),
+  ];
   const navigate = useNavigate();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dark, setDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -163,12 +191,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className={cn(
         'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border',
         collapsed && 'justify-center px-2'
@@ -184,14 +211,12 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {navItems.map(item => (
+        {dynamicNavItems.map(item => (
           <NavItemComponent key={item.label} item={item} collapsed={collapsed} />
         ))}
       </nav>
 
-      {/* User */}
       <div className={cn(
         'border-t border-sidebar-border p-3',
         collapsed && 'flex flex-col items-center gap-2'
@@ -225,7 +250,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Desktop sidebar */}
       <aside className={cn(
         'hidden md:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shrink-0',
         sidebarCollapsed ? 'w-16' : 'w-60'
@@ -233,7 +257,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         <SidebarContent collapsed={sidebarCollapsed} />
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 md:hidden"
@@ -241,7 +264,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside className={cn(
         'fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-sidebar border-r border-sidebar-border md:hidden transition-transform duration-300',
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -249,11 +271,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         <SidebarContent collapsed={false} />
       </aside>
 
-      {/* Main */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header */}
         <header className="flex h-14 items-center border-b border-border bg-background px-4 gap-3 shrink-0">
-          {/* Mobile toggle */}
           <Button
             variant="ghost"
             size="icon"
@@ -263,7 +282,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
 
-          {/* Desktop collapse */}
           <Button
             variant="ghost"
             size="icon"
@@ -275,7 +293,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <div className="flex-1" />
 
-          {/* Dark mode toggle */}
+          <AlertasBadge />
+          <CountdownFab contentSide="bottom" />
+
           <Button
             variant="ghost"
             size="icon"
@@ -286,11 +306,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Button>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
-        <CountdownFab />
+        <Footer />
       </div>
     </div>
   );

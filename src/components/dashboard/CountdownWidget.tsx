@@ -37,15 +37,21 @@ interface TimeLeft {
 }
 
 const variantStyles: Record<CountdownVariant, string> = {
-  compact: 'min-h-[170px]',
-  medium: 'min-h-[220px]',
-  hero: 'min-h-[280px] col-span-full',
+  compact: 'min-h-[135px]',
+  medium: 'min-h-[160px]',
+  hero: 'min-h-[180px] col-span-full',
 };
 
 const segmentStyles: Record<CountdownVariant, string> = {
-  compact: 'text-xl',
-  medium: 'text-3xl',
-  hero: 'text-4xl md:text-5xl',
+  compact: 'text-sm',
+  medium: 'text-base',
+  hero: 'text-lg md:text-xl',
+};
+
+const circleSizeStyles: Record<CountdownVariant, string> = {
+  compact: 'h-14 w-14',
+  medium: 'h-16 w-16',
+  hero: 'h-20 w-20',
 };
 
 function calculateTimeLeft(targetDate: string, modeAfterEnd: CountdownMode): TimeLeft {
@@ -92,6 +98,41 @@ function formatUnit(value: number) {
   return value.toString().padStart(2, '0');
 }
 
+function CircularUnit({
+  label,
+  value,
+  max,
+  color,
+  variant,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+  variant: CountdownVariant;
+}) {
+  const progress = Math.max(0, Math.min(100, (value / max) * 100));
+
+  return (
+    <div className="text-center space-y-1">
+      <div
+        className={cn(
+          'rounded-full grid place-items-center border border-border/50',
+          circleSizeStyles[variant],
+        )}
+        style={{
+          background: `conic-gradient(${color} ${progress}%, hsl(var(--muted)) ${progress}% 100%)`,
+        }}
+      >
+        <div className="h-[80%] w-[80%] rounded-full bg-background grid place-items-center">
+          <p className={cn('font-bold text-foreground tabular-nums', segmentStyles[variant])}>{formatUnit(value)}</p>
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+    </div>
+  );
+}
+
 export function CountdownWidget({ event, variant = 'medium', onEdit, onDelete }: CountdownWidgetProps) {
   const { days, hours, minutes, seconds, ended } = useCountdown(
     event.target_date,
@@ -109,11 +150,11 @@ export function CountdownWidget({ event, variant = 'medium', onEdit, onDelete }:
 
   return (
     <Card className={cn('border-l-4 transition-all', variantStyles[variant])} style={accentStyle}>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2 pt-3 px-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-base font-semibold leading-tight">{event.title}</CardTitle>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <CardTitle className="text-sm font-semibold leading-tight">{event.title}</CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
               <CalendarClock className="h-3 w-3" />
               {new Date(event.target_date).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short', timeZone: 'UTC' })} UTC
             </p>
@@ -132,19 +173,14 @@ export function CountdownWidget({ event, variant = 'medium', onEdit, onDelete }:
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap items-center gap-3 md:gap-5">
-          {[
-            { label: 'Dias', value: days },
-            { label: 'Horas', value: hours },
-            { label: 'Min', value: minutes },
-            ...(event.settings.showSeconds ? [{ label: 'Seg', value: seconds }] : []),
-          ].map((part) => (
-            <div key={part.label} className="text-center min-w-[60px]">
-              <p className={cn('font-bold text-foreground tabular-nums', segmentStyles[variant])}>{formatUnit(part.value)}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{part.label}</p>
-            </div>
-          ))}
+      <CardContent className="px-3 pb-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <CircularUnit label="Dias" value={days} max={365} color={event.settings.colorTheme} variant={variant} />
+          <CircularUnit label="Horas" value={hours} max={24} color={event.settings.colorTheme} variant={variant} />
+          <CircularUnit label="Min" value={minutes} max={60} color={event.settings.colorTheme} variant={variant} />
+          {event.settings.showSeconds && (
+            <CircularUnit label="Seg" value={seconds} max={60} color={event.settings.colorTheme} variant={variant} />
+          )}
           <Badge variant={ended ? 'secondary' : 'default'} className="ml-auto">
             {ended
               ? event.settings.modeAfterEnd === 'countup'

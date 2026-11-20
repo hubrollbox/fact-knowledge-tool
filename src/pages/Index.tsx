@@ -1,54 +1,78 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FolderOpen, AlertCircle, FileText, Plus, ArrowRight } from 'lucide-react';
+import { FolderOpen, AlertCircle, Plus, ArrowRight, Mail, TimerReset, CalendarClock } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ESTADO_LABELS, formatarData } from '@/lib/utils-fkt';
 import { AgendaWidget } from '@/components/dashboard/AgendaWidget';
 import { EmailWidget } from '@/components/dashboard/EmailWidget';
 import { CountdownWidgetsBoard } from '@/components/dashboard/CountdownWidgetsBoard';
-import type { Processo } from '@/types';
+import { PlannerOverview } from '@/components/dashboard/PlannerOverview';
+import type { Dossier } from '@/types';
 
 interface Stats {
-  totalProcessos: number;
+  countdownAbertos: number;
+  emailsNaoLidos: number;
   issuesAbertas: number;
-  totalFactos: number;
-  processosAtivos: number;
+  proximoCompromisso: string;
 }
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({ totalProcessos: 0, issuesAbertas: 0, totalFactos: 0, processosAtivos: 0 });
-  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    countdownAbertos: 0,
+    emailsNaoLidos: 0,
+    issuesAbertas: 0,
+    proximoCompromisso: 'Sem agenda',
+  });
+  const [dossiers, setDossiers] = useState<Dossier[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [pRes, iRes, fRes] = await Promise.all([
-        supabase.from('processos').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5),
-        supabase.from('issues').select('id, estado, processo_id, processos!inner(user_id)').eq('processos.user_id', user.id).eq('estado', 'aberta'),
-        supabase.from('factos').select('id, processos!inner(user_id)').eq('processos.user_id', user.id),
+      const today = new Date().toISOString().split('T')[0];
+      const nowIso = new Date().toISOString();
+
+      const [pRes, iRes, countdownRes, emailServiceRes, docAgendaRes, factoAgendaRes] = await Promise.all([
+        supabase.from('dossiers').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5),
+        supabase.from('issues').select('id, estado, dossier_id, dossiers!inner(user_id)').eq('dossiers.user_id', user.id).eq('estado', 'aberta'),
+        supabase.from('countdown_events').select('id').eq('user_id', user.id).gte('target_date', nowIso),
+        supabase.from('user_services').select('connected, metadata').eq('user_id', user.id).eq('service', 'gmail').maybeSingle(),
+        supabase
+          .from('documentos')
+          .select('data_documento, dossiers!inner(user_id)')
+          .eq('dossiers.user_id', user.id)
+          .not('data_documento', 'is', null)
+          .gte('data_documento', today)
+          .order('data_documento', { ascending: true })
+          .limit(1),
+        supabase
+          .from('factos')
+          .select('data_facto, dossiers!inner(user_id)')
+          .eq('dossiers.user_id', user.id)
+          .not('data_facto', 'is', null)
+          .gte('data_facto', today)
+          .order('data_facto', { ascending: true })
+          .limit(1),
       ]);
 
-      setProcessos((pRes.data as Processo[]) || []);
-      const total = (pRes.data || []).length;
-      const ativos = (pRes.data || []).filter((p: Processo) => p.estado !== 'arquivado' && p.estado !== 'concluido').length;
-      setStats({
-        totalProcessos: total,
-        issuesAbertas: (iRes.data || []).length,
-        totalFactos: (fRes.data || []).length,
-        processosAtivos: ativos,
-      });
+      setDossiers((pRes.data as Dossier[]) || []);
+      const docDate = docAgendaRes.data?.[0]?.data_documento;
+      const factoDate = factoAgendaRes.data?.[0]?.data_facto;
+      const nextDate = [docDate, factoDate].filter(Boolean).sort((a, b) => (a as string).localeCompare(b as string))[0] as string | undefined;
+      const rawUnread = (emailServiceRes.data?.metadata as { unread_count?: number; unreadCount?: number } | null) || null;
+      const unreadCount = emailServiceRes.data?.connected ? Number(rawUnread?.unread_count ?? rawUnread?.unreadCount ?? 0) : 0;
 
-      // fetch all for total
-      const allP = await supabase.from('processos').select('id, titulo, estado, materia, updated_at, created_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(5);
-      setProcessos((allP.data as Processo[]) || []);
-      const allPTotal = await supabase.from('processos').select('id').eq('user_id', user.id);
-      setStats(prev => ({ ...prev, totalProcessos: (allPTotal.data || []).length }));
+      setStats({
+        countdownAbertos: (countdownRes.data || []).length,
+        emailsNaoLidos: Number.isFinite(unreadCount) ? unreadCount : 0,
+        issuesAbertas: (iRes.data || []).length,
+        proximoCompromisso: nextDate ? new Date(`${nextDate}T00:00:00`).toLocaleDateString('pt-PT') : 'Sem agenda',
+      });
 
       setLoading(false);
     };
@@ -75,46 +99,55 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Visão geral dos seus processos</p>
+            <p className="text-sm text-muted-foreground mt-0.5">FKT</p>
           </div>
-          <Button asChild>
-            <Link to="/processos/novo">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Processo
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link to="/modulos">
+                Explorar módulos
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/dossiers/novo">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Dossier
+              </Link>
+            </Button>
+          </div>
         </div>
 
+        {/* Planner — destaque principal */}
+        <PlannerOverview />
+
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Processos', value: stats.totalProcessos, icon: FolderOpen },
-            { label: 'Processos Ativos', value: stats.processosAtivos, icon: FolderOpen },
-            { label: 'Issues Abertas', value: stats.issuesAbertas, icon: AlertCircle },
-            { label: 'Factos Registados', value: stats.totalFactos, icon: FileText },
+            { label: 'Countdown', value: stats.countdownAbertos, icon: TimerReset },
+            { label: 'Emails', value: stats.emailsNaoLidos, icon: Mail },
+            { label: 'Issues', value: stats.issuesAbertas, icon: AlertCircle },
+            { label: 'Próximo', value: stats.proximoCompromisso, icon: CalendarClock },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label} className="border-border">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-                    <p className="text-3xl font-bold text-foreground mt-1">
-                      {loading ? '—' : value}
-                    </p>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground truncate">{label}</p>
+                    <p className="text-lg font-bold text-foreground">{loading ? '—' : value}</p>
                   </div>
-                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Processos recentes */}
+        {/* Dossiers recentes */}
         <Card className="border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base font-semibold">Processos Recentes</CardTitle>
+            <CardTitle className="text-base font-semibold">Dossiers Recentes</CardTitle>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/processos" className="text-xs text-muted-foreground hover:text-foreground">
+              <Link to="/dossiers" className="text-xs text-muted-foreground hover:text-foreground">
                 Ver todos <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </Button>
@@ -126,20 +159,20 @@ export default function Dashboard() {
                   <div key={i} className="h-12 bg-muted rounded-md animate-pulse" />
                 ))}
               </div>
-            ) : processos.length === 0 ? (
+            ) : dossiers.length === 0 ? (
               <div className="text-center py-10">
                 <FolderOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Nenhum processo ainda</p>
+                <p className="text-sm text-muted-foreground">Nenhum dossier ainda</p>
                 <Button asChild className="mt-4" variant="outline" size="sm">
-                  <Link to="/processos/novo">Criar primeiro processo</Link>
+                  <Link to="/dossiers/novo">Criar primeiro dossier</Link>
                 </Button>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {processos.map(p => (
+                {dossiers.map(p => (
                   <Link
                     key={p.id}
-                    to={`/processos/${p.id}`}
+                    to={`/dossiers/${p.id}`}
                     className="flex items-center justify-between py-3 hover:bg-muted/50 -mx-2 px-2 rounded-md transition-colors group"
                   >
                     <div className="min-w-0">
@@ -156,7 +189,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Agenda & Email widgets */}
+        {/* Widgets secundários */}
         <div className="grid md:grid-cols-2 gap-4">
           <AgendaWidget />
           <EmailWidget />
