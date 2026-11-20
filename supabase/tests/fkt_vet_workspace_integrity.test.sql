@@ -111,6 +111,20 @@ BEGIN
     END IF;
   END LOOP;
 
+
+  -- Default ACLs must not reintroduce anon/PUBLIC access on future objects.
+  IF EXISTS (
+    SELECT 1
+    FROM pg_default_acl d
+    CROSS JOIN LATERAL aclexplode(d.defaclacl) acl
+    WHERE d.defaclnamespace = 'public'::regnamespace
+      AND d.defaclobjtype IN ('r', 'S', 'f')
+      AND acl.grantee IN (0, 'anon'::regrole)
+      AND (acl.privilege_type IN ('SELECT','INSERT','UPDATE','DELETE','TRUNCATE','USAGE','EXECUTE'))
+  ) THEN
+    RAISE EXCEPTION 'Default privileges still grant access to PUBLIC/anon in public schema';
+  END IF;
+
   -- All Canil write policies on UPDATE must include WITH CHECK.
   FOR _policy IN
     SELECT tablename, policyname
