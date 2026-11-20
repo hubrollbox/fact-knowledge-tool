@@ -145,8 +145,7 @@ CREATE TABLE public.juridico_aplicacoes (
 );
 
 ALTER TABLE public.juridico_aplicacoes
-  ADD COLUMN pressupostos text,
-  ADD COLUMN updated_at timestamptz NOT NULL DEFAULT now();
+  ADD COLUMN pressupostos text;
 
 -- Link the reasoning application to the exact facts and sources considered.
 ALTER TABLE public.juridico_questoes_factos
