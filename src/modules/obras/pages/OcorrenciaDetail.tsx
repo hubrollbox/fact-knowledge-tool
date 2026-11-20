@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, CalendarDays, FileText, Loader2, MapPin } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
-import { useObra, useOcorrencias, useVisita, useAcoes } from '../hooks/useObras';
+import { useObra, useOcorrencia, useVisita, useAcoes } from '../hooks/useObras';
 import { FotosGaleria } from '../components/FotosGaleria';
 import { AnaliseOcorrencia } from '../components/AnaliseOcorrencia';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
@@ -20,13 +20,12 @@ function dataPt(value?: string | null) {
 export function OcorrenciaDetail() {
   const { id, ocorrenciaId } = useParams();
   const { data: obra, isLoading: obraLoading } = useObra(id);
-  const { data: ocorrencias, isLoading: ocorrenciasLoading } = useOcorrencias(id);
-  const ocorrencia = (ocorrencias ?? []).find((item) => item.id === ocorrenciaId);
+  const { data: ocorrencia, isLoading: ocorrenciaLoading } = useOcorrencia(id, ocorrenciaId);
   const { data: visita, isLoading: visitaLoading } = useVisita(ocorrencia?.visita_id ?? undefined);
   const { data: acoes, isLoading: acoesLoading } = useAcoes(id);
   const { canWrite } = useWorkspaceRole();
 
-  if (obraLoading || ocorrenciasLoading || acoesLoading || (ocorrencia?.visita_id && visitaLoading)) {
+  if (obraLoading || ocorrenciaLoading || acoesLoading || (ocorrencia?.visita_id && visitaLoading)) {
     return <div className="flex items-center gap-2 p-6 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A carregar dossier da ocorrência…</div>;
   }
 
@@ -41,7 +40,7 @@ export function OcorrenciaDetail() {
     <main className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Button asChild variant="ghost" size="sm"><Link to={visitaUrl}><ArrowLeft className="mr-1 h-4 w-4" />{visita ? 'Voltar à visita' : obra.nome}</Link></Button>
-        <Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/visita/${ocorrencia.visita_id}/relatorio`}><FileText className="mr-2 h-4 w-4" />Relatório da visita</Link></Button>
+        {ocorrencia.visita_id && <Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/visita/${ocorrencia.visita_id}/relatorio`}><FileText className="mr-2 h-4 w-4" />Relatório da visita</Link></Button>}
       </div>
 
       <header className="space-y-3">
