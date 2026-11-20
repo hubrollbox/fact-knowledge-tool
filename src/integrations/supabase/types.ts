@@ -249,6 +249,7 @@ export type Database = {
           ninhada_id: string
           preco_venda: number | null
           sexo: string | null
+          workspace_id: string
         }
         Insert: {
           animal_id?: string | null
@@ -262,6 +263,7 @@ export type Database = {
           ninhada_id: string
           preco_venda?: number | null
           sexo?: string | null
+          workspace_id?: string
         }
         Update: {
           animal_id?: string | null
@@ -275,18 +277,19 @@ export type Database = {
           ninhada_id?: string
           preco_venda?: number | null
           sexo?: string | null
+          workspace_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "canil_cachorros_animal_id_fkey"
-            columns: ["animal_id"]
+            foreignKeyName: "canil_cachorros_workspace_animal_fkey"
+            columns: ["workspace_id", "animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
           {
-            foreignKeyName: "canil_cachorros_ninhada_id_fkey"
-            columns: ["ninhada_id"]
+            foreignKeyName: "canil_cachorros_workspace_ninhada_fkey"
+            columns: ["workspace_id", "ninhada_id"]
             isOneToOne: false
             referencedRelation: "canil_ninhadas"
             referencedColumns: ["id"]
@@ -332,15 +335,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_ninhadas_mae_id_fkey"
-            columns: ["mae_id"]
+            foreignKeyName: "canil_ninhadas_workspace_mae_fkey"
+            columns: ["workspace_id", "mae_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
           {
-            foreignKeyName: "canil_ninhadas_pai_id_fkey"
-            columns: ["pai_id"]
+            foreignKeyName: "canil_ninhadas_workspace_pai_fkey"
+            columns: ["workspace_id", "pai_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
             referencedColumns: ["id"]
@@ -389,11 +392,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_registos_clinicos_animal_id_fkey"
-            columns: ["animal_id"]
+            foreignKeyName: "canil_registos_clinicos_workspace_animal_fkey"
+            columns: ["workspace_id", "animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
         ]
       }
@@ -445,11 +448,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "canil_reservas_animal_id_fkey"
-            columns: ["animal_id"]
+            foreignKeyName: "canil_reservas_workspace_animal_fkey"
+            columns: ["workspace_id", "animal_id"]
             isOneToOne: false
             referencedRelation: "canil_animais"
-            referencedColumns: ["id"]
+            referencedColumns: ["workspace_id", "id"]
           },
         ]
       }
