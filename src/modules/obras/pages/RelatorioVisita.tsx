@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useObra, useVisita, useOcorrencias, useAcoes } from '../hooks/useObras';
@@ -40,7 +41,12 @@ function FotosOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) {
   );
 }
 
-type AnaliseRelatorio = { analise: any; factos: any[]; referencias: any[]; versoes: any[]; documentos: any[] };
+type Analise = Database['public']['Tables']['obras_ocorrencia_analises']['Row'];
+type Facto = Database['public']['Tables']['obras_ocorrencia_factos']['Row'];
+type Referencia = Database['public']['Tables']['obras_ocorrencia_referencias']['Row'];
+type Versao = Pick<Database['public']['Tables']['obras_documento_versoes']['Row'], 'id' | 'documento_id' | 'numero_versao' | 'nome_ficheiro' | 'storage_path'> & { signedUrl: string | null };
+type Documento = Pick<Database['public']['Tables']['obras_documentos']['Row'], 'id' | 'titulo'>;
+type AnaliseRelatorio = { analise: Analise; factos: Facto[]; referencias: Referencia[]; versoes: Versao[]; documentos: Documento[] };
 
 function BlocoAnalise({ dados }: { dados: AnaliseRelatorio }) {
   const { analise, factos, referencias, versoes, documentos } = dados;
