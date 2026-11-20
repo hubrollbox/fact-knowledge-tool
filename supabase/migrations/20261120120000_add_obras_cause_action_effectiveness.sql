@@ -134,18 +134,21 @@ RETURNS uuid
 LANGUAGE plpgsql
 SET search_path = ''
 AS $$
-DECLARE ws_id uuid;
+DECLARE ws_id uuid; current_state text;
 BEGIN
   IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Autenticação obrigatória'; END IF;
   IF _motivo IS NULL OR length(btrim(_motivo)) = 0 THEN RAISE EXCEPTION 'O motivo da reabertura é obrigatório'; END IF;
 
-  SELECT o.workspace_id INTO ws_id
+  SELECT o.workspace_id, o.estado INTO ws_id, current_state
   FROM public.obras_ocorrencias AS o
   WHERE o.id = _ocorrencia_id
   FOR UPDATE;
 
   IF ws_id IS NULL OR NOT private.obras_can_write(ws_id) THEN
     RAISE EXCEPTION 'Ocorrência inexistente ou sem permissões';
+  END IF;
+  IF current_state <> 'resolvida' THEN
+    RAISE EXCEPTION 'Só é possível reabrir uma ocorrência resolvida';
   END IF;
 
   UPDATE public.obras_ocorrencias SET estado = 'aberta'
