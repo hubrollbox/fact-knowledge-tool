@@ -252,7 +252,7 @@ AS $$
 
     UNION ALL
     SELECT 'core', 'dossier', d.id, d.titulo, concat_ws(' · ', d.tipo, d.estado, d.materia, d.descricao),
-      '/dossiers/' || d.id::text, d.created_at, NULL::uuid, NULL::uuid, d.estado
+      '/dossiers/' || d.id::text, d.created_at, NULL::uuid, NULL::uuid, d.estado::text
     FROM public.dossiers d CROSS JOIN q
     WHERE (p_module IS NULL OR p_module = 'core') AND (p_record_type IS NULL OR p_record_type = 'dossier')
       AND (p_date_from IS NULL OR d.created_at::date >= p_date_from)
