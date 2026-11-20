@@ -53,8 +53,21 @@ export function ProcessoDetail({ processoId, onBack }: Props) {
 
   useEffect(() => {
     if (!pendingAnchor) return;
-    document.getElementById(pendingAnchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setPendingAnchor(null);
+    let attempts = 0;
+    let timeout: ReturnType<typeof setTimeout>;
+    const scrollWhenReady = () => {
+      const target = document.getElementById(pendingAnchor);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setPendingAnchor(null);
+        return;
+      }
+      attempts += 1;
+      if (attempts < 20) timeout = setTimeout(scrollWhenReady, 100);
+      else setPendingAnchor(null);
+    };
+    scrollWhenReady();
+    return () => clearTimeout(timeout);
   }, [activeTab, pendingAnchor]);
 
   const navigateTo = (tab: string, anchor: string) => {
