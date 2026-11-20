@@ -48,29 +48,47 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
   };
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setErroFoto('');
-    try {
-      let id = ocorrenciaCriadaId;
-      if (!id) {
+    e.preventDefault();
+    setErroFoto('');
+
+    let id = ocorrenciaCriadaId;
+    if (!id) {
+      try {
         const criada = await criar.mutateAsync({
-          obra_id: obraId, visita_id: visitaId ?? null, titulo: f.titulo.trim(),
-          descricao: f.descricao || null, localizacao: f.localizacao || null, gravidade: f.gravidade,
+          obra_id: obraId,
+          visita_id: visitaId ?? null,
+          titulo: f.titulo.trim(),
+          descricao: f.descricao.trim() || null,
+          localizacao: f.localizacao.trim() || null,
+          gravidade: f.gravidade,
         });
-        id = criada.id; setOcorrenciaCriadaId(id);
+        id = criada.id;
+        setOcorrenciaCriadaId(id);
+      } catch (error) {
+        setErroFoto(error instanceof Error ? error.message : 'Não foi possível guardar a ocorrência. Os dados continuam disponíveis para tentar novamente.');
+        return;
       }
-      if (fotografia) {
-        setAPreparar(true);
-        let preparada: File;
-        try { preparada = await comprimirFotografia(fotografia); }
-        finally { setAPreparar(false); }
-        await upload.mutateAsync({ file: preparada, visitaId, ocorrenciaId: id });
-      }
-      limpar(); setOpen(false);
-    } catch (error) {
-      setErroFoto(fotografia
-        ? 'A ocorrência ficou guardada, mas a fotografia não foi enviada. Pode tentar novamente.'
-        : error instanceof Error ? error.message : 'Não foi possível guardar a ocorrência.');
     }
+
+    if (fotografia) {
+      try {
+        setAPreparar(true);
+        const preparada = await comprimirFotografia(fotografia);
+        setAPreparar(false);
+        await upload.mutateAsync({ file: preparada, visitaId, ocorrenciaId: id! });
+      } catch (error) {
+        setAPreparar(false);
+        setErroFoto(
+          error instanceof Error
+            ? `A ocorrência foi guardada, mas a fotografia não foi enviada: ${error.message}. Pode tentar novamente.`
+            : 'A ocorrência foi guardada, mas não foi possível enviar a fotografia. Pode tentar novamente.',
+        );
+        return;
+      }
+    }
+
+    limpar();
+    setOpen(false);
   };
 
   return (
@@ -110,7 +128,7 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
           <DialogFooter className="sticky bottom-0 shrink-0 border-t bg-background px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <Button type="submit" className="min-h-11 w-full sm:w-auto" disabled={ocupado || (!f.titulo.trim() && !ocorrenciaCriadaId)}>
               {ocupado && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {aPreparar ? 'A preparar fotografia…' : upload.isPending ? 'A enviar fotografia…' : criar.isPending ? 'A guardar ocorrência…' : ocorrenciaCriadaId ? 'Tentar enviar fotografia' : 'Guardar ocorrência'}
+              {aPreparar ? 'A preparar fotografia…' : upload.isPending ? 'A enviar fotografia…' : criar.isPending ? 'A guardar ocorrência…' : ocorrenciaCriadaId ? (fotografia ? 'Tentar enviar fotografia' : 'Concluir registo') : 'Guardar ocorrência'}
             </Button>
           </DialogFooter>
         </form>
