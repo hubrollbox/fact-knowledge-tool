@@ -10,11 +10,6 @@ function useWorkspaceId() {
   return workspace?.id ?? null;
 }
 
-function invalidateProcesso(queryClient: ReturnType<typeof useQueryClient>, processoId: string) {
-  queryClient.invalidateQueries({ queryKey: ['juridico_processos', processoId] });
-  queryClient.invalidateQueries({ queryKey: ['juridico_processos'] });
-}
-
 export function usePartes(processoId: string) {
   return useQuery({
     queryKey: ['juridico_partes', processoId],
