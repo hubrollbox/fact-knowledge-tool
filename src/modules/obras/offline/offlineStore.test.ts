@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline } from './offlineStore';
+import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline, combinarEdicaoOffline } from './offlineStore';
 
 describe('offlineStore', () => {
   it('cria operações pendentes com tentativas a zero e sem erro', () => {
@@ -49,5 +49,38 @@ describe('comparação de versões offline', () => {
     const local = { descricao: 'Alteração local' };
     const remote = { descricao: 'Alteração remota' };
     expect(compararCamposOffline(base, remote, Object.keys(local))).toEqual(['descricao']);
+  });
+});
+
+describe('composição de edições offline', () => {
+  it('mantém o registo completo e acumula alterações feitas em momentos diferentes', () => {
+    const first = combinarEdicaoOffline(
+      { id: 'r1', titulo: 'Original', gravidade: 'media', descricao: 'Texto inicial' },
+      undefined,
+      { titulo: 'Título local' },
+    );
+    const second = combinarEdicaoOffline(
+      { id: 'r1', titulo: 'Original', gravidade: 'media', descricao: 'Texto inicial' },
+      first.payload,
+      { gravidade: 'alta' },
+      first.changedFields,
+    );
+
+    expect(second.payload).toEqual({
+      id: 'r1',
+      titulo: 'Título local',
+      gravidade: 'alta',
+      descricao: 'Texto inicial',
+    });
+    expect(second.changedFields.sort()).toEqual(['gravidade', 'titulo']);
+  });
+
+  it('não inclui identificadores nem metadados nos campos alterados', () => {
+    const result = combinarEdicaoOffline(
+      { id: 'r2', workspace_id: 'w1', titulo: 'A' },
+      undefined,
+      { id: 'r2', workspace_id: 'w1', titulo: 'B' },
+    );
+    expect(result.changedFields).toEqual(['titulo']);
   });
 });
