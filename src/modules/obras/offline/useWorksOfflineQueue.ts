@@ -51,6 +51,36 @@ async function inserirSeAindaNaoExiste(
   throw error;
 }
 
+function compararCampos(
+  remote: Record<string, unknown>,
+  base: Record<string, unknown>,
+  fields: string[],
+) {
+  return fields.filter((key) =>
+    JSON.stringify(remote[key] ?? null) !== JSON.stringify(base[key] ?? null),
+  );
+}
+
+async function sincronizarAtualizacao(operation: WorksOfflineOperation) {
+  const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
+  const client = supabase as any;
+  const { data: remote, error } = await client.from(table).select('*').eq('id', operation.id).maybeSingle();
+  if (error) throw error;
+  if (!remote || remote.workspace_id !== operation.workspaceId) {
+    throw new Error('O registo original já não existe ou não pertence a este espaço de trabalho.');
+  }
+  const base = operation.basePayload ?? {};
+  const fields = Object.keys(operation.payload).filter((key) =>
+    !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key),
+  );
+  const conflicts = compararCampos(remote, base, fields);
+  if (conflicts.length) {
+    throw new Error('Conflito de edição: o registo foi alterado no servidor desde a última consulta.');
+  }
+  const { error: updateError } = await client.from(table).update(operation.payload).eq('id', operation.id);
+  if (updateError) throw updateError;
+}
+
 async function sincronizarFoto(operation: WorksOfflineOperation) {
   const file = operation.payload.file;
   if (!(file instanceof Blob)) throw new Error('A fotografia pendente não contém um ficheiro válido.');
@@ -105,8 +135,12 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
         if (operation.userId !== user.id || operation.workspaceId !== workspaceId) continue;
         try {
           if (operation.entity === 'visita' || operation.entity === 'ocorrencia') {
-            const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
-            await inserirSeAindaNaoExiste(table, String(operation.payload.id ?? operation.id), operation.workspaceId, operation.payload);
+            if (operation.operationType === 'update') {
+              await sincronizarAtualizacao(operation);
+            } else {
+              const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
+              await inserirSeAindaNaoExiste(table, String(operation.payload.id ?? operation.id), operation.workspaceId, operation.payload);
+            }
           } else {
             await sincronizarFoto(operation);
           }
