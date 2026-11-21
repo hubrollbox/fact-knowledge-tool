@@ -22,6 +22,7 @@ async function inserirSeAindaNaoExiste(
   payload: Record<string, unknown>,
 ) {
   // Avoid upsert: existing production policies grant INSERT/SELECT, not necessarily UPDATE.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client = supabase as any;
   const verificar = async () => {
     const { data, error } = await client.from(table).select('id,workspace_id').eq('id', id).maybeSingle();
