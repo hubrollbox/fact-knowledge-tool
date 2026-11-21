@@ -61,14 +61,15 @@ async function sincronizarAtualizacao(operation: WorksOfflineOperation) {
     throw new Error('O registo original já não existe ou não pertence a este espaço de trabalho.');
   }
   const base = operation.basePayload ?? {};
-  const fields = Object.keys(operation.payload).filter((key) =>
+  const fields = operation.changedFields ?? Object.keys(operation.payload).filter((key) =>
     !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key),
   );
   const conflicts = compararCamposOffline(base, remote, fields);
   if (conflicts.length) {
     throw new Error('Conflito de edição: o registo foi alterado no servidor desde a última consulta.');
   }
-  let update = client.from(table).update(operation.payload).eq('id', operation.id);
+  const updatePayload = Object.fromEntries(fields.map((key) => [key, operation.payload[key]]));
+  let update = client.from(table).update(updatePayload).eq('id', operation.id);
   if (remote.updated_at) update = update.eq('updated_at', remote.updated_at);
   const { data: updated, error: updateError } = await update.select('id').maybeSingle();
   if (updateError) throw updateError;
