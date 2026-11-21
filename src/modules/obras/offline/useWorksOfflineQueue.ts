@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   actualizarOperacaoOffline,
+  compararCamposOffline,
   listarOperacoesOffline,
   removerOperacaoOffline,
   type WorksOfflineOperation,
@@ -51,16 +52,6 @@ async function inserirSeAindaNaoExiste(
   throw error;
 }
 
-function compararCampos(
-  remote: Record<string, unknown>,
-  base: Record<string, unknown>,
-  fields: string[],
-) {
-  return fields.filter((key) =>
-    JSON.stringify(remote[key] ?? null) !== JSON.stringify(base[key] ?? null),
-  );
-}
-
 async function sincronizarAtualizacao(operation: WorksOfflineOperation) {
   const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
   const client = supabase as any;
@@ -73,12 +64,15 @@ async function sincronizarAtualizacao(operation: WorksOfflineOperation) {
   const fields = Object.keys(operation.payload).filter((key) =>
     !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key),
   );
-  const conflicts = compararCampos(remote, base, fields);
+  const conflicts = compararCamposOffline(base, remote, fields);
   if (conflicts.length) {
     throw new Error('Conflito de edição: o registo foi alterado no servidor desde a última consulta.');
   }
-  const { error: updateError } = await client.from(table).update(operation.payload).eq('id', operation.id);
+  let update = client.from(table).update(operation.payload).eq('id', operation.id);
+  if (remote.updated_at) update = update.eq('updated_at', remote.updated_at);
+  const { data: updated, error: updateError } = await update.select('id').maybeSingle();
   if (updateError) throw updateError;
+  if (!updated) throw new Error('Conflito de edição: o registo mudou durante a sincronização.');
 }
 
 async function sincronizarFoto(operation: WorksOfflineOperation) {
