@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import type { ObraInsert, VisitaInsert, OcorrenciaInsert, AcaoInsert } from '../types/obras';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, actualizarRegistoPendenteOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline, listarSnapshotsOffline } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, actualizarRegistoPendenteOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline, listarSnapshotsOffline, compararCamposOffline } from '../offline/offlineStore';
 
 const onErr = (e: Error) => toast({ title: 'Não foi guardado', description: e.message, variant: 'destructive' });
 
@@ -272,10 +272,8 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
           if (!current || current.workspace_id !== ws) throw new Error('Registo não encontrado neste espaço de trabalho.');
           if (!base) base = current;
           if (base) {
-            const changed = Object.keys(changes).filter((key) =>
-              !['updated_at', 'created_at'].includes(key) &&
-              JSON.stringify(current[key] ?? null) !== JSON.stringify(base![key] ?? null),
-            );
+            const fields = Object.keys(changes).filter((key) => !['updated_at', 'created_at'].includes(key));
+            const changed = compararCamposOffline(base, current, fields);
             if (changed.length) {
               await actualizarRegistoPendenteOffline({
                 id, userId: user.id, workspaceId: ws, entity, payload: { ...changes, id, workspace_id: ws },
