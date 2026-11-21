@@ -39,8 +39,9 @@ async function withStore<T>(mode: IDBTransactionMode, action: (store: IDBObjectS
     return await new Promise<T>((resolve, reject) => {
       const transaction = db.transaction(STORE, mode);
       const request = action(transaction.objectStore(STORE));
-      request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error ?? new Error('Falha no armazenamento offline.'));
+      transaction.oncomplete = () => resolve(request.result);
+      transaction.onerror = () => reject(transaction.error ?? new Error('Falha na transação offline.'));
       transaction.onabort = () => reject(transaction.error ?? new Error('Operação offline cancelada.'));
     });
   } finally { db.close(); }
