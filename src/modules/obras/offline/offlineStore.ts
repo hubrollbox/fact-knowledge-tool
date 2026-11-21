@@ -12,14 +12,11 @@ export interface WorksOfflineOperation {
 }
 
 const DB_NAME = 'fkt-works-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'operations';
 
 function openDatabase(): Promise<IDBDatabase> {
-  if (typeof indexedDB === 'undefined') {
-    return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
-  }
-
+  if (typeof indexedDB === 'undefined') return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
@@ -46,9 +43,7 @@ async function withStore<T>(mode: IDBTransactionMode, action: (store: IDBObjectS
       request.onerror = () => reject(request.error ?? new Error('Falha no armazenamento offline.'));
       transaction.onabort = () => reject(transaction.error ?? new Error('Operação offline cancelada.'));
     });
-  } finally {
-    db.close();
-  }
+  } finally { db.close(); }
 }
 
 export async function guardarOperacaoOffline(operation: WorksOfflineOperation): Promise<void> {
@@ -67,8 +62,7 @@ export async function actualizarOperacaoOffline(
   changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError'>>,
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
-  if (!current) return;
-  await guardarOperacaoOffline({ ...current, ...changes });
+  if (current) await guardarOperacaoOffline({ ...current, ...changes });
 }
 
 export async function removerOperacaoOffline(id: string): Promise<void> {
@@ -80,26 +74,27 @@ export async function limparOperacoesOfflineDoUtilizador(userId: string): Promis
   try {
     await new Promise<void>((resolve, reject) => {
       const transaction = db.transaction(STORE, 'readwrite');
-      const store = transaction.objectStore(STORE);
-      const request = store.index('scope').openCursor();
+      const request = transaction.objectStore(STORE).index('scope').openCursor();
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor) return;
-        const value = cursor.value as WorksOfflineOperation;
-        if (value.userId === userId) cursor.delete();
+        if ((cursor.value as WorksOfflineOperation).userId === userId) cursor.delete();
         cursor.continue();
       };
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error ?? new Error('Não foi possível limpar os dados offline.'));
       transaction.onabort = () => reject(transaction.error ?? new Error('Limpeza offline cancelada.'));
     });
-  } finally {
-    db.close();
-  }
+  } finally { db.close(); }
+}
+
+export function criarOperacaoOffline(input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError'>): WorksOfflineOperation {
+  return { ...input, createdAt: new Date().toISOString(), attempts: 0, lastError: null };
 }
 
 export function isFalhaDeLigacao(error: unknown): boolean {
+  if (!navigator.onLine) return true;
   if (!error) return false;
   const message = error instanceof Error ? error.message : String(error);
-  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline/i.test(message);
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline|timeout/i.test(message);
 }
