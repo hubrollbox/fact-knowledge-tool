@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, CloudUpload, WifiOff, GitCompareArrows } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ function display(value: unknown) {
 }
 
 export function OfflineSyncStatus() {
+  const queryClient = useQueryClient();
   const workspaceId = useObrasWorkspace();
   const { operations, pendingCount, syncing, sync, refresh } = useWorksOfflineQueue(workspaceId);
   const [online, setOnline] = useState(navigator.onLine);
@@ -49,6 +51,10 @@ export function OfflineSyncStatus() {
       await resolverConflitoOffline(selected.id, choice);
       setSelected(null);
       await refresh();
+      await queryClient.invalidateQueries({ queryKey: ['obras_visitas'] });
+      await queryClient.invalidateQueries({ queryKey: ['obras_ocorrencias'] });
+      await queryClient.invalidateQueries({ queryKey: ['obras_visita'] });
+      await queryClient.invalidateQueries({ queryKey: ['obras_ocorrencia'] });
       if (choice === 'keep_local' && navigator.onLine) await sync();
     } finally {
       setResolving(false);
