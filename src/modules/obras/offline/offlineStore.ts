@@ -62,6 +62,7 @@ export async function guardarOperacaoOffline(operation: WorksOfflineOperation): 
 export async function actualizarRegistoPendenteOffline(
   input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError' | 'operationType'> & {
     basePayload?: Record<string, unknown>;
+    conflictRemote?: Record<string, unknown> | null;
   },
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(input.id));
@@ -72,7 +73,7 @@ export async function actualizarRegistoPendenteOffline(
     lastError: null,
     operationType: current?.operationType === 'create' ? 'create' : 'update',
     basePayload: current?.basePayload ?? input.basePayload ?? {},
-    conflictRemote: null,
+    conflictRemote: input.conflictRemote ?? null,
   };
   await guardarOperacaoOffline(next);
 }
