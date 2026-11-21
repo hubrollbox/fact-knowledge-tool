@@ -305,7 +305,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias', variables.obraId] });
-      qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visita' : 'obras_ocorrencia', variables.obraId] });
+      qc.invalidateQueries({ queryKey: entity === 'visita' ? ['obras_visita', variables.id] : ['obras_ocorrencia', variables.obraId] });
     },
     onError: onErr,
   });
@@ -357,7 +357,7 @@ export function useActualizarEstado() {
       if (error) throw error;
       return table;
     },
-    onSuccess: (t) => { qc.invalidateQueries({ queryKey: [t] }); qc.invalidateQueries({ queryKey: ['obra'] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }); qc.invalidateQueries({ queryKey: ['obras_fila_acoes'] }); },
+    onSuccess: (t) => { qc.invalidateQueries({ queryKey: [t] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias'] }); qc.invalidateQueries({ queryKey: ['obra'] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }); qc.invalidateQueries({ queryKey: ['obras_fila_acoes'] }); },
     onError: onErr,
   });
 }
