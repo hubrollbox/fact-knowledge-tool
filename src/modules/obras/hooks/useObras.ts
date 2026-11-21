@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import type { ObraInsert, VisitaInsert, OcorrenciaInsert, AcaoInsert } from '../types/obras';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline, listarSnapshotsOffline } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, actualizarRegistoPendenteOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline, listarSnapshotsOffline } from '../offline/offlineStore';
 
 const onErr = (e: Error) => toast({ title: 'Não foi guardado', description: e.message, variant: 'destructive' });
 
@@ -228,6 +228,61 @@ function useInsert<K extends 'obras_visitas' | 'obras_ocorrencias' | 'obras_acoe
 export const useCriarVisita = () => useInsert('obras_visitas');
 export const useCriarOcorrencia = () => useInsert('obras_ocorrencias');
 export const useCriarAcao = () => useInsert('obras_acoes');
+
+type EntidadeEditavel = 'visita' | 'ocorrencia';
+
+export function useEditarRegistoOffline(entity: EntidadeEditavel) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, obraId, changes }: { id: string; obraId: string; changes: Record<string, unknown> }) => {
+      if (!ws || !user?.id) throw new Error('Sem espaço de trabalho ou sessão válida.');
+      const table = entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
+      const snapshotEntity = entity === 'visita' ? 'visitas' : 'ocorrencias';
+      let base: Record<string, unknown> | undefined;
+      const cached = await obterSnapshotOffline<any[]>(user.id, ws, obraId, snapshotEntity);
+      base = cached?.find((row) => row.id === id);
+      if (navigator.onLine) {
+        try {
+          const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+          if (readError) throw readError;
+          if (!current || current.workspace_id !== ws) throw new Error('Registo não encontrado neste espaço de trabalho.');
+          if (base) {
+            const changed = Object.keys(changes).filter((key) =>
+              !['updated_at', 'created_at'].includes(key) &&
+              JSON.stringify(current[key] ?? null) !== JSON.stringify(base![key] ?? null),
+            );
+            if (changed.length) {
+              await actualizarRegistoPendenteOffline({
+                id, userId: user.id, workspaceId: ws, entity, payload: { ...changes, id, workspace_id: ws },
+                basePayload: base,
+              });
+              throw new Error('Foi detectada uma alteração concorrente. A edição local foi preservada para resolução.');
+            }
+          }
+          const { data, error } = await supabase.from(table).update(changes as never).eq('id', id).select().single();
+          if (error) throw error;
+          return data;
+        } catch (error) {
+          if (!isFalhaDeLigacao(error)) throw error;
+        }
+      }
+      if (!base) throw new Error('Não existe uma versão anterior guardada neste dispositivo. Abra o registo enquanto está online antes de o editar offline.');
+      await actualizarRegistoPendenteOffline({
+        id, userId: user.id, workspaceId: ws, entity,
+        payload: { ...changes, id, workspace_id: ws },
+        basePayload: base,
+      });
+      return { ...base, ...changes, id, workspace_id: ws };
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias', variables.obraId] });
+      qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visita' : 'obras_ocorrencia', variables.obraId] });
+    },
+    onError: onErr,
+  });
+}
 
 export function useActualizarEstado() {
   const qc = useQueryClient();
