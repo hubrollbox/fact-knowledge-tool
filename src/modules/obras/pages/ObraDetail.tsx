@@ -12,6 +12,7 @@ import { OcorrenciaDialog } from '../components/OcorrenciaDialog';
 import { OcorrenciaItem } from '../components/OcorrenciaItem';
 import { AcaoDialog } from '../components/AcaoDialog';
 import { DocumentosObra } from '../components/DocumentosObra';
+import { OfflineSyncStatus } from '../components/OfflineSyncStatus';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ export function ObraDetail() {
   return (
     <div className="space-y-5">
       <Button variant="ghost" size="sm" asChild><Link to="/obras"><ArrowLeft className="h-4 w-4 mr-1" />Obras</Link></Button>
+      <OfflineSyncStatus />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{obra.nome}</h1>
