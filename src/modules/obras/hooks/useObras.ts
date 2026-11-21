@@ -22,7 +22,7 @@ export function useObras() {
         return data;
       } catch (error) {
         if (!isFalhaDeLigacao(error) || !user?.id) throw error;
-        return await obterSnapshotOffline<typeof error extends never ? never : any[]>(user.id, ws!, '__lista__', 'obra') ?? [];
+        return await obterSnapshotOffline<any[]>(user.id, ws!, '__lista__', 'obra') ?? [];
       }
     },
   });
@@ -116,7 +116,9 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
       if (!user?.id || !ws) return null;
       const pending = await listarOperacoesOffline(user.id, ws);
       const item = pending.find((op) => op.entity === 'ocorrencia' && op.payload.id === ocorrenciaId);
-      return item?.payload as any ?? null;
+      if (item) return item.payload as any;
+      const cached = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'ocorrencias');
+      return cached?.find((row) => row.id === ocorrenciaId) ?? null;
     },
   });
 }
@@ -156,7 +158,9 @@ export function useVisita(id?: string) {
       if (!user?.id || !ws) return null;
       const pending = await listarOperacoesOffline(user.id, ws);
       const item = pending.find((op) => op.entity === 'visita' && op.payload.id === id);
-      return item?.payload as any ?? null;
+      if (item) return item.payload as any;
+      const snapshots = await obterSnapshotOffline<any[]>(user.id, ws, '__lista__', 'visitas');
+      return snapshots?.find((row) => row.id === id) ?? null;
     },
   });
 }
