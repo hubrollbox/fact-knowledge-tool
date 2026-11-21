@@ -75,18 +75,25 @@ export function useOcorrencias(obraId?: string) {
 }
 
 export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['obras_ocorrencia', obraId, ocorrenciaId],
     enabled: !!obraId && !!ocorrenciaId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('obras_ocorrencias')
-        .select('*')
-        .eq('obra_id', obraId!)
-        .eq('id', ocorrenciaId!)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+      if (navigator.onLine) {
+        try {
+          const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).eq('id', ocorrenciaId!).maybeSingle();
+          if (error) throw error;
+          if (data) return data;
+        } catch (error) {
+          if (!isFalhaDeLigacao(error)) throw error;
+        }
+      }
+      if (!user?.id || !ws) return null;
+      const pending = await listarOperacoesOffline(user.id, ws);
+      const item = pending.find((op) => op.entity === 'ocorrencia' && op.payload.id === ocorrenciaId);
+      return item?.payload as any ?? null;
     },
   });
 }
@@ -99,13 +106,25 @@ export function useAcoes(obraId?: string) {
 }
 
 export function useVisita(id?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['obras_visita', id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase.from('obras_visitas').select('*').eq('id', id!).maybeSingle();
-      if (error) throw error;
-      return data;
+      if (navigator.onLine) {
+        try {
+          const { data, error } = await supabase.from('obras_visitas').select('*').eq('id', id!).maybeSingle();
+          if (error) throw error;
+          if (data) return data;
+        } catch (error) {
+          if (!isFalhaDeLigacao(error)) throw error;
+        }
+      }
+      if (!user?.id || !ws) return null;
+      const pending = await listarOperacoesOffline(user.id, ws);
+      const item = pending.find((op) => op.entity === 'visita' && op.payload.id === id);
+      return item?.payload as any ?? null;
     },
   });
 }
