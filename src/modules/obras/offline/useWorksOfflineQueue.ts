@@ -29,9 +29,11 @@ async function inserirSeAindaNaoExiste(
     if (error) throw error;
     return data;
   };
-  const existing = await verificar();
-  if (existing) {
-    if (existing.workspace_id !== workspaceId) throw new Error('Conflito: o identificador já existe noutro espaço de trabalho.');
+  const validarExistente = (existing: Record<string, unknown> | null) => {
+    if (!existing) return false;
+    if (existing.workspace_id !== workspaceId) {
+      throw new Error('Conflito: o identificador já existe noutro espaço de trabalho.');
+    }
     const conflicts = Object.entries(payload).filter(([key, value]) =>
       !['created_at', 'updated_at'].includes(key) &&
       JSON.stringify(existing[key]) !== JSON.stringify(value),
@@ -39,13 +41,13 @@ async function inserirSeAindaNaoExiste(
     if (conflicts.length) {
       throw new Error('Conflito de sincronização: o registo remoto foi alterado. Os dados locais foram preservados neste dispositivo.');
     }
-    return;
-  }
+    return true;
+  };
+  if (validarExistente(await verificar())) return;
   const { error } = await client.from(table).insert(payload);
   if (!error) return;
   // A previous request may have reached Postgres even if its response was lost.
-  const afterInsert = await verificar();
-  if (afterInsert?.workspace_id === workspaceId) return;
+  if (validarExistente(await verificar())) return;
   throw error;
 }
 
