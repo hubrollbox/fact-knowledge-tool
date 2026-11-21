@@ -155,3 +155,18 @@ export async function obterSnapshotOffline<T>(
     });
   } finally { db.close(); }
 }
+
+export async function listarSnapshotsOffline(
+  userId: string,
+  workspaceId: string,
+): Promise<WorksOfflineSnapshot[]> {
+  const db = await openDatabase();
+  try {
+    return await new Promise<WorksOfflineSnapshot[]>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readonly');
+      const request = tx.objectStore(SNAPSHOTS).index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
+      request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineSnapshot[]);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar a cache offline.'));
+    });
+  } finally { db.close(); }
+}
