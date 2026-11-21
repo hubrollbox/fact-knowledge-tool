@@ -12,6 +12,7 @@ export interface WorksOfflineOperation {
   operationType?: 'create' | 'update';
   basePayload?: Record<string, unknown>;
   conflictRemote?: Record<string, unknown> | null;
+  changedFields?: string[];
 }
 
 const DB_NAME = 'fkt-works-offline';
@@ -66,14 +67,21 @@ export async function actualizarRegistoPendenteOffline(
   },
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(input.id));
+  const operationType = current?.operationType === 'create' ? 'create' : 'update';
+  const basePayload = current?.basePayload ?? input.basePayload ?? {};
+  const changedFields = operationType === 'create'
+    ? undefined
+    : [...new Set([...(current?.changedFields ?? []), ...Object.keys(input.payload).filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key))])];
   const next: WorksOfflineOperation = {
     ...input,
+    payload: operationType === 'create' ? { ...(current?.payload ?? {}), ...input.payload } : { ...basePayload, ...(current?.payload ?? {}), ...input.payload },
     createdAt: current?.createdAt ?? new Date().toISOString(),
     attempts: 0,
     lastError: null,
-    operationType: current?.operationType === 'create' ? 'create' : 'update',
-    basePayload: current?.basePayload ?? input.basePayload ?? {},
-    conflictRemote: input.conflictRemote ?? null,
+    operationType,
+    basePayload,
+    changedFields,
+    conflictRemote: input.conflictRemote ?? current?.conflictRemote ?? null,
   };
   await guardarOperacaoOffline(next);
 }
@@ -87,7 +95,7 @@ export async function listarOperacoesOffline(userId: string, workspaceId: string
 
 export async function actualizarOperacaoOffline(
   id: string,
-  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError' | 'operationType' | 'basePayload' | 'conflictRemote'>>,
+  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError' | 'operationType' | 'basePayload' | 'conflictRemote' | 'changedFields'>>,
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
   if (current) await guardarOperacaoOffline({ ...current, ...changes });
