@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import type { ObraInsert, VisitaInsert, OcorrenciaInsert, AcaoInsert } from '../types/obras';
+import { useAuth } from '@/contexts/AuthContext';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline } from '../offline/offlineStore';
 
 const onErr = (e: Error) => toast({ title: 'Não foi guardado', description: e.message, variant: 'destructive' });
 
@@ -32,15 +34,43 @@ export function useObra(id?: string) {
 }
 
 export function useVisitas(obraId?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({ queryKey: ['obras_visitas', obraId], enabled: !!obraId, queryFn: async () => {
-    const { data, error } = await supabase.from('obras_visitas').select('*').eq('obra_id', obraId!).order('data_visita', { ascending: false });
-    if (error) throw error; return data;
+    let remote: any[] = [];
+    if (navigator.onLine) {
+      try {
+        const { data, error } = await supabase.from('obras_visitas').select('*').eq('obra_id', obraId!).order('data_visita', { ascending: false });
+        if (error) throw error;
+        remote = data ?? [];
+      } catch (error) {
+        if (!isFalhaDeLigacao(error)) throw error;
+      }
+    }
+    if (!user?.id || !ws) return remote;
+    const pending = await listarOperacoesOffline(user.id, ws);
+    const local = pending.filter((op) => op.entity === 'visita' && op.payload.obra_id === obraId).map((op) => op.payload);
+    return [...local, ...remote.filter((row) => !local.some((item) => item.id === row.id))].sort((a, b) => String(b.data_visita).localeCompare(String(a.data_visita)));
   } });
 }
 export function useOcorrencias(obraId?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({ queryKey: ['obras_ocorrencias', obraId], enabled: !!obraId, queryFn: async () => {
-    const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
-    if (error) throw error; return data;
+    let remote: any[] = [];
+    if (navigator.onLine) {
+      try {
+        const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+        if (error) throw error;
+        remote = data ?? [];
+      } catch (error) {
+        if (!isFalhaDeLigacao(error)) throw error;
+      }
+    }
+    if (!user?.id || !ws) return remote;
+    const pending = await listarOperacoesOffline(user.id, ws);
+    const local = pending.filter((op) => op.entity === 'ocorrencia' && op.payload.obra_id === obraId).map((op) => op.payload);
+    return [...local, ...remote.filter((row) => !local.some((item) => item.id === row.id))].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
   } });
 }
 
@@ -110,14 +140,27 @@ export function useCriarObra() {
 
 function useInsert<K extends 'obras_visitas' | 'obras_ocorrencias' | 'obras_acoes'>(table: K) {
   const ws = useObrasWorkspace();
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (v: Omit<K extends 'obras_visitas' ? VisitaInsert : K extends 'obras_ocorrencias' ? OcorrenciaInsert : AcaoInsert, 'workspace_id'>) => {
-      if (!ws) throw new Error('Sem espaço de trabalho');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await supabase.from(table).insert({ ...(v as any), workspace_id: ws }).select().single();
-      if (error) throw error;
-      return data;
+      if (!ws || !user?.id) throw new Error('Sem espaço de trabalho ou sessão válida');
+      // Generate the identifier before either path so retries cannot create duplicates.
+      const payload = { ...(v as any), id: (v as any).id ?? crypto.randomUUID(), workspace_id: ws };
+      const entity = table === 'obras_visitas' ? 'visita' : table === 'obras_ocorrencias' ? 'ocorrencia' : null;
+      if (!navigator.onLine && entity) {
+        await guardarOperacaoOffline(criarOperacaoOffline({ id: payload.id, userId: user.id, workspaceId: ws, entity, payload }));
+        return payload;
+      }
+      try {
+        const { data, error } = await supabase.from(table).insert(payload).select().single();
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        if (!entity || !isFalhaDeLigacao(error)) throw error;
+        await guardarOperacaoOffline(criarOperacaoOffline({ id: payload.id, userId: user.id, workspaceId: ws, entity, payload }));
+        return payload;
+      }
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: [table] }); qc.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }); },
     onError: onErr,
