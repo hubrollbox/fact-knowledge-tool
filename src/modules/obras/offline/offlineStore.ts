@@ -9,6 +9,9 @@ export interface WorksOfflineOperation {
   createdAt: string;
   attempts: number;
   lastError: string | null;
+  operationType?: 'create' | 'update';
+  basePayload?: Record<string, unknown>;
+  conflictRemote?: Record<string, unknown> | null;
 }
 
 const DB_NAME = 'fkt-works-offline';
@@ -65,7 +68,7 @@ export async function listarOperacoesOffline(userId: string, workspaceId: string
 
 export async function actualizarOperacaoOffline(
   id: string,
-  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError'>>,
+  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError' | 'operationType' | 'basePayload' | 'conflictRemote'>>,
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
   if (current) await guardarOperacaoOffline({ ...current, ...changes });
@@ -169,4 +172,23 @@ export async function listarSnapshotsOffline(
       request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar a cache offline.'));
     });
   } finally { db.close(); }
+}
+
+export async function resolverConflitoOffline(
+  id: string,
+  resolution: 'keep_local' | 'keep_remote',
+): Promise<void> {
+  const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
+  if (!current || !current.conflictRemote) throw new Error('O conflito já não está disponível.');
+  if (resolution === 'keep_remote') {
+    await removerOperacaoOffline(id);
+    return;
+  }
+  await guardarOperacaoOffline({
+    ...current,
+    basePayload: current.conflictRemote,
+    conflictRemote: null,
+    lastError: null,
+    attempts: 0,
+  });
 }
