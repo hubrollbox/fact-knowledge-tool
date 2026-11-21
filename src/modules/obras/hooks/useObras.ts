@@ -108,7 +108,13 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
         try {
           const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).eq('id', ocorrenciaId!).maybeSingle();
           if (error) throw error;
-          if (data) return data;
+          if (data) {
+            if (user?.id && ws) {
+              const rows = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'ocorrencias') ?? [];
+              await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'ocorrencias', data: [...rows.filter((row) => row.id !== data.id), data] }).catch(() => undefined);
+            }
+            return data;
+          }
         } catch (error) {
           if (!isFalhaDeLigacao(error)) throw error;
         }
@@ -150,7 +156,13 @@ export function useVisita(id?: string) {
         try {
           const { data, error } = await supabase.from('obras_visitas').select('*').eq('id', id!).maybeSingle();
           if (error) throw error;
-          if (data) return data;
+          if (data) {
+            if (user?.id && ws) {
+              const rows = await obterSnapshotOffline<any[]>(user.id, ws, data.obra_id, 'visitas') ?? [];
+              await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: data.obra_id, entity: 'visitas', data: [...rows.filter((row) => row.id !== data.id), data] }).catch(() => undefined);
+            }
+            return data;
+          }
         } catch (error) {
           if (!isFalhaDeLigacao(error)) throw error;
         }
@@ -258,6 +270,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
           const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
           if (readError) throw readError;
           if (!current || current.workspace_id !== ws) throw new Error('Registo não encontrado neste espaço de trabalho.');
+          if (!base) base = current;
           if (base) {
             const changed = Object.keys(changes).filter((key) =>
               !['updated_at', 'created_at'].includes(key) &&
