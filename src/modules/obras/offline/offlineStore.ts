@@ -59,6 +59,24 @@ export async function guardarOperacaoOffline(operation: WorksOfflineOperation): 
   await withStore<IDBValidKey>('readwrite', (store) => store.put(operation));
 }
 
+export async function actualizarRegistoPendenteOffline(
+  input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError' | 'operationType'> & {
+    basePayload?: Record<string, unknown>;
+  },
+): Promise<void> {
+  const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(input.id));
+  const next: WorksOfflineOperation = {
+    ...input,
+    createdAt: current?.createdAt ?? new Date().toISOString(),
+    attempts: 0,
+    lastError: null,
+    operationType: current?.operationType === 'create' ? 'create' : 'update',
+    basePayload: current?.basePayload ?? input.basePayload ?? {},
+    conflictRemote: null,
+  };
+  await guardarOperacaoOffline(next);
+}
+
 export async function listarOperacoesOffline(userId: string, workspaceId: string): Promise<WorksOfflineOperation[]> {
   const rows = await withStore<WorksOfflineOperation[]>('readonly', (store) =>
     store.index('scope').getAll(IDBKeyRange.only([userId, workspaceId])),
