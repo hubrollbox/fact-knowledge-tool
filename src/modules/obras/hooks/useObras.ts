@@ -243,6 +243,16 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
       let base: Record<string, unknown> | undefined;
       const cached = await obterSnapshotOffline<any[]>(user.id, ws, obraId, snapshotEntity);
       base = cached?.find((row) => row.id === id);
+      const pendingBeforeEdit = (await listarOperacoesOffline(user.id, ws)).find((operation) => operation.id === id && operation.entity === entity);
+      if (pendingBeforeEdit?.operationType === 'create') {
+        const merged = { ...pendingBeforeEdit.payload, ...changes, id, workspace_id: ws };
+        await actualizarRegistoPendenteOffline({
+          id, userId: user.id, workspaceId: ws, entity, payload: merged,
+          basePayload: pendingBeforeEdit.basePayload ?? {},
+        });
+        window.dispatchEvent(new Event('fkt:offline-queue-changed'));
+        return merged;
+      }
       if (navigator.onLine) {
         try {
           const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
@@ -261,8 +271,11 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
               throw new Error('Foi detectada uma alteração concorrente. A edição local foi preservada para resolução.');
             }
           }
-          const { data, error } = await supabase.from(table).update(changes as never).eq('id', id).select().single();
+          let update = supabase.from(table).update(changes as never).eq('id', id);
+          if (current.updated_at) update = update.eq('updated_at', current.updated_at) as typeof update;
+          const { data, error } = await update.select().maybeSingle();
           if (error) throw error;
+          if (!data) throw new Error('Conflito de edição: o registo foi alterado durante a gravação. Recarregue os dados antes de voltar a editar.');
           return data;
         } catch (error) {
           if (!isFalhaDeLigacao(error)) throw error;
@@ -274,6 +287,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
         payload: { ...changes, id, workspace_id: ws },
         basePayload: base,
       });
+      window.dispatchEvent(new Event('fkt:offline-queue-changed'));
       return { ...base, ...changes, id, workspace_id: ws };
     },
     onSuccess: (_data, variables) => {
