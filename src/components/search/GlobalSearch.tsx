@@ -196,7 +196,7 @@ export function GlobalSearch() {
               <button key={item.module + item.record_type + item.record_id} type="button" onClick={() => openResult(item.href)} className="flex w-full items-start justify-between gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent">
                 <span className="min-w-0">
                   <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{MODULE_LABELS[item.module] ?? item.module}</span><span>·</span><span>{item.record_type.replaceAll('_',' ')}</span>{item.status && <span className="rounded bg-muted px-1.5 py-0.5">{item.status}</span>}
+                    <span>{MODULE_LABELS[item.module] ?? item.module}</span><span>·</span><span>{item.record_type.replace(/_/g, ' ')}</span>{item.status && <span className="rounded bg-muted px-1.5 py-0.5">{item.status}</span>}
                   </span>
                   <span className="mt-1 block truncate text-sm font-medium text-foreground">{item.title}</span>
                   {item.excerpt && <span className="mt-1 line-clamp-2 block text-xs text-muted-foreground">{item.excerpt}</span>}

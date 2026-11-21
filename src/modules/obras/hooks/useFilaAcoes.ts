@@ -39,7 +39,7 @@ export function useFilaAcoes() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       const rows = data ?? [];
-      const occurrenceIds = [...new Set(rows.map((a: any) => a.ocorrencia_id).filter(Boolean))];
+      const occurrenceIds: string[] = [...new Set<string>(rows.map((a: any) => a.ocorrencia_id as string | null).filter((id): id is string => Boolean(id)))];
       let analyses: any[] = [];
       if (occurrenceIds.length) {
         const result = await supabase.from('obras_ocorrencia_analises')
