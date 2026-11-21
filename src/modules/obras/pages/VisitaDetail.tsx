@@ -8,6 +8,7 @@ import { OcorrenciaDialog } from '../components/OcorrenciaDialog';
 import { OcorrenciaItem } from '../components/OcorrenciaItem';
 import { FotosGaleria } from '../components/FotosGaleria';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
+import { EditarRegistoDialog } from '../components/EditarRegistoDialog';
 
 export function VisitaDetail() {
   const { id, visitaId } = useParams();
@@ -28,6 +29,7 @@ export function VisitaDetail() {
         <p className="text-sm text-muted-foreground">{[visita.hora_inicio?.slice(0, 5), visita.tecnico, visita.condicoes_meteo].filter(Boolean).join(' · ')}</p>
         {visita.notas && <p className="text-sm mt-2 whitespace-pre-wrap">{visita.notas}</p>}
         </div>
+        {canWrite && <EditarRegistoDialog entity="visita" record={visita} obraId={id!} />}
         <Button asChild size="sm"><Link to={`/obras/${id}/visita/${visita.id}/relatorio`}><FileText className="h-4 w-4 mr-2" />Gerar relatório PDF</Link></Button>
       </div>
       <Card>

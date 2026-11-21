@@ -9,17 +9,19 @@ export interface WorksOfflineOperation {
   createdAt: string;
   attempts: number;
   lastError: string | null;
+  operationType?: 'create' | 'update';
+  basePayload?: Record<string, unknown>;
+  conflictRemote?: Record<string, unknown> | null;
+  changedFields?: string[];
 }
 
 const DB_NAME = 'fkt-works-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 3;
 const STORE = 'operations';
+const SNAPSHOTS = 'snapshots';
 
 function openDatabase(): Promise<IDBDatabase> {
-  if (typeof indexedDB === 'undefined') {
-    return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
-  }
-
+  if (typeof indexedDB === 'undefined') return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
@@ -28,6 +30,10 @@ function openDatabase(): Promise<IDBDatabase> {
         const store = db.createObjectStore(STORE, { keyPath: 'id' });
         store.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
         store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(SNAPSHOTS)) {
+        const snapshots = db.createObjectStore(SNAPSHOTS, { keyPath: 'id' });
+        snapshots.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -42,17 +48,60 @@ async function withStore<T>(mode: IDBTransactionMode, action: (store: IDBObjectS
     return await new Promise<T>((resolve, reject) => {
       const transaction = db.transaction(STORE, mode);
       const request = action(transaction.objectStore(STORE));
-      request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error ?? new Error('Falha no armazenamento offline.'));
+      transaction.oncomplete = () => resolve(request.result);
+      transaction.onerror = () => reject(transaction.error ?? new Error('Falha na transação offline.'));
       transaction.onabort = () => reject(transaction.error ?? new Error('Operação offline cancelada.'));
     });
-  } finally {
-    db.close();
-  }
+  } finally { db.close(); }
 }
 
 export async function guardarOperacaoOffline(operation: WorksOfflineOperation): Promise<void> {
   await withStore<IDBValidKey>('readwrite', (store) => store.put(operation));
+}
+
+export function combinarEdicaoOffline(
+  base: Record<string, unknown>,
+  anterior: Record<string, unknown> | undefined,
+  alteracoes: Record<string, unknown>,
+  camposAnteriores: string[] = [],
+) {
+  const payload = { ...base, ...(anterior ?? {}), ...alteracoes };
+  const changedFields = [...new Set([
+    ...camposAnteriores,
+    ...Object.keys(alteracoes).filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key)),
+  ])];
+  return { payload, changedFields };
+}
+
+export async function actualizarRegistoPendenteOffline(
+  input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError' | 'operationType'> & {
+    basePayload?: Record<string, unknown>;
+    conflictRemote?: Record<string, unknown> | null;
+  },
+): Promise<void> {
+  const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(input.id));
+  const operationType = current?.operationType === 'create' ? 'create' : 'update';
+  const basePayload = current?.basePayload ?? input.basePayload ?? {};
+  const combined = combinarEdicaoOffline(
+    operationType === 'create' ? {} : basePayload,
+    current?.payload,
+    input.payload,
+    current?.changedFields,
+  );
+  const changedFields = operationType === 'create' ? undefined : combined.changedFields;
+  const next: WorksOfflineOperation = {
+    ...input,
+    payload: combined.payload,
+    createdAt: current?.createdAt ?? new Date().toISOString(),
+    attempts: 0,
+    lastError: null,
+    operationType,
+    basePayload,
+    changedFields,
+    conflictRemote: input.conflictRemote ?? current?.conflictRemote ?? null,
+  };
+  await guardarOperacaoOffline(next);
 }
 
 export async function listarOperacoesOffline(userId: string, workspaceId: string): Promise<WorksOfflineOperation[]> {
@@ -64,11 +113,10 @@ export async function listarOperacoesOffline(userId: string, workspaceId: string
 
 export async function actualizarOperacaoOffline(
   id: string,
-  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError'>>,
+  changes: Partial<Pick<WorksOfflineOperation, 'attempts' | 'lastError' | 'operationType' | 'basePayload' | 'conflictRemote' | 'changedFields'>>,
 ): Promise<void> {
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
-  if (!current) return;
-  await guardarOperacaoOffline({ ...current, ...changes });
+  if (current) await guardarOperacaoOffline({ ...current, ...changes });
 }
 
 export async function removerOperacaoOffline(id: string): Promise<void> {
@@ -80,26 +128,122 @@ export async function limparOperacoesOfflineDoUtilizador(userId: string): Promis
   try {
     await new Promise<void>((resolve, reject) => {
       const transaction = db.transaction(STORE, 'readwrite');
-      const store = transaction.objectStore(STORE);
-      const request = store.index('scope').openCursor();
+      const request = transaction.objectStore(STORE).index('scope').openCursor();
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor) return;
-        const value = cursor.value as WorksOfflineOperation;
-        if (value.userId === userId) cursor.delete();
+        if ((cursor.value as WorksOfflineOperation).userId === userId) cursor.delete();
         cursor.continue();
       };
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error ?? new Error('Não foi possível limpar os dados offline.'));
       transaction.onabort = () => reject(transaction.error ?? new Error('Limpeza offline cancelada.'));
     });
-  } finally {
-    db.close();
-  }
+  } finally { db.close(); }
+}
+
+export function criarOperacaoOffline(input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError'>): WorksOfflineOperation {
+  return { ...input, createdAt: new Date().toISOString(), attempts: 0, lastError: null };
 }
 
 export function isFalhaDeLigacao(error: unknown): boolean {
+  if (!navigator.onLine) return true;
   if (!error) return false;
   const message = error instanceof Error ? error.message : String(error);
-  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline/i.test(message);
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline|timeout/i.test(message);
+}
+
+export type WorksOfflineSnapshotEntity = 'obra' | 'visitas' | 'ocorrencias' | 'acoes';
+
+export interface WorksOfflineSnapshot {
+  id: string;
+  userId: string;
+  workspaceId: string;
+  obraId: string;
+  entity: WorksOfflineSnapshotEntity;
+  data: unknown;
+  savedAt: string;
+}
+
+function snapshotId(userId: string, workspaceId: string, obraId: string, entity: WorksOfflineSnapshotEntity) {
+  return [userId, workspaceId, obraId, entity].join(':');
+}
+
+export async function guardarSnapshotOffline(input: Omit<WorksOfflineSnapshot, 'id' | 'savedAt'>): Promise<void> {
+  const snapshot: WorksOfflineSnapshot = {
+    ...input,
+    id: snapshotId(input.userId, input.workspaceId, input.obraId, input.entity),
+    savedAt: new Date().toISOString(),
+  };
+  const db = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readwrite');
+      tx.objectStore(SNAPSHOTS).put(snapshot);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('Não foi possível guardar a cache offline.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Cache offline cancelada.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function obterSnapshotOffline<T>(
+  userId: string,
+  workspaceId: string,
+  obraId: string,
+  entity: WorksOfflineSnapshotEntity,
+): Promise<T | null> {
+  const db = await openDatabase();
+  try {
+    return await new Promise<T | null>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readonly');
+      const request = tx.objectStore(SNAPSHOTS).get(snapshotId(userId, workspaceId, obraId, entity));
+      request.onsuccess = () => resolve((request.result?.data as T | undefined) ?? null);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível ler a cache offline.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function listarSnapshotsOffline(
+  userId: string,
+  workspaceId: string,
+): Promise<WorksOfflineSnapshot[]> {
+  const db = await openDatabase();
+  try {
+    return await new Promise<WorksOfflineSnapshot[]>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readonly');
+      const request = tx.objectStore(SNAPSHOTS).index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
+      request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineSnapshot[]);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar a cache offline.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function resolverConflitoOffline(
+  id: string,
+  resolution: 'keep_local' | 'keep_remote',
+): Promise<void> {
+  const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(id));
+  if (!current || !current.conflictRemote) throw new Error('O conflito já não está disponível.');
+  if (resolution === 'keep_remote') {
+    await removerOperacaoOffline(id);
+    return;
+  }
+  await guardarOperacaoOffline({
+    ...current,
+    basePayload: current.conflictRemote,
+    conflictRemote: null,
+    lastError: null,
+    attempts: 0,
+  });
+}
+
+export function compararCamposOffline(
+  base: Record<string, unknown>,
+  remote: Record<string, unknown>,
+  fields: string[],
+): string[] {
+  return fields.filter((key) =>
+    JSON.stringify(remote[key] ?? null) !== JSON.stringify(base[key] ?? null),
+  );
 }

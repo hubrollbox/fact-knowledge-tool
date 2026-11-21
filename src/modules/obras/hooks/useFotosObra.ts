@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
+import { useAuth } from '@/contexts/AuthContext';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao } from '../offline/offlineStore';
 
 const MAX = 20 * 1024 * 1024;
 
@@ -41,24 +43,56 @@ function getPosicao(): Promise<{ lat: number; lng: number } | null> {
 
 export function useUploadFoto() {
   const ws = useObrasWorkspace();
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ file, visitaId, ocorrenciaId, legenda }: { file: File; visitaId?: string; ocorrenciaId?: string; legenda?: string }) => {
-      if (!ws) throw new Error('Sem espaço de trabalho');
+      if (!ws || !user?.id) throw new Error('Sem espaço de trabalho ou sessão válida');
       if (!file.type.startsWith('image/')) throw new Error('O ficheiro tem de ser uma imagem');
       if (file.size > MAX) throw new Error('A foto excede 20 MB');
       const pos = await getPosicao();
+      const id = crypto.randomUUID();
+      const capturedAt = new Date().toISOString();
+      const metadata = {
+        id, workspace_id: ws, visita_id: visitaId ?? null, ocorrencia_id: ocorrenciaId ?? null,
+        legenda: legenda || null, capturada_em: capturedAt, latitude: pos?.lat ?? null, longitude: pos?.lng ?? null,
+      };
+      if (!navigator.onLine) {
+        await guardarOperacaoOffline(criarOperacaoOffline({
+          id, userId: user.id, workspaceId: ws, entity: 'foto',
+          payload: { ...metadata, photoId: id, file, visitaId: visitaId ?? null, ocorrenciaId: ocorrenciaId ?? null, legenda: legenda ?? null, capturadaEm: capturedAt },
+        }));
+        return { queued: true };
+      }
       const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${ws}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('obras-fotos').upload(path, file, { contentType: file.type });
-      if (upErr) throw upErr;
-      const { error } = await supabase.from('obras_fotos').insert({
-        workspace_id: ws, storage_path: path, visita_id: visitaId ?? null, ocorrencia_id: ocorrenciaId ?? null,
-        legenda: legenda || null, capturada_em: new Date().toISOString(), latitude: pos?.lat ?? null, longitude: pos?.lng ?? null,
-      });
-      if (error) { await supabase.storage.from('obras-fotos').remove([path]); throw error; }
+      const storagePath = ws + '/' + id + '.' + ext;
+      const { error: upErr } = await supabase.storage.from('obras-fotos').upload(storagePath, file, { contentType: file.type });
+      if (upErr) {
+        if (!isFalhaDeLigacao(upErr)) throw upErr;
+        await guardarOperacaoOffline(criarOperacaoOffline({
+          id, userId: user.id, workspaceId: ws, entity: 'foto',
+          payload: { ...metadata, photoId: id, file, visitaId: visitaId ?? null, ocorrenciaId: ocorrenciaId ?? null, legenda: legenda ?? null, capturadaEm: capturedAt },
+        }));
+        return { queued: true };
+      }
+      const { error } = await supabase.from('obras_fotos').insert({ ...metadata, storage_path: storagePath });
+      if (error) {
+        if (isFalhaDeLigacao(error)) {
+          await guardarOperacaoOffline(criarOperacaoOffline({
+            id, userId: user.id, workspaceId: ws, entity: 'foto',
+            payload: { ...metadata, photoId: id, file, visitaId: visitaId ?? null, ocorrenciaId: ocorrenciaId ?? null, legenda: legenda ?? null, capturadaEm: capturedAt },
+          }));
+          return { queued: true };
+        }
+        await supabase.storage.from('obras-fotos').remove([storagePath]);
+        throw error;
+      }
+      return { queued: false };
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['obras_fotos'] }); toast({ title: 'Foto guardada' }); },
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ['obras_fotos'] });
+      toast({ title: result?.queued ? 'Foto guardada no dispositivo' : 'Foto guardada', description: result?.queued ? 'Será enviada quando recuperar a ligação.' : undefined });
+    },
     onError: (e: Error) => toast({ title: 'A foto não foi guardada', description: e.message, variant: 'destructive' }),
   });
 }
