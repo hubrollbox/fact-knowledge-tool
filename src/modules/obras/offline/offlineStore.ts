@@ -12,8 +12,9 @@ export interface WorksOfflineOperation {
 }
 
 const DB_NAME = 'fkt-works-offline';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE = 'operations';
+const SNAPSHOTS = 'snapshots';
 
 function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === 'undefined') return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
@@ -25,6 +26,10 @@ function openDatabase(): Promise<IDBDatabase> {
         const store = db.createObjectStore(STORE, { keyPath: 'id' });
         store.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
         store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(SNAPSHOTS)) {
+        const snapshots = db.createObjectStore(SNAPSHOTS, { keyPath: 'id' });
+        snapshots.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -98,4 +103,55 @@ export function isFalhaDeLigacao(error: unknown): boolean {
   if (!error) return false;
   const message = error instanceof Error ? error.message : String(error);
   return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline|timeout/i.test(message);
+}
+
+export type WorksOfflineSnapshotEntity = 'obra' | 'visitas' | 'ocorrencias' | 'acoes';
+
+export interface WorksOfflineSnapshot {
+  id: string;
+  userId: string;
+  workspaceId: string;
+  obraId: string;
+  entity: WorksOfflineSnapshotEntity;
+  data: unknown;
+  savedAt: string;
+}
+
+function snapshotId(userId: string, workspaceId: string, obraId: string, entity: WorksOfflineSnapshotEntity) {
+  return [userId, workspaceId, obraId, entity].join(':');
+}
+
+export async function guardarSnapshotOffline(input: Omit<WorksOfflineSnapshot, 'id' | 'savedAt'>): Promise<void> {
+  const snapshot: WorksOfflineSnapshot = {
+    ...input,
+    id: snapshotId(input.userId, input.workspaceId, input.obraId, input.entity),
+    savedAt: new Date().toISOString(),
+  };
+  const db = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readwrite');
+      tx.objectStore(SNAPSHOTS).put(snapshot);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('Não foi possível guardar a cache offline.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Cache offline cancelada.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function obterSnapshotOffline<T>(
+  userId: string,
+  workspaceId: string,
+  obraId: string,
+  entity: WorksOfflineSnapshotEntity,
+): Promise<T | null> {
+  const db = await openDatabase();
+  try {
+    return await new Promise<T | null>((resolve, reject) => {
+      const tx = db.transaction(SNAPSHOTS, 'readonly');
+      const request = tx.objectStore(SNAPSHOTS).get(snapshotId(userId, workspaceId, obraId, entity));
+      request.onsuccess = () => resolve((request.result?.data as T | undefined) ?? null);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível ler a cache offline.'));
+    });
+  } finally { db.close(); }
 }
