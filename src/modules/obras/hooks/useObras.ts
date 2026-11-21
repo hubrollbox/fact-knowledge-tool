@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import type { ObraInsert, VisitaInsert, OcorrenciaInsert, AcaoInsert } from '../types/obras';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline, listarSnapshotsOffline } from '../offline/offlineStore';
 
 const onErr = (e: Error) => toast({ title: 'Não foi guardado', description: e.message, variant: 'destructive' });
 
@@ -159,8 +159,12 @@ export function useVisita(id?: string) {
       const pending = await listarOperacoesOffline(user.id, ws);
       const item = pending.find((op) => op.entity === 'visita' && op.payload.id === id);
       if (item) return item.payload as any;
-      const snapshots = await obterSnapshotOffline<any[]>(user.id, ws, '__lista__', 'visitas');
-      return snapshots?.find((row) => row.id === id) ?? null;
+      const snapshots = await listarSnapshotsOffline(user.id, ws);
+      for (const snapshot of snapshots.filter((item) => item.entity === 'visitas')) {
+        const row = (snapshot.data as any[])?.find((entry) => entry.id === id);
+        if (row) return row;
+      }
+      return null;
     },
   });
 }
