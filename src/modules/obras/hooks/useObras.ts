@@ -313,8 +313,46 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
 
 export function useActualizarEstado() {
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const workspaceId = useObrasWorkspace();
   return useMutation({
     mutationFn: async ({ table, id, estado }: { table: 'obras_ocorrencias' | 'obras_acoes' | 'obras'; id: string; estado: string }) => {
+      if (table === 'obras_ocorrencias') {
+        if (!user?.id) throw new Error('Sem sessão válida.');
+        const ws = workspaceId;
+        if (!ws) throw new Error('Sem espaço de trabalho.');
+        const snapshots = await listarSnapshotsOffline(user.id, ws);
+        const snapshot = snapshots.find((item) => item.entity === 'ocorrencias' && (item.data as any[])?.some((row) => row.id === id));
+        const base = (snapshot?.data as any[])?.find((row) => row.id === id);
+        if (!navigator.onLine) {
+          if (!base) throw new Error('Abra a ocorrência enquanto está online antes de alterar o estado offline.');
+          await actualizarRegistoPendenteOffline({ id, userId: user.id, workspaceId: ws, entity: 'ocorrencia', payload: { estado, id, workspace_id: ws }, basePayload: base });
+          window.dispatchEvent(new Event('fkt:offline-queue-changed'));
+          return table;
+        }
+        try {
+          const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+          if (readError) throw readError;
+          if (!current || current.workspace_id !== ws) throw new Error('Ocorrência não encontrada.');
+          if (base && compararCamposOffline(base, current, ['estado']).length) {
+            await actualizarRegistoPendenteOffline({ id, userId: user.id, workspaceId: ws, entity: 'ocorrencia', payload: { estado, id, workspace_id: ws }, basePayload: base, conflictRemote: current });
+            window.dispatchEvent(new Event('fkt:offline-queue-changed'));
+            throw new Error('Foi detectada uma alteração concorrente ao estado. A alteração local foi preservada para resolução.');
+          }
+          let update = supabase.from(table).update({ estado }).eq('id', id);
+          if (current.updated_at) update = update.eq('updated_at', current.updated_at) as typeof update;
+          const { data, error } = await update.select('id').maybeSingle();
+          if (error) throw error;
+          if (!data) throw new Error('Conflito ao alterar o estado. Recarregue a ocorrência.');
+          return table;
+        } catch (error) {
+          if (!isFalhaDeLigacao(error)) throw error;
+          if (!base) throw new Error('Não existe uma versão guardada para alterar esta ocorrência offline.');
+          await actualizarRegistoPendenteOffline({ id, userId: user.id, workspaceId: ws, entity: 'ocorrencia', payload: { estado, id, workspace_id: ws }, basePayload: base });
+          window.dispatchEvent(new Event('fkt:offline-queue-changed'));
+          return table;
+        }
+      }
       const { error } = await supabase.from(table).update({ estado }).eq('id', id);
       if (error) throw error;
       return table;
