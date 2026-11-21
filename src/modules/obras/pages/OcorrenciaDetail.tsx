@@ -12,6 +12,7 @@ import { HistoricoOcorrencia } from '../components/HistoricoOcorrencia';
 import { AcompanhamentoOcorrencia } from '../components/AcompanhamentoOcorrencia';
 import { OcorrenciasRelacionadas } from '../components/OcorrenciasRelacionadas';
 import { ClassificacaoOcorrencia } from '../components/ClassificacaoOcorrencia';
+import { EditarRegistoDialog } from '../components/EditarRegistoDialog';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES, gravidadeVariant } from '../types/obras';
 
 function dataPt(value?: string | null) {
@@ -52,7 +53,10 @@ export function OcorrenciaDetail() {
           <Badge variant="outline">{ESTADOS_OCORRENCIA[ocorrencia.estado as keyof typeof ESTADOS_OCORRENCIA] ?? ocorrencia.estado}</Badge>
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{ocorrencia.titulo}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">{ocorrencia.titulo}</h1>
+            {canWrite && <EditarRegistoDialog entity="ocorrencia" record={ocorrencia} obraId={obra.id} />}
+          </div>
           <p className="text-sm text-muted-foreground">{obra.nome}</p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
