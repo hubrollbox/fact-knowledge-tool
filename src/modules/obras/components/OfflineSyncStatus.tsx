@@ -62,9 +62,7 @@ export function OfflineSyncStatus() {
   };
 
   const changedFields = selected
-    ? [...new Set([...Object.keys(selected.basePayload ?? {}), ...Object.keys(selected.payload), ...Object.keys(selected.conflictRemote ?? {})])]
-        .filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key))
-        .filter((key) => JSON.stringify(selected.payload[key] ?? null) !== JSON.stringify(selected.conflictRemote?.[key] ?? null))
+    ? (selected.changedFields ?? Object.keys(selected.payload).filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key)))
     : [];
 
   return (
