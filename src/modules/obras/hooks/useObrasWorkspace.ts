@@ -4,6 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const workspaceCacheKey = (userId: string) => 'fkt:works:workspace:' + userId;
 
+function isNetworkFailure(error: unknown) {
+  if (!navigator.onLine) return true;
+  const message = error instanceof Error ? error.message : String(error);
+  return /failed to fetch|networkerror|network request failed|load failed|fetch failed|offline|timeout/i.test(message);
+}
+
 export function useObrasWorkspace() {
   const { user } = useAuth();
   const { data } = useQuery({
@@ -40,7 +46,7 @@ export function useObrasWorkspace() {
         if (memberWorkspace) localStorage.setItem(workspaceCacheKey(user.id), memberWorkspace.id);
         return memberWorkspace;
       } catch (error) {
-        if (navigator.onLine) throw error;
+        if (!isNetworkFailure(error)) throw error;
         const cachedId = localStorage.getItem(workspaceCacheKey(user.id));
         if (!cachedId) throw new Error('Este dispositivo ainda não tem um espaço de trabalho preparado para utilização offline.');
         return { id: cachedId };
