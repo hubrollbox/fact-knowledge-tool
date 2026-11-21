@@ -263,7 +263,7 @@ export type Database = {
           ninhada_id: string
           preco_venda?: number | null
           sexo?: string | null
-          workspace_id?: string
+          workspace_id: string
         }
         Update: {
           animal_id?: string | null
@@ -2913,11 +2913,13 @@ export type Database = {
         Row: {
           created_at: string
           descricao: string | null
+          especialidade: string | null
           estado: string
           gravidade: string
           id: string
           localizacao: string | null
           obra_id: string
+          tipo: string | null
           titulo: string
           updated_at: string
           visita_id: string | null
@@ -2926,11 +2928,13 @@ export type Database = {
         Insert: {
           created_at?: string
           descricao?: string | null
+          especialidade?: string | null
           estado?: string
           gravidade?: string
           id?: string
           localizacao?: string | null
           obra_id: string
+          tipo?: string | null
           titulo: string
           updated_at?: string
           visita_id?: string | null
@@ -2939,11 +2943,13 @@ export type Database = {
         Update: {
           created_at?: string
           descricao?: string | null
+          especialidade?: string | null
           estado?: string
           gravidade?: string
           id?: string
           localizacao?: string | null
           obra_id?: string
+          tipo?: string | null
           titulo?: string
           updated_at?: string
           visita_id?: string | null
@@ -2966,6 +2972,133 @@ export type Database = {
           },
           {
             foreignKeyName: "obras_ocorrencias_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_ocorrencias_relacoes: {
+        Row: {
+          created_at: string
+          criado_por: string
+          id: string
+          ocorrencia_id: string
+          ocorrencia_relacionada_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string
+          id?: string
+          ocorrencia_id: string
+          ocorrencia_relacionada_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string
+          id?: string
+          ocorrencia_id?: string
+          ocorrencia_relacionada_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_ocorrencias_relacoes_left_fk"
+            columns: ["ocorrencia_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_relacoes_right_fk"
+            columns: ["ocorrencia_relacionada_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "obras_ocorrencias"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "obras_ocorrencias_relacoes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras_relatorios_emitidos: {
+        Row: {
+          created_at: string
+          emitido_em: string
+          emitido_por: string
+          estado: string
+          id: string
+          numero_versao: number
+          obra_id: string
+          relatorio_anterior_id: string | null
+          snapshot: Json
+          visita_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          emitido_em?: string
+          emitido_por: string
+          estado?: string
+          id?: string
+          numero_versao: number
+          obra_id: string
+          relatorio_anterior_id?: string | null
+          snapshot: Json
+          visita_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          emitido_em?: string
+          emitido_por?: string
+          estado?: string
+          id?: string
+          numero_versao?: number
+          obra_id?: string
+          relatorio_anterior_id?: string | null
+          snapshot?: Json
+          visita_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_relatorios_emitidos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_relatorios_emitidos_previos_visita_fk"
+            columns: ["relatorio_anterior_id", "visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_relatorios_emitidos"
+            referencedColumns: ["id", "visita_id"]
+          },
+          {
+            foreignKeyName: "obras_relatorios_emitidos_relatorio_anterior_id_fkey"
+            columns: ["relatorio_anterior_id"]
+            isOneToOne: false
+            referencedRelation: "obras_relatorios_emitidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_relatorios_emitidos_visita_id_fkey"
+            columns: ["visita_id"]
+            isOneToOne: false
+            referencedRelation: "obras_visitas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_relatorios_emitidos_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -3340,6 +3473,53 @@ export type Database = {
         }
         Returns: string
       }
+      emitir_relatorio_visita: {
+        Args: { p_snapshot: Json; p_visita_id: string }
+        Returns: {
+          created_at: string
+          emitido_em: string
+          emitido_por: string
+          estado: string
+          id: string
+          numero_versao: number
+          obra_id: string
+          relatorio_anterior_id: string | null
+          snapshot: Json
+          visita_id: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "obras_relatorios_emitidos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      fkt_global_search: {
+        Args: {
+          p_date_from?: string
+          p_date_to?: string
+          p_limit?: number
+          p_module?: string
+          p_obra_id?: string
+          p_query: string
+          p_record_type?: string
+          p_status?: string
+          p_workspace_id?: string
+        }
+        Returns: {
+          created_at: string
+          excerpt: string
+          href: string
+          module: string
+          obra_id: string
+          record_id: string
+          record_type: string
+          status: string
+          title: string
+          workspace_id: string
+        }[]
+      }
       get_disciplina_user_id: {
         Args: { _disciplina_id: string }
         Returns: string
@@ -3354,6 +3534,7 @@ export type Database = {
         Args: { _motivo: string; _ocorrencia_id: string }
         Returns: string
       }
+      sincronizar_alertas_obras_acoes: { Args: never; Returns: number }
       transition_juridico_conclusao: {
         Args: { _conclusao_id: string; _notas?: string; _novo_estado: string }
         Returns: string
