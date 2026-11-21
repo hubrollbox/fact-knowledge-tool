@@ -267,7 +267,9 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
               await actualizarRegistoPendenteOffline({
                 id, userId: user.id, workspaceId: ws, entity, payload: { ...changes, id, workspace_id: ws },
                 basePayload: base,
+                conflictRemote: current,
               });
+              window.dispatchEvent(new Event('fkt:offline-queue-changed'));
               throw new Error('Foi detectada uma alteração concorrente. A edição local foi preservada para resolução.');
             }
           }
