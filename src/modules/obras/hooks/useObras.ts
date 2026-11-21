@@ -4,31 +4,46 @@ import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import type { ObraInsert, VisitaInsert, OcorrenciaInsert, AcaoInsert } from '../types/obras';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, listarOperacoesOffline, guardarSnapshotOffline, obterSnapshotOffline } from '../offline/offlineStore';
 
 const onErr = (e: Error) => toast({ title: 'Não foi guardado', description: e.message, variant: 'destructive' });
 
 export function useObras() {
   const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['obras', ws],
     enabled: !!ws,
     queryFn: async () => {
-      const { data, error } = await supabase.from('obras').select('*').eq('workspace_id', ws!).order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.from('obras').select('*').eq('workspace_id', ws!).order('created_at', { ascending: false });
+        if (error) throw error;
+        if (user?.id) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws!, obraId: '__lista__', entity: 'obra', data });
+        return data;
+      } catch (error) {
+        if (!isFalhaDeLigacao(error) || !user?.id) throw error;
+        return await obterSnapshotOffline<typeof error extends never ? never : any[]>(user.id, ws!, '__lista__', 'obra') ?? [];
+      }
     },
   });
 }
 
 export function useObra(id?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({
     queryKey: ['obra', id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await supabase.from('obras').select('*').eq('id', id!).maybeSingle();
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.from('obras').select('*').eq('id', id!).maybeSingle();
+        if (error) throw error;
+        if (data && user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: id!, entity: 'obra', data });
+        return data;
+      } catch (error) {
+        if (!isFalhaDeLigacao(error) || !user?.id || !ws) throw error;
+        return await obterSnapshotOffline<any>(user.id, ws, id!, 'obra');
+      }
     },
   });
 }
