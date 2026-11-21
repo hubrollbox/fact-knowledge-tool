@@ -15,6 +15,32 @@ function extension(file: File): string {
   return fromMime && /^[a-z0-9.+-]{1,12}$/.test(fromMime) ? fromMime : 'jpg';
 }
 
+async function inserirSeAindaNaoExiste(
+  table: 'obras_visitas' | 'obras_ocorrencias' | 'obras_fotos',
+  id: string,
+  workspaceId: string,
+  payload: Record<string, unknown>,
+) {
+  // Avoid upsert: existing production policies grant INSERT/SELECT, not necessarily UPDATE.
+  const client = supabase as any;
+  const verificar = async () => {
+    const { data, error } = await client.from(table).select('id,workspace_id').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data;
+  };
+  const existing = await verificar();
+  if (existing) {
+    if (existing.workspace_id !== workspaceId) throw new Error('O identificador já existe noutro espaço de trabalho.');
+    return;
+  }
+  const { error } = await client.from(table).insert(payload);
+  if (!error) return;
+  // A previous request may have reached Postgres even if its response was lost.
+  const afterInsert = await verificar();
+  if (afterInsert?.workspace_id === workspaceId) return;
+  throw error;
+}
+
 async function sincronizarFoto(operation: WorksOfflineOperation) {
   const file = operation.payload.file;
   if (!(file instanceof Blob)) throw new Error('A fotografia pendente não contém um ficheiro válido.');
@@ -44,8 +70,7 @@ async function sincronizarFoto(operation: WorksOfflineOperation) {
     latitude: (operation.payload.latitude as number | null) ?? null,
     longitude: (operation.payload.longitude as number | null) ?? null,
   };
-  const { error } = await supabase.from('obras_fotos').upsert(metadata, { onConflict: 'id' });
-  if (error) throw error;
+  await inserirSeAindaNaoExiste('obras_fotos', id, operation.workspaceId, metadata);
 }
 
 export function useWorksOfflineQueue(workspaceId: string | null) {
@@ -71,8 +96,7 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
         try {
           if (operation.entity === 'visita' || operation.entity === 'ocorrencia') {
             const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
-            const { error } = await supabase.from(table).upsert(operation.payload as never, { onConflict: 'id' });
-            if (error) throw error;
+            await inserirSeAindaNaoExiste(table, String(operation.payload.id ?? operation.id), operation.workspaceId, operation.payload);
           } else {
             await sincronizarFoto(operation);
           }
