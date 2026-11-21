@@ -60,6 +60,20 @@ export async function guardarOperacaoOffline(operation: WorksOfflineOperation): 
   await withStore<IDBValidKey>('readwrite', (store) => store.put(operation));
 }
 
+export function combinarEdicaoOffline(
+  base: Record<string, unknown>,
+  anterior: Record<string, unknown> | undefined,
+  alteracoes: Record<string, unknown>,
+  camposAnteriores: string[] = [],
+) {
+  const payload = { ...base, ...(anterior ?? {}), ...alteracoes };
+  const changedFields = [...new Set([
+    ...camposAnteriores,
+    ...Object.keys(alteracoes).filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key)),
+  ])];
+  return { payload, changedFields };
+}
+
 export async function actualizarRegistoPendenteOffline(
   input: Omit<WorksOfflineOperation, 'createdAt' | 'attempts' | 'lastError' | 'operationType'> & {
     basePayload?: Record<string, unknown>;
@@ -69,12 +83,16 @@ export async function actualizarRegistoPendenteOffline(
   const current = await withStore<WorksOfflineOperation | undefined>('readonly', (store) => store.get(input.id));
   const operationType = current?.operationType === 'create' ? 'create' : 'update';
   const basePayload = current?.basePayload ?? input.basePayload ?? {};
-  const changedFields = operationType === 'create'
-    ? undefined
-    : [...new Set([...(current?.changedFields ?? []), ...Object.keys(input.payload).filter((key) => !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key))])];
+  const combined = combinarEdicaoOffline(
+    operationType === 'create' ? {} : basePayload,
+    current?.payload,
+    input.payload,
+    current?.changedFields,
+  );
+  const changedFields = operationType === 'create' ? undefined : combined.changedFields;
   const next: WorksOfflineOperation = {
     ...input,
-    payload: operationType === 'create' ? { ...(current?.payload ?? {}), ...input.payload } : { ...basePayload, ...(current?.payload ?? {}), ...input.payload },
+    payload: combined.payload,
     createdAt: current?.createdAt ?? new Date().toISOString(),
     attempts: 0,
     lastError: null,
