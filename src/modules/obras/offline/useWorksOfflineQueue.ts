@@ -170,9 +170,14 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
   useEffect(() => { void refresh(); if (navigator.onLine) void sync(); }, [refresh, sync]);
   useEffect(() => {
     const onOnline = () => { void sync(); };
+    const onQueueChanged = () => { void refresh(); };
     window.addEventListener('online', onOnline);
-    return () => window.removeEventListener('online', onOnline);
-  }, [sync]);
+    window.addEventListener('fkt:offline-queue-changed', onQueueChanged);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('fkt:offline-queue-changed', onQueueChanged);
+    };
+  }, [sync, refresh]);
 
   return { operations, pendingCount: operations.length, syncing, refresh, sync };
 }
