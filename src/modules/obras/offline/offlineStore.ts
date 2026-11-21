@@ -211,3 +211,13 @@ export async function resolverConflitoOffline(
     attempts: 0,
   });
 }
+
+export function compararCamposOffline(
+  base: Record<string, unknown>,
+  remote: Record<string, unknown>,
+  fields: string[],
+): string[] {
+  return fields.filter((key) =>
+    JSON.stringify(remote[key] ?? null) !== JSON.stringify(base[key] ?? null),
+  );
+}
