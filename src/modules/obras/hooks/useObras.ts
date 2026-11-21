@@ -58,9 +58,13 @@ export function useVisitas(obraId?: string) {
         const { data, error } = await supabase.from('obras_visitas').select('*').eq('obra_id', obraId!).order('data_visita', { ascending: false });
         if (error) throw error;
         remote = data ?? [];
+        if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'visitas', data: remote });
       } catch (error) {
         if (!isFalhaDeLigacao(error)) throw error;
+        if (user?.id && ws) remote = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'visitas') ?? [];
       }
+    } else if (user?.id && ws) {
+      remote = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'visitas') ?? [];
     }
     if (!user?.id || !ws) return remote;
     const pending = await listarOperacoesOffline(user.id, ws);
@@ -78,9 +82,13 @@ export function useOcorrencias(obraId?: string) {
         const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
         if (error) throw error;
         remote = data ?? [];
+        if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'ocorrencias', data: remote });
       } catch (error) {
         if (!isFalhaDeLigacao(error)) throw error;
+        if (user?.id && ws) remote = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'ocorrencias') ?? [];
       }
+    } else if (user?.id && ws) {
+      remote = await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'ocorrencias') ?? [];
     }
     if (!user?.id || !ws) return remote;
     const pending = await listarOperacoesOffline(user.id, ws);
@@ -114,9 +122,18 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
 }
 
 export function useAcoes(obraId?: string) {
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({ queryKey: ['obras_acoes', obraId], enabled: !!obraId, queryFn: async () => {
-    const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
-    if (error) throw error; return data;
+    try {
+      const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+      if (error) throw error;
+      if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'acoes', data: data ?? [] });
+      return data;
+    } catch (error) {
+      if (!isFalhaDeLigacao(error) || !user?.id || !ws) throw error;
+      return await obterSnapshotOffline<any[]>(user.id, ws, obraId!, 'acoes') ?? [];
+    }
   } });
 }
 
