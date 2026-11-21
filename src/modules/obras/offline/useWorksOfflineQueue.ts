@@ -22,9 +22,16 @@ async function sincronizarFoto(operation: WorksOfflineOperation) {
   const path = operation.workspaceId + '/' + id + '.' + extension(file as File);
   const { error: uploadError } = await supabase.storage.from('obras-fotos').upload(path, file, {
     contentType: file.type || 'image/jpeg',
-    upsert: true,
   });
-  if (uploadError) throw uploadError;
+  if (uploadError) {
+    // A previous attempt may have uploaded the object before metadata failed.
+    // Confirm that exact object exists instead of requiring Storage UPDATE rights.
+    if (!/already exists|duplicate/i.test(uploadError.message)) throw uploadError;
+    const folder = operation.workspaceId;
+    const filename = id + '.' + extension(file as File);
+    const { data: existing, error: listError } = await supabase.storage.from('obras-fotos').list(folder, { search: filename });
+    if (listError || !existing?.some((item) => item.name === filename)) throw uploadError;
+  }
 
   const metadata = {
     id,
@@ -85,7 +92,7 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
     }
   }, [user?.id, workspaceId, refresh]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { void refresh(); if (navigator.onLine) void sync(); }, [refresh, sync]);
   useEffect(() => {
     const onOnline = () => { void sync(); };
     window.addEventListener('online', onOnline);
