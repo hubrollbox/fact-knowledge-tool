@@ -25,13 +25,20 @@ async function inserirSeAindaNaoExiste(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const client = supabase as any;
   const verificar = async () => {
-    const { data, error } = await client.from(table).select('id,workspace_id').eq('id', id).maybeSingle();
+    const { data, error } = await client.from(table).select('*').eq('id', id).maybeSingle();
     if (error) throw error;
     return data;
   };
   const existing = await verificar();
   if (existing) {
-    if (existing.workspace_id !== workspaceId) throw new Error('O identificador já existe noutro espaço de trabalho.');
+    if (existing.workspace_id !== workspaceId) throw new Error('Conflito: o identificador já existe noutro espaço de trabalho.');
+    const conflicts = Object.entries(payload).filter(([key, value]) =>
+      !['created_at', 'updated_at'].includes(key) &&
+      JSON.stringify(existing[key]) !== JSON.stringify(value),
+    );
+    if (conflicts.length) {
+      throw new Error('Conflito de sincronização: o registo remoto foi alterado. Os dados locais foram preservados neste dispositivo.');
+    }
     return;
   }
   const { error } = await client.from(table).insert(payload);
