@@ -72,7 +72,7 @@ export function useMembrosFilaAcoes() {
       if (workspace?.user_id && !members.some(m => m.user_id === workspace.user_id)) {
         members.unshift({ user_id: workspace.user_id, role: 'owner' });
       }
-      return members;
+      return members.filter(m => ['owner','admin','editor'].includes(m.role));
     },
   });
 }
