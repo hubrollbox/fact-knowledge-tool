@@ -16,9 +16,10 @@ export interface WorksOfflineOperation {
 }
 
 const DB_NAME = 'fkt-works-offline';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE = 'operations';
 const SNAPSHOTS = 'snapshots';
+const PHOTOS = 'photos';
 
 function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === 'undefined') return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
@@ -34,6 +35,10 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(SNAPSHOTS)) {
         const snapshots = db.createObjectStore(SNAPSHOTS, { keyPath: 'id' });
         snapshots.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
+      }
+      if (!db.objectStoreNames.contains(PHOTOS)) {
+        const photos = db.createObjectStore(PHOTOS, { keyPath: 'id' });
+        photos.createIndex('scope', ['userId', 'workspaceId'], { unique: false });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -215,6 +220,45 @@ export async function listarSnapshotsOffline(
       const request = tx.objectStore(SNAPSHOTS).index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
       request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineSnapshot[]);
       request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar a cache offline.'));
+    });
+  } finally { db.close(); }
+}
+
+export interface WorksOfflineCachedPhoto {
+  id: string;
+  userId: string;
+  workspaceId: string;
+  visita_id: string | null;
+  ocorrencia_id: string | null;
+  legenda: string | null;
+  capturada_em: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  blob: Blob;
+  cachedAt: string;
+}
+
+export async function guardarFotoCacheOffline(input: Omit<WorksOfflineCachedPhoto, 'cachedAt'>): Promise<void> {
+  const db = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(PHOTOS, 'readwrite');
+      tx.objectStore(PHOTOS).put({ ...input, cachedAt: new Date().toISOString() });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('Não foi possível guardar a fotografia offline.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Cache da fotografia cancelada.'));
+    });
+  } finally { db.close(); }
+}
+
+export async function listarFotosCacheOffline(userId: string, workspaceId: string): Promise<WorksOfflineCachedPhoto[]> {
+  const db = await openDatabase();
+  try {
+    return await new Promise<WorksOfflineCachedPhoto[]>((resolve, reject) => {
+      const tx = db.transaction(PHOTOS, 'readonly');
+      const request = tx.objectStore(PHOTOS).index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
+      request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineCachedPhoto[]);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar fotografias offline.'));
     });
   } finally { db.close(); }
 }
