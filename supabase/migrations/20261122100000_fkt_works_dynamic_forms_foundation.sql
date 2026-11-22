@@ -458,7 +458,7 @@ BEGIN
           EXCEPTION WHEN invalid_text_representation THEN
             RAISE EXCEPTION 'Identificador de fotografia inválido no campo %', v_field->>'label';
           END;
-          IF NOT EXISTS (
+          IF v_type = 'photo' AND NOT EXISTS (
             SELECT 1 FROM public.obras_fotos f
             WHERE f.id = v_photo_id
               AND f.workspace_id = v_response.workspace_id
@@ -466,6 +466,20 @@ BEGIN
                    (v_response.ocorrencia_id IS NOT NULL AND f.ocorrencia_id = v_response.ocorrencia_id))
           ) THEN
             RAISE EXCEPTION 'Uma fotografia do campo % não pertence a esta visita ou ocorrência', v_field->>'label';
+          ELSIF v_type = 'attachment' AND NOT EXISTS (
+            SELECT 1
+            FROM public.obras_documentos d
+            JOIN public.obras_documentos_ligacoes l
+              ON l.documento_id = d.id
+             AND l.workspace_id = d.workspace_id
+             AND l.obra_id = d.obra_id
+            WHERE d.id = v_photo_id
+              AND d.workspace_id = v_response.workspace_id
+              AND d.obra_id = v_response.obra_id
+              AND (l.visita_id = v_response.visita_id OR
+                   (v_response.ocorrencia_id IS NOT NULL AND l.ocorrencia_id = v_response.ocorrencia_id))
+          ) THEN
+            RAISE EXCEPTION 'Um anexo do campo % não está associado a esta visita ou ocorrência', v_field->>'label';
           END IF;
         END LOOP;
       END IF;
