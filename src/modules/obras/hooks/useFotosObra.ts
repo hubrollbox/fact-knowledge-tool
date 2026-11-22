@@ -3,29 +3,67 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, guardarFotoCacheOffline, listarFotosCacheOffline } from '../offline/offlineStore';
 
 const MAX = 20 * 1024 * 1024;
 
 export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; ocorrenciaIds?: string[] }) {
   const key = filtro.visitaId ?? filtro.ocorrenciaId ?? filtro.ocorrenciaIds?.join(',');
+  const ws = useObrasWorkspace();
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['obras_fotos', key],
+    queryKey: ['obras_fotos', user?.id, ws, key],
     staleTime: 4 * 60 * 1000,
     refetchInterval: 4 * 60 * 1000,
     enabled: !!key,
     queryFn: async () => {
-      let q = supabase.from('obras_fotos').select('*').order('capturada_em', { ascending: false });
-      if (filtro.visitaId) q = q.eq('visita_id', filtro.visitaId);
-      else if (filtro.ocorrenciaId) q = q.eq('ocorrencia_id', filtro.ocorrenciaId);
-      else if (filtro.ocorrenciaIds?.length) q = q.in('ocorrencia_id', filtro.ocorrenciaIds);
-      else return [];
-      const { data, error } = await q;
-      if (error) throw error;
-      const paths = data.map((f) => f.storage_path);
-      if (!paths.length) return [];
-      const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 300);
-      return data.map((f, i) => ({ ...f, url: signed?.[i]?.signedUrl ?? null }));
+      if (!user?.id || !ws) throw new Error('Sem sessão ou espaço de trabalho para consultar fotografias.');
+      const cached = await listarFotosCacheOffline(user.id, ws).catch(() => []);
+      const cachedForFilter = cached.filter((photo) =>
+        filtro.visitaId ? photo.visita_id === filtro.visitaId
+          : filtro.ocorrenciaId ? photo.ocorrencia_id === filtro.ocorrenciaId
+            : !!filtro.ocorrenciaIds?.includes(photo.ocorrencia_id ?? ''),
+      );
+      if (!navigator.onLine) {
+        return cachedForFilter
+          .sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''))
+          .map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob }));
+      }
+      try {
+        let q = supabase.from('obras_fotos').select('*').order('capturada_em', { ascending: false });
+        if (filtro.visitaId) q = q.eq('visita_id', filtro.visitaId);
+        else if (filtro.ocorrenciaId) q = q.eq('ocorrencia_id', filtro.ocorrenciaId);
+        else if (filtro.ocorrenciaIds?.length) q = q.in('ocorrencia_id', filtro.ocorrenciaIds);
+        else return [];
+        const { data, error } = await q;
+        if (error) throw error;
+        if (!data.length) return [];
+        const paths = data.map((photo) => photo.storage_path);
+        const [{ data: signed }, downloads] = await Promise.all([
+          supabase.storage.from('obras-fotos').createSignedUrls(paths, 300),
+          Promise.all(data.map(async (photo) => {
+            const { data: blob, error: downloadError } = await supabase.storage.from('obras-fotos').download(photo.storage_path);
+            if (downloadError || !blob || blob.size > MAX) return null;
+            await guardarFotoCacheOffline({
+              id: photo.id, userId: user.id, workspaceId: ws,
+              visita_id: photo.visita_id, ocorrencia_id: photo.ocorrencia_id,
+              legenda: photo.legenda, capturada_em: photo.capturada_em,
+              latitude: photo.latitude, longitude: photo.longitude, blob,
+            }).catch(() => undefined);
+            return blob;
+          })),
+        ]);
+        return data.map((photo, i) => ({
+          ...photo,
+          url: signed?.[i]?.signedUrl ?? null,
+          cachedBlob: downloads[i] ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
+        }));
+      } catch (error) {
+        if (!isFalhaDeLigacao(error)) throw error;
+        return cachedForFilter
+          .sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''))
+          .map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob }));
+      }
     },
   });
 }
