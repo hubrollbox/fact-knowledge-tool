@@ -306,7 +306,7 @@ RETURNS public.obras_formularios_versoes
 LANGUAGE sql
 SECURITY INVOKER
 SET search_path = ''
-AS $ SELECT private.obras_publicar_formulario_privileged(p_formulario_id, p_definicao); $;
+AS $$ SELECT private_works_forms.obras_publicar_formulario_privileged(p_formulario_id, p_definicao); $$;
 
 -- A response is created from the current published version, never from a
 -- client-supplied schema. Composite FKs enforce same-workspace relationships.
@@ -382,7 +382,7 @@ RETURNS public.obras_formularios_respostas
 LANGUAGE sql
 SECURITY INVOKER
 SET search_path = ''
-AS $ SELECT private.obras_criar_formulario_resposta_privileged(p_formulario_id, p_obra_id, p_visita_id, p_ocorrencia_id); $;
+AS $$ SELECT private_works_forms.obras_criar_formulario_resposta_privileged(p_formulario_id, p_obra_id, p_visita_id, p_ocorrencia_id); $$;
 
 -- Completion validates mandatory values and attachment ownership on the server.
 CREATE OR REPLACE FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(p_resposta_id uuid)
@@ -489,17 +489,17 @@ RETURNS public.obras_formularios_respostas
 LANGUAGE sql
 SECURITY INVOKER
 SET search_path = ''
-AS $ SELECT private.obras_concluir_formulario_resposta_privileged(p_resposta_id); $;
+AS $$ SELECT private_works_forms.obras_concluir_formulario_resposta_privileged(p_resposta_id); $$;
 
 REVOKE ALL ON FUNCTION public.publicar_obras_formulario(uuid, jsonb) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.criar_obras_formulario_resposta(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.concluir_obras_formulario_resposta(uuid) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION private.obras_publicar_formulario_privileged(uuid, jsonb) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION private.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
-REVOKE ALL ON FUNCTION private.obras_concluir_formulario_resposta_privileged(uuid) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION private.obras_publicar_formulario_privileged(uuid, jsonb) TO authenticated;
-GRANT EXECUTE ON FUNCTION private.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION private.obras_concluir_formulario_resposta_privileged(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION private_works_forms.obras_publicar_formulario_privileged(uuid, jsonb) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION private_works_forms.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_publicar_formulario_privileged(uuid, jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.publicar_obras_formulario(uuid, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.criar_obras_formulario_resposta(uuid, uuid, uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.concluir_obras_formulario_resposta(uuid) TO authenticated;
