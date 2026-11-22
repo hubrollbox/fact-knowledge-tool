@@ -4,6 +4,7 @@ import { ArrowLeft, FileCheck, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useObra, useVisita, useOcorrencias, useAcoes } from '../hooks/useObras';
 import { useFotos } from '../hooks/useFotosObra';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmitirRelatorioVisita, useRelatoriosEmitidos } from '../hooks/useRelatoriosEmitidos';
 import { fetchAnaliseOcorrencia } from '../hooks/useAnaliseOcorrencia';
@@ -310,6 +311,7 @@ export function RelatorioVisita() {
       </section>
 
       {analisesError && <p className="report-muted">Não foi possível carregar toda a análise técnica. Confirme os dados antes de emitir o relatório.</p>}
+      {formulariosError && <p className="report-muted">Não foi possível carregar os formulários concluídos. Confirme os dados antes de emitir o relatório.</p>}
 
       <section className="report-section">
         <h2>5. Registo fotográfico da visita</h2>
