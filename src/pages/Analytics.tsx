@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,11 +80,8 @@ export default function Analytics() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Métricas agregadas dos teus dossiers</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Analytics" description={<>Métricas agregadas dos teus dossiers</>} />
 
         <QueryState loading={loading} error={error} skeletonRows={4}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

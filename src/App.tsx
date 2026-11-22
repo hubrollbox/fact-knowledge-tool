@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/toaster";
 import PedidosPiloto from "@/pages/gestao/PedidosPiloto";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,7 +65,8 @@ const queryClient = new QueryClient();
 function ProcessoDetailRoute() {
   const { id } = useParams();
   const navigate = useNavigate();
-  return <ProcessoDetail processoId={id!} onBack={() => navigate('/juridico')} />;
+  if (!id) return null;
+  return <ProcessoDetail processoId={id} onBack={() => navigate('/juridico')} />;
 }
 
 const App = () => (
@@ -74,7 +74,6 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <Toaster />
           <Sonner />
           <Routes>
             <Route path="/" element={<LandingPage />} />

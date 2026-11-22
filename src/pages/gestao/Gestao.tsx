@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,11 +19,8 @@ export default function Gestao() {
   const visible = isGlobalAdmin ? [...cards, { label: 'Pedidos de piloto', desc: 'Contactos recebidos e estado de admissão', href: '/gestao/pedidos-piloto', icon: Inbox }] : cards;
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Gestão</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Hub de gestão e administração</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Gestão" description={<>Hub de gestão e administração</>} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visible.map(({ label, desc, href, icon: Icon }) => (
             <Link key={label} to={href}>

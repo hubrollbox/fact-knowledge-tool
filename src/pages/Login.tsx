@@ -1,6 +1,7 @@
+import { PublicHeader } from '@/components/layout/PublicHeader';
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Scale } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,12 +52,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <div className="flex-1 flex items-center justify-center px-4">
+      <PublicHeader />
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-sm">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary mb-4">
-              <Scale className="h-7 w-7 text-primary-foreground" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary mb-4">
+              <Layers className="h-7 w-7 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">FKT</h1>
             <p className="text-sm text-muted-foreground mt-1">Factual Knowledge Tool</p>
@@ -116,13 +118,13 @@ export default function Login() {
               </form>
 
               <div className="mt-4 text-center">
-                <button
+                <Button variant="link"
                   type="button"
                   onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); setSuccess(null); }}
                   className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
                 >
                   {mode === 'login' ? 'Não tem conta? Registe-se' : 'Já tem conta? Entre'}
-                </button>
+                </Button>
               </div>
             </CardContent>
           </Card>

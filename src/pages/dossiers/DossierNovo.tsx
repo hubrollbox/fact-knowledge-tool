@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -57,15 +58,12 @@ export default function DossierNovo() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate('/dossiers')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Novo Dossier</h1>
-            <p className="text-sm text-muted-foreground">Crie um novo dossier de análise factual</p>
-          </div>
+          <PageHeader title="Novo Dossier" description={<>Crie um novo dossier de análise factual</>} />
         </div>
 
         <Card className="border-border">

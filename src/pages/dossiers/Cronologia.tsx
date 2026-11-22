@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useState, useEffect } from 'react';
 import { Download, Filter, Search } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -69,12 +70,9 @@ export default function Cronologia() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Cronologia</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{filtered.length} factos ordenados por data</p>
-          </div>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <PageHeader title="Cronologia" description={<>{filtered.length} factos ordenados por data</>} />
           <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0}>
             <Download className="h-4 w-4 mr-2" />Exportar CSV
           </Button>

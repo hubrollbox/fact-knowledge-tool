@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mail, Calendar, HardDrive, Cloud, Github, LogOut, Loader2, ExternalLink, KeyRound, Eye, EyeOff, Info, HelpCircle } from 'lucide-react';
@@ -281,12 +282,9 @@ export default function Perfil() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-8">
+      <div className="space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Perfil</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Dados da conta e serviços sincronizados</p>
-        </div>
+        <PageHeader title="Perfil" description={<>Dados da conta e serviços sincronizados</>} breadcrumbs={[{ label: "Gestão", href: "/gestao" }, { label: "Perfil" }]} backTo="/gestao" />
 
         {/* Account info */}
         <Card>
@@ -294,7 +292,7 @@ export default function Perfil() {
             <CardTitle className="text-base">Conta</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
                 <p className="font-medium">{user?.email ?? '—'}</p>

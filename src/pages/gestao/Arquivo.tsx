@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Archive, RefreshCw } from 'lucide-react';
@@ -30,11 +31,8 @@ export default function Arquivo() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Arquivo</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{dossiers.length} dossier{dossiers.length !== 1 ? 's' : ''} arquivado{dossiers.length !== 1 ? 's' : ''}</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Arquivo" description={<>{dossiers.length} dossier{dossiers.length !== 1 ? 's' : ''} arquivado{dossiers.length !== 1 ? 's' : ''}</>} breadcrumbs={[{ label: "Gestão", href: "/gestao" }, { label: "Arquivo" }]} backTo="/gestao" />
 
         {loading ? (
           <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />)}</div>

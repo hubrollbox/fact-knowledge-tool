@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
@@ -60,11 +61,8 @@ export default function PedidosPiloto() {
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Pedidos de piloto</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Contactos recebidos pelo formulário público</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Pedidos de piloto" description={<>Contactos recebidos pelo formulário público</>} breadcrumbs={[{ label: "Gestão", href: "/gestao" }, { label: "Pedidos de piloto" }]} backTo="/gestao" />
         <div className="grid grid-cols-3 gap-3">
           {Object.entries(ESTADOS).map(([k, l]) => (
             <Card key={k}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{l}</p><p className="text-2xl font-semibold">{contagem(k)}</p></CardContent></Card>

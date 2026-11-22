@@ -107,10 +107,10 @@ export default function DisciplinaDetalhe() {
   const filteredTopicos = topicos.filter(t => t.nome.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredBibliografia = filteredTopicos.filter(t => t.referencias && t.referencias.trim());
 
-  if (loading) return <AppLayout><div className="p-6 max-w-6xl mx-auto"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
+  if (loading) return <AppLayout><div className="space-y-4"><div className="h-8 w-48 bg-muted rounded animate-pulse" /></div></AppLayout>;
   if (!disciplina) return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto text-center">
+      <div className="text-center">
         <p className="text-muted-foreground">Disciplina não encontrada.</p>
         <Button asChild className="mt-4" variant="outline"><Link to="/conhecimento">Voltar</Link></Button>
       </div>
@@ -119,7 +119,7 @@ export default function DisciplinaDetalhe() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/conhecimento')}><ArrowLeft className="h-4 w-4" /></Button>

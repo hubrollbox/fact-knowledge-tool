@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useState, useEffect, useRef } from 'react';
 import { Printer } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -66,12 +67,9 @@ export default function Relatorios() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Relatórios</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Gerar relatórios de análise FIRAC</p>
-          </div>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <PageHeader title="Relatórios" description={<>Gerar relatórios de análise FIRAC</>} breadcrumbs={[{ label: "Gestão", href: "/gestao" }, { label: "Relatórios" }]} backTo="/gestao" />
           {data && (
             <Button onClick={handlePrint} variant="outline">
               <Printer className="h-4 w-4 mr-2" />Imprimir

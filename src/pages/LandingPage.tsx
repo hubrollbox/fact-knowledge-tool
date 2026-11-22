@@ -1,3 +1,4 @@
+import { PublicHeader } from '@/components/layout/PublicHeader';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, Scale, Dog, Code, HardHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,25 +57,7 @@ const modules = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <span className="text-lg font-bold tracking-tight">FKT</span>
-          <nav className="flex items-center gap-2" aria-label="Navegação principal">
-            <Button asChild variant="ghost" size="sm">
-              <a href="#core">O Core</a>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <a href="#modulos">Módulos</a>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/ajuda-suporte">Ajuda e Suporte</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/login">Entrar</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="flex-1">
         <section className="px-6 py-24 md:py-36">

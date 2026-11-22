@@ -100,7 +100,7 @@ export default function DossierDetalhe() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="p-6 max-w-6xl mx-auto space-y-4">
+        <div className="space-y-4">
           <div className="h-8 w-48 bg-muted rounded animate-pulse" />
           <div className="h-4 w-64 bg-muted rounded animate-pulse" />
         </div>
@@ -111,7 +111,7 @@ export default function DossierDetalhe() {
   if (error || !dossier) {
     return (
       <AppLayout>
-        <div className="p-6 max-w-6xl mx-auto text-center">
+        <div className="text-center">
           <p className="text-muted-foreground">Dossier não encontrado.</p>
           <Button asChild className="mt-4" variant="outline"><Link to="/dossiers">Voltar</Link></Button>
         </div>
@@ -133,7 +133,7 @@ export default function DossierDetalhe() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/dossiers')}>
@@ -175,7 +175,7 @@ export default function DossierDetalhe() {
         {/* Ações */}
         <Card className="border-border">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                 Ações

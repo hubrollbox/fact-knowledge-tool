@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, BookOpen, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -148,12 +149,9 @@ export default function Conhecimento() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Conhecimento</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{disciplinas.length} disciplina{disciplinas.length !== 1 ? 's' : ''}</p>
-          </div>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <PageHeader title="Conhecimento" description={<>{disciplinas.length} disciplina{disciplinas.length !== 1 ? 's' : ''}</>} />
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-2" />Nova Disciplina</Button>
         </div>
 

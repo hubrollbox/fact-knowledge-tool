@@ -1,3 +1,4 @@
+import { PageHeader } from '@/modules/experience/components/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDownCircle, ArrowUpCircle, Landmark, Plus, Trash2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -86,30 +87,27 @@ export default function Tesouraria() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Tesouraria</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Gestão da conta corrente: movimentos, saldos e controlo financeiro.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader title="Tesouraria" description={<>Gestão da conta corrente: movimentos, saldos e controlo financeiro.</>} breadcrumbs={[{ label: "Gestão", href: "/gestao" }, { label: "Tesouraria" }]} backTo="/gestao" />
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Saldo atual</CardTitle></CardHeader>
-            <CardContent className="flex items-center justify-between">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4">
               <p className={`text-2xl font-bold ${saldo >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{moeda.format(saldo)}</p>
               <Landmark className="h-5 w-5 text-muted-foreground" />
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Total créditos</CardTitle></CardHeader>
-            <CardContent className="flex items-center justify-between">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-2xl font-bold text-emerald-600">{moeda.format(totais.creditos)}</p>
               <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Total débitos</CardTitle></CardHeader>
-            <CardContent className="flex items-center justify-between">
+            <CardContent className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-2xl font-bold text-red-600">{moeda.format(totais.debitos)}</p>
               <ArrowDownCircle className="h-5 w-5 text-red-600" />
             </CardContent>
