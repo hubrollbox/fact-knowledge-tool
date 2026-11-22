@@ -12,6 +12,7 @@ CREATE TABLE public.obras_formularios (
     CHECK (tipo IN ('visita', 'inspeccao', 'verificacao', 'outro')),
   estado text NOT NULL DEFAULT 'rascunho'
     CHECK (estado IN ('rascunho', 'activo', 'arquivado')),
+  draft_definicao jsonb CHECK (draft_definicao IS NULL OR jsonb_typeof(draft_definicao) = 'object'),
   current_version_id uuid,
   created_by uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE RESTRICT,
   updated_by uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE RESTRICT,
@@ -99,7 +100,7 @@ REVOKE ALL ON public.obras_formularios_respostas FROM PUBLIC, anon, authenticate
 
 GRANT SELECT ON public.obras_formularios TO authenticated;
 GRANT INSERT (workspace_id, nome, descricao, tipo) ON public.obras_formularios TO authenticated;
-GRANT UPDATE (nome, descricao, tipo, estado) ON public.obras_formularios TO authenticated;
+GRANT UPDATE (nome, descricao, tipo, estado, draft_definicao) ON public.obras_formularios TO authenticated;
 GRANT SELECT ON public.obras_formularios_versoes TO authenticated;
 GRANT SELECT ON public.obras_formularios_respostas TO authenticated;
 GRANT UPDATE (respostas) ON public.obras_formularios_respostas TO authenticated;
