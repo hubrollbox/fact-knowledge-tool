@@ -194,7 +194,15 @@ DECLARE
 BEGIN
   SELECT a.responsavel_user_id INTO assignee
   FROM public.obras_acoes a
-  WHERE a.id = NEW.acao_id AND a.workspace_id = NEW.workspace_id;
+  WHERE a.id = NEW.acao_id AND a.workspace_id = NEW.workspace_id
+    AND (
+      EXISTS (SELECT 1 FROM public.workspaces w WHERE w.id = a.workspace_id AND w.user_id = a.responsavel_user_id)
+      OR EXISTS (
+        SELECT 1 FROM public.workspace_members wm
+        WHERE wm.workspace_id = a.workspace_id AND wm.user_id = a.responsavel_user_id
+          AND wm.role IN ('admin','editor')
+      )
+    );
 
   IF assignee IS NOT NULL AND assignee <> NEW.autor_id THEN
     INSERT INTO public.alertas (
