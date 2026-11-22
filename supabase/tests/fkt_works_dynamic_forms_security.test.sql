@@ -114,10 +114,17 @@ BEGIN
     RAISE EXCEPTION 'As três rotinas privilegiadas devem estar isoladas no schema dedicado';
   END IF;
 
-  IF NOT has_function_privilege('authenticated', 'public.publicar_obras_formulario(uuid,jsonb)', 'EXECUTE')
+  IF NOT has_function_privilege('authenticated', 'public.publicar_obras_formulario(uuid)', 'EXECUTE')
     OR NOT has_function_privilege('authenticated', 'public.criar_obras_formulario_resposta(uuid,uuid,uuid,uuid)', 'EXECUTE')
     OR NOT has_function_privilege('authenticated', 'public.concluir_obras_formulario_resposta(uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'Faltam permissões de execução nas funções do fluxo de formulários';
+  END IF;
+
+  IF has_function_privilege('authenticated', 'private_works_forms.obras_publicar_formulario_privileged(uuid,jsonb)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'authenticated não pode chamar o helper que publica definições arbitrárias';
+  END IF;
+  IF NOT has_function_privilege('authenticated', 'private_works_forms.obras_publicar_formulario_draft_privileged(uuid)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'authenticated não consegue publicar o rascunho guardado através do wrapper seguro';
   END IF;
 END;
 $$ $test$, 'FKT Works forms enforce workspace RLS, immutable versions and controlled response lifecycle');
