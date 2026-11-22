@@ -13,6 +13,7 @@ import { OcorrenciaItem } from '../components/OcorrenciaItem';
 import { AcaoDialog } from '../components/AcaoDialog';
 import { DocumentosObra } from '../components/DocumentosObra';
 import { OfflineSyncStatus } from '../components/OfflineSyncStatus';
+import { AcaoComentarios } from '../components/AcaoComentarios';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -71,14 +72,15 @@ export function ObraDetail() {
         </TabsContent>
 
         <TabsContent value="acoes" className="space-y-3">
-          {canWrite && <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} />}
+          {canWrite && <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} visitas={visitas ?? []} />}
           {!acoes?.length ? <p className="text-sm text-muted-foreground">Ainda não há ações.</p> : acoes.map((a) => {
             const atrasada = a.prazo && a.estado !== 'concluida' && new Date(a.prazo) < new Date(new Date().toDateString());
             return (
-              <div key={a.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-3">
+              <div key={a.id} className="space-y-3 border border-border rounded-md p-3">
                 <div className="min-w-0">
                   <div className="text-sm font-medium">{a.descricao}</div>
                   <div className="text-xs text-muted-foreground">
+                    <Badge variant="outline" className="mr-2">Prioridade: {(a as any).prioridade ?? 'normal'}</Badge>
                     {a.responsavel ?? 'Sem responsável'}
                     {a.prazo && <span className={atrasada ? 'text-destructive' : ''}> · prazo {new Date(a.prazo).toLocaleDateString('pt-PT')}</span>}
                   </div>
@@ -89,6 +91,7 @@ export function ObraDetail() {
                     <SelectContent>{Object.entries(ESTADOS_ACAO).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
                   </Select>
                 ) : <Badge variant="outline">{ESTADOS_ACAO[a.estado as keyof typeof ESTADOS_ACAO]}</Badge>}
+                <AcaoComentarios acaoId={a.id} obraId={obra.id} workspaceId={obra.workspace_id} />
               </div>
             );
           })}
