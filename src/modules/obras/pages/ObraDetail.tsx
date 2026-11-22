@@ -74,7 +74,7 @@ export function ObraDetail() {
         <TabsContent value="acoes" className="space-y-3">
           {canWrite && <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} visitas={visitas ?? []} />}
           {!acoes?.length ? <p className="text-sm text-muted-foreground">Ainda não há ações.</p> : acoes.map((a) => {
-            const atrasada = a.prazo && a.estado !== 'concluida' && new Date(a.prazo) < new Date(new Date().toDateString());
+            const atrasada = a.prazo && !['concluida','cancelada'].includes(a.estado) && new Date(a.prazo) < new Date(new Date().toDateString());
             return (
               <div key={a.id} className="space-y-3 border border-border rounded-md p-3">
                 <div className="min-w-0">
