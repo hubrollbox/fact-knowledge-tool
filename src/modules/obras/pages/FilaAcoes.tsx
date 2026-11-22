@@ -41,8 +41,8 @@ export function FilaAcoes() {
     if (responsavel === 'sem' && (a.responsavel_user_id || a.responsavel)) return false;
     if (responsavel !== 'todos' && responsavel !== 'minhas' && responsavel !== 'sem' && a.responsavel_user_id !== responsavel) return false;
     if (obra !== 'todas' && a.obra_id !== obra) return false;
-    if (prazo === 'atrasadas' && !(a.prazo && a.prazo < hoje() && a.estado !== 'concluida')) return false;
-    if (prazo === 'proximas' && !(a.prazo && a.prazo >= hoje() && a.prazo <= new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10) && a.estado !== 'concluida')) return false;
+    if (prazo === 'atrasadas' && !(a.prazo && a.prazo < hoje() && !['concluida','cancelada'].includes(a.estado))) return false;
+    if (prazo === 'proximas' && !(a.prazo && a.prazo >= hoje() && a.prazo <= new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10) && !['concluida','cancelada'].includes(a.estado))) return false;
     if (prazo === 'sem' && a.prazo) return false;
     const term = pesquisa.trim().toLocaleLowerCase('pt-PT');
     return !term || [a.descricao, a.responsavel, a.obras?.nome, a.obras_ocorrencias?.titulo].some(v => v?.toLocaleLowerCase('pt-PT').includes(term));
