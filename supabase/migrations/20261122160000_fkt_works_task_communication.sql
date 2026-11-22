@@ -59,6 +59,14 @@ CREATE TABLE public.obras_acoes_anexos (
 CREATE INDEX obras_acoes_workspace_priority_due_idx
   ON public.obras_acoes(workspace_id, prioridade, prazo)
   WHERE estado NOT IN ('concluida','cancelada');
+
+-- Supports the per-user deadline-alert lookup in sincronizar_alertas_obras_acoes().
+-- The partial predicate excludes completed/cancelled actions and rows without a deadline.
+CREATE INDEX obras_acoes_responsavel_alertas_idx
+  ON public.obras_acoes(responsavel_user_id, prazo)
+  WHERE responsavel_user_id IS NOT NULL
+    AND prazo IS NOT NULL
+    AND estado NOT IN ('concluida','cancelada');
 CREATE INDEX obras_acoes_visita_idx
   ON public.obras_acoes(visita_id) WHERE visita_id IS NOT NULL;
 CREATE INDEX obras_acoes_comentarios_action_time_idx
