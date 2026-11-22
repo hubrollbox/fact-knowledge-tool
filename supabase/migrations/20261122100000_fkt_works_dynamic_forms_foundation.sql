@@ -541,4 +541,69 @@ GRANT EXECUTE ON FUNCTION public.publicar_obras_formulario(uuid, jsonb) TO authe
 GRANT EXECUTE ON FUNCTION public.criar_obras_formulario_resposta(uuid, uuid, uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.concluir_obras_formulario_resposta(uuid) TO authenticated;
 
+
+-- Correct the existing generic Works workspace trigger: record fields that
+-- exist only on one table must be accessed inside table-specific nested IFs.
+CREATE OR REPLACE FUNCTION private.obras_check_workspace()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  ws uuid;
+BEGIN
+  IF TG_TABLE_NAME IN ('obras_visitas', 'obras_ocorrencias', 'obras_acoes') THEN
+    SELECT workspace_id INTO ws
+    FROM public.obras
+    WHERE id = NEW.obra_id;
+    IF ws IS DISTINCT FROM NEW.workspace_id THEN
+      RAISE EXCEPTION 'A obra não pertence a este espaço de trabalho';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'obras_ocorrencias' THEN
+    IF NEW.visita_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.obras_visitas
+      WHERE id = NEW.visita_id AND obra_id = NEW.obra_id
+    ) THEN
+      RAISE EXCEPTION 'A visita não pertence a esta obra';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'obras_acoes' THEN
+    IF NEW.ocorrencia_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.obras_ocorrencias
+      WHERE id = NEW.ocorrencia_id AND obra_id = NEW.obra_id
+    ) THEN
+      RAISE EXCEPTION 'A ocorrência não pertence a esta obra';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'obras_fotos' THEN
+    IF NEW.visita_id IS NULL AND NEW.ocorrencia_id IS NULL THEN
+      RAISE EXCEPTION 'A foto tem de estar ligada a uma visita ou ocorrência';
+    END IF;
+    IF NEW.visita_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.obras_visitas
+      WHERE id = NEW.visita_id AND workspace_id = NEW.workspace_id
+    ) THEN
+      RAISE EXCEPTION 'A visita não pertence a este espaço de trabalho';
+    END IF;
+    IF NEW.ocorrencia_id IS NOT NULL AND NOT EXISTS (
+      SELECT 1 FROM public.obras_ocorrencias
+      WHERE id = NEW.ocorrencia_id AND workspace_id = NEW.workspace_id
+    ) THEN
+      RAISE EXCEPTION 'A ocorrência não pertence a este espaço de trabalho';
+    END IF;
+    IF split_part(NEW.storage_path, '/', 1) <> NEW.workspace_id::text THEN
+      RAISE EXCEPTION 'Caminho da foto inválido';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$;
+REVOKE ALL ON FUNCTION private.obras_check_workspace() FROM PUBLIC, anon, authenticated;
+
 COMMIT;
