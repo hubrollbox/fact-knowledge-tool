@@ -148,6 +148,10 @@ BEGIN
   IF NEW.estado = 'activo' AND NEW.current_version_id IS NULL THEN
     RAISE EXCEPTION 'Um modelo só pode ser activado depois de publicada a primeira versão';
   END IF;
+  IF NEW.estado = 'activo' AND OLD.estado <> 'activo'
+     AND NEW.current_version_id IS NOT DISTINCT FROM OLD.current_version_id THEN
+    RAISE EXCEPTION 'Um modelo só pode ser activado através da publicação de uma nova versão';
+  END IF;
   RETURN NEW;
 END;
 $$;
