@@ -62,8 +62,21 @@ BEGIN
   RETURNING id INTO _form_id;
 
   SELECT id INTO _version_id
-  FROM public.publicar_obras_formulario(_form_id, _definition);
+  FROM public.publicar_obras_formulario(_form_id);
   IF _version_id IS NULL THEN RAISE EXCEPTION 'Publishing did not return a version'; END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.obras_formularios
+    WHERE id = _form_id AND draft_definicao IS NOT NULL
+  ) THEN
+    RAISE EXCEPTION 'Published draft was not cleared atomically';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.obras_formularios_versoes
+    WHERE id = _version_id AND definicao = _definition
+  ) THEN
+    RAISE EXCEPTION 'Published version does not preserve the saved draft snapshot';
+  END IF;
 
   SELECT id INTO _response_id
   FROM public.criar_obras_formulario_resposta(
@@ -211,7 +224,7 @@ BEGIN
   VALUES ('b3800000-0000-4000-8000-000000000001', 'Modelo owner', 'visita', _definition)
   RETURNING id INTO _form_id;
 
-  PERFORM public.publicar_obras_formulario(_form_id, _definition);
+  PERFORM public.publicar_obras_formulario(_form_id);
   BEGIN
     PERFORM public.criar_obras_formulario_resposta(
       _form_id,
