@@ -39,6 +39,7 @@ export function AgendaDiaria() {
   const hojeStr = hoje.toISOString().split('T')[0];
 
   const urgentes = (alertas ?? []).filter((a) => {
+    if (!a.data_proxima) return false;
     const diff =
       (parseISO(a.data_proxima).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
     return diff <= 7;
