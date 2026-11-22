@@ -99,7 +99,7 @@ BEGIN
       SELECT 1 FROM public.workspace_members wm
       WHERE wm.workspace_id = v_workspace_id
         AND wm.user_id = _actor_id
-        AND wm.role IN ('admin', 'editor')
+        AND wm.role IN ('owner', 'admin', 'editor')
     )
   ) THEN
     RAISE EXCEPTION 'Sem permissões para anexar ficheiros a esta acção';
