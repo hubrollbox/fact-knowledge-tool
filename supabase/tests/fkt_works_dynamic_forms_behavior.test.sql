@@ -88,6 +88,18 @@ BEGIN
   IF NOT _caught THEN RAISE EXCEPTION 'Impossible calendar date was not rejected'; END IF;
 
   UPDATE public.obras_formularios_respostas
+  SET respostas = '{"date-field":"2026-02-28","choice-field":"Conforme"}'::jsonb
+  WHERE id = _response_id;
+
+  _caught := false;
+  BEGIN
+    PERFORM public.concluir_obras_formulario_resposta(_response_id);
+  EXCEPTION WHEN raise_exception THEN
+    _caught := position('Campo obrigatório' in SQLERRM) > 0;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Missing required boolean field was not rejected'; END IF;
+
+  UPDATE public.obras_formularios_respostas
   SET respostas = '{"date-field":"2026-02-28","choice-field":"Desconhecido","boolean-field":false}'::jsonb
   WHERE id = _response_id;
 
@@ -104,6 +116,27 @@ BEGIN
   WHERE id = _response_id;
 
   PERFORM public.concluir_obras_formulario_resposta(_response_id);
+
+  _caught := false;
+  BEGIN
+    UPDATE public.obras_formularios_respostas
+    SET respostas = '{"tampered":true}'::jsonb
+    WHERE id = _response_id;
+  EXCEPTION WHEN raise_exception THEN
+    _caught := position('imutável' in SQLERRM) > 0;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Completed response was mutable'; END IF;
+
+  _caught := false;
+  BEGIN
+    UPDATE public.obras_formularios_versoes
+    SET definicao = '{"tampered":true}'::jsonb
+    WHERE id = _version_id;
+  EXCEPTION WHEN insufficient_privilege THEN
+    _caught := true;
+  END;
+  IF NOT _caught THEN RAISE EXCEPTION 'Published version could be edited directly'; END IF;
+
   SELECT count(*) INTO _count
   FROM public.obras_formularios_respostas
   WHERE id = _response_id AND estado = 'concluido'
