@@ -240,8 +240,30 @@ Deno.serve(async (req: Request) => {
     });
 
     if (rpcError) {
-      const { error: cleanupError } = await admin.storage.from(BUCKET).remove([storagePath]);
-      if (cleanupError) console.error("Attachment cleanup failed", { storagePath, message: cleanupError.message });
+      // A transport error can occur after Postgres committed. Never delete an
+      // object if its version row already exists.
+      const { data: persistedVersion, error: lookupError } = await admin
+        .from("obras_documento_versoes")
+        .select("id")
+        .eq("storage_path", storagePath)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error("Could not determine attachment persistence state", {
+          storagePath,
+          message: lookupError.message,
+        });
+      } else if (!persistedVersion) {
+        const { error: cleanupError } = await admin.storage.from(BUCKET).remove([storagePath]);
+        if (cleanupError) {
+          console.error("Attachment cleanup failed", { storagePath, message: cleanupError.message });
+        }
+      } else {
+        console.error("Attachment RPC returned an error after persistence; retained object", {
+          storagePath,
+          attachmentId: attachmentId ?? null,
+        });
+      }
       throw rpcError;
     }
 
