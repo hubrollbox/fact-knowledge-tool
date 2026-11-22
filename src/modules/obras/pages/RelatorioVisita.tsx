@@ -9,6 +9,7 @@ import { useEmitirRelatorioVisita, useRelatoriosEmitidos } from '../hooks/useRel
 import { fetchAnaliseOcorrencia } from '../hooks/useAnaliseOcorrencia';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES } from '../types/obras';
 import type { Foto, Ocorrencia } from '../types/obras';
+import type { FormDefinition } from '../hooks/useFormTemplates';
 import './relatorio-visita.css';
 
 function dataPt(value?: string | null) {
@@ -43,6 +44,7 @@ function FotosOcorrencia({ fotos, isLoading }: { fotos?: FotoRelatorio[]; isLoad
   );
 }
 
+type FormResponseReport = { id: string; formulario_id: string; ocorrencia_id: string | null; definicao_snapshot: FormDefinition; respostas: Record<string, unknown>; created_at: string };
 type AnaliseData = Awaited<ReturnType<typeof fetchAnaliseOcorrencia>>;
 type AnaliseRelatorio = AnaliseData & { analise: NonNullable<AnaliseData['analise']> };
 
@@ -92,6 +94,31 @@ function BlocoAnalise({ dados, fotos }: { dados: AnaliseRelatorio; fotos: FotoRe
     </div>
   );
 }
+
+function BlocoFormulario({ response, documentos, fotos }: { response: FormResponseReport; documentos: { id: string; titulo: string }[]; fotos: FotoRelatorio[] }) {
+  const documentoPorId = new Map(documentos.map((doc) => [doc.id, doc.titulo]));
+  const fotoPorId = new Map(fotos.map((foto) => [foto.id, foto.legenda || 'Fotografia associada']));
+  return (
+    <article className="report-form">
+      {response.definicao_snapshot.sections.map((section) => (
+        <div key={section.id} className="report-form-section">
+          <h4>{section.title}</h4>
+          <dl className="report-form-fields">
+            {section.fields.map((field) => {
+              const value = response.respostas?.[field.id];
+              let display = '—';
+              if (field.type === 'boolean') display = value === true ? 'Sim' : value === false ? 'Não' : '—';
+              else if (Array.isArray(value)) display = value.map((id) => field.type === 'photo' ? fotoPorId.get(String(id)) ?? 'Fotografia não disponível' : documentoPorId.get(String(id)) ?? 'Documento não disponível').join(', ') || '—';
+              else if (value !== null && value !== undefined && value !== '') display = String(value);
+              return <div key={field.id}><dt>{field.label}</dt><dd>{display}</dd></div>;
+            })}
+          </dl>
+        </div>
+      ))}
+    </article>
+  );
+}
+
 function BlocoOcorrencia({ ocorrencia, index, analise, fotos }: { ocorrencia: Ocorrencia; index: number; analise?: AnaliseRelatorio; fotos: FotoRelatorio[] }) {
   return (
     <article className="report-occurrence">
@@ -122,6 +149,31 @@ export function RelatorioVisita() {
   const idsOcorrenciasRelatorio = (ocorrencias ?? []).filter((o) => o.visita_id === visita?.id).map((o) => o.id);
   const { data: fotosVisita, isLoading: fotosLoading } = useFotos({ visitaId });
   const { data: fotosOcorrencias, isLoading: fotosOcorrenciasLoading } = useFotos({ ocorrenciaIds: idsOcorrenciasRelatorio });
+  const db = supabase as any;
+  const { data: formulariosConcluidos = [], isLoading: formulariosLoading, isError: formulariosError } = useQuery({
+    queryKey: ['obras_relatorio_formularios', visitaId],
+    enabled: !!visitaId,
+    queryFn: async () => {
+      const { data, error } = await db.from('obras_formularios_respostas').select('id,formulario_id,ocorrencia_id,definicao_snapshot,respostas,created_at')
+        .eq('visita_id', visitaId).eq('estado', 'concluido').order('created_at');
+      if (error) throw error;
+      return (data ?? []) as FormResponseReport[];
+    },
+  });
+  const idsDocumentosFormulario = [...new Set(formulariosConcluidos.flatMap((response) =>
+    response.definicao_snapshot.sections.flatMap((section) => section.fields
+      .filter((field) => field.type === 'attachment')
+      .flatMap((field) => Array.isArray(response.respostas?.[field.id]) ? response.respostas[field.id] as string[] : [])),
+  ))];
+  const { data: documentosFormulario = [], isLoading: documentosFormularioLoading } = useQuery({
+    queryKey: ['obras_relatorio_formularios_documentos', idsDocumentosFormulario],
+    enabled: idsDocumentosFormulario.length > 0,
+    queryFn: async () => {
+      const { data, error } = await db.from('obras_documentos').select('id,titulo').in('id', idsDocumentosFormulario);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const { data: analisesRelatorio, isLoading: analisesLoading, isError: analisesError } = useQuery({
     queryKey: ['obras_relatorio_analises', visitaId, idsOcorrenciasRelatorio],
     enabled: !!visita?.id && !ocorrenciasLoading && idsOcorrenciasRelatorio.length > 0,
@@ -137,7 +189,7 @@ export function RelatorioVisita() {
   );
   const geradoEm = new Date();
 
-  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || fotosOcorrenciasLoading || analisesLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
+  if (obraLoading || visitaLoading || ocorrenciasLoading || acoesLoading || fotosLoading || fotosOcorrenciasLoading || analisesLoading || formulariosLoading || documentosFormularioLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar relatório…</div>;
   if (!obra || !visita || visita.obra_id !== obra.id) {
     return <div className="p-8 space-y-3"><p className="text-sm text-muted-foreground">Não foi possível localizar esta visita e a respectiva obra.</p><Button asChild variant="outline"><Link to={id ? `/obras/${id}` : '/obras'}>Voltar</Link></Button></div>;
   }
@@ -147,7 +199,7 @@ export function RelatorioVisita() {
   const acoesVisita = (acoes ?? []).filter((a) => a.ocorrencia_id && idsOcorrencias.has(a.ocorrencia_id));
   const acoesPendentes = acoesVisita.filter((a) => a.estado !== 'concluida');
   const gravidades = ['critica', 'alta', 'media', 'baixa'] as const;
-  const podeEmitir = !!user && !analisesError && !analisesLoading && !fotosLoading && !fotosOcorrenciasLoading;
+  const podeEmitir = !!user && !analisesError && !analisesLoading && !fotosLoading && !fotosOcorrenciasLoading && !formulariosError && !formulariosLoading && !documentosFormularioLoading;
   const emitir = () => {
     if (!obra || !visita || !podeEmitir) return;
     const semUrl = (fotos: FotoRelatorio[]) => fotos.map(({ url: _url, ...foto }) => foto);
@@ -163,6 +215,7 @@ export function RelatorioVisita() {
       acoes: acoesVisita,
       fotos_visita: semUrl(fotosVisita ?? []),
       fotos_ocorrencias: semUrl(fotosOcorrencias ?? []),
+      formularios: formulariosConcluidos,
       analises: [...analisePorOcorrencia.entries()].map(([ocorrencia_id, dados]) => ({
         ocorrencia_id,
         ...dados,
@@ -275,7 +328,12 @@ export function RelatorioVisita() {
       </section>
 
       <section className="report-section">
-        <h2>6. Plano de acções correctivas</h2>
+        <h2>6. Formulários e listas de verificação</h2>
+        {!formulariosConcluidos.length ? <p className="report-muted">Não existem formulários concluídos nesta visita.</p> : <div className="report-forms">{formulariosConcluidos.map((response) => <div key={response.id}><h3>Formulário · {response.ocorrencia_id ? `Ocorrência ${response.ocorrencia_id}` : 'Visita'}</h3><BlocoFormulario response={response} documentos={documentosFormulario} fotos={[...(fotosVisita ?? []), ...(fotosOcorrencias ?? [])]} /></div>)}</div>}
+      </section>
+
+      <section className="report-section">
+        <h2>7. Plano de acções correctivas</h2>
         {!acoesVisita.length ? <p className="report-muted">Não existem acções associadas às ocorrências desta visita.</p> : (
           <table className="report-table">
             <thead><tr><th>Acção</th><th>Responsável</th><th>Prazo</th><th>Estado</th></tr></thead>
@@ -287,7 +345,7 @@ export function RelatorioVisita() {
       </section>
 
       <section className="report-section report-validation">
-        <h2>7. Validação e assinaturas</h2>
+        <h2>8. Validação e assinaturas</h2>
         <p className="report-muted">A assinatura neste documento confirma a recepção ou validação do relatório, não substituindo os procedimentos contratuais aplicáveis.</p>
         <div className="report-signatures">
           <div><strong>Fiscal / Técnico</strong><span>Nome:</span><span>Assinatura:</span><small>Data: ____ / ____ / ______</small></div>
