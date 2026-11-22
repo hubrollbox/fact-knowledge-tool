@@ -9,6 +9,7 @@ import { useAlertasVacinas } from '../hooks/useClinico';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useWorkspaceId } from '../hooks/useWorkspaceId';
+import { canilAnimalPath } from '../contracts';
 
 function useConsultasHoje() {
   const workspaceId = useWorkspaceId();
@@ -37,7 +38,7 @@ export function AgendaDiaria() {
   const hoje = new Date();
   const hojeStr = hoje.toISOString().split('T')[0];
 
-  const urgentes = (alertas ?? []).filter((a: any) => {
+  const urgentes = (alertas ?? []).filter((a) => {
     const diff =
       (parseISO(a.data_proxima).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
     return diff <= 7;
@@ -63,7 +64,7 @@ export function AgendaDiaria() {
           {!reservas?.length ? (
             <p className="text-sm text-muted-foreground">Sem movimentos</p>
           ) : (
-            reservas.map((r: any) => {
+            reservas.map((r) => {
               const isEntrada = r.data_entrada === hojeStr;
               return (
                 <div
@@ -100,10 +101,10 @@ export function AgendaDiaria() {
           {!consultas?.length ? (
             <p className="text-sm text-muted-foreground">Sem consultas</p>
           ) : (
-            consultas.map((c: any) => (
+            consultas.map((c) => (
               <div
                 key={c.id}
-                onClick={() => c.animal && navigate(`/canil/${c.animal.id}`)}
+                onClick={() => c.animal && navigate(canilAnimalPath(c.animal.id))}
                 className="flex cursor-pointer items-center justify-between rounded-md border p-2.5 text-sm hover:bg-accent"
               >
                 <div>
@@ -132,10 +133,10 @@ export function AgendaDiaria() {
           {!urgentes.length ? (
             <p className="text-sm text-muted-foreground">Sem alertas urgentes</p>
           ) : (
-            urgentes.map((a: any) => (
+            urgentes.map((a) => (
               <div
                 key={a.id}
-                onClick={() => a.animal && navigate(`/canil/${a.animal.id}`)}
+                onClick={() => a.animal && navigate(canilAnimalPath(a.animal.id))}
                 className="flex cursor-pointer items-center justify-between rounded-md border p-2.5 text-sm hover:bg-accent"
               >
                 <div>
