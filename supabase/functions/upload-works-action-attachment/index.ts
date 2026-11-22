@@ -253,9 +253,11 @@ Deno.serve(async (req: Request) => {
       throw error;
     }
 
+    const boundedHeaders = new Headers(req.headers);
+    boundedHeaders.delete("content-length");
     const boundedRequest = new Request(req.url, {
       method: "POST",
-      headers: req.headers,
+      headers: boundedHeaders,
       body: requestBody,
     });
     const form = await boundedRequest.formData();
