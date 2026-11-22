@@ -70,7 +70,7 @@ BEGIN
     OR has_table_privilege('authenticated','public.obras_acoes_comentarios','DELETE') THEN
     RAISE EXCEPTION 'Privilégios de comentários não respeitam SELECT/INSERT apenas'; END IF;
 
-  IF position(`cancelada` in lower(pg_get_functiondef(
+  IF position('cancelada' in lower(pg_get_functiondef(
     'public.sincronizar_alertas_obras_acoes()'::regprocedure
   ))) = 0 THEN
     RAISE EXCEPTION 'A sincronização de alertas não exclui acções canceladas'; END IF;
