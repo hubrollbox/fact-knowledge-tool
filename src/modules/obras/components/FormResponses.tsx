@@ -28,7 +28,7 @@ type FormResponse = {
 type Template = { id: string; nome: string; descricao: string | null; tipo: string };
 type AttachmentOption = { id: string; label: string };
 
-export function FormResponses({ obraId, visitaId, canWrite }: { obraId: string; visitaId: string; canWrite: boolean }) {
+export function FormResponses({ obraId, visitaId, occurrenceId, canWrite }: { obraId: string; visitaId: string; occurrenceId?: string; canWrite: boolean }) {
   const workspaceId = useObrasWorkspace();
   const queryClient = useQueryClient();
   const [drafts, setDrafts] = useState<Record<string, Record<string, unknown>>>({});
@@ -44,31 +44,34 @@ export function FormResponses({ obraId, visitaId, canWrite }: { obraId: string; 
     },
   });
   const responsesQuery = useQuery({
-    queryKey: ['obras-formularios-respostas', visitaId],
+    queryKey: ['obras-formularios-respostas', visitaId, occurrenceId],
     enabled: !!visitaId,
     queryFn: async () => {
-      const { data, error } = await db.from('obras_formularios_respostas').select('*')
-        .eq('visita_id', visitaId).order('created_at', { ascending: false });
+      let query = db.from('obras_formularios_respostas').select('*').eq('visita_id', visitaId);
+      if (occurrenceId) query = query.eq('ocorrencia_id', occurrenceId);
+      const { data, error } = await query.order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as FormResponse[];
     },
   });
   const photosQuery = useQuery({
-    queryKey: ['obras-formularios-fotos', visitaId],
+    queryKey: ['obras-formularios-fotos', visitaId, occurrenceId],
     enabled: !!visitaId,
     queryFn: async () => {
-      const { data, error } = await db.from('obras_fotos').select('id,legenda,capturada_em')
-        .eq('visita_id', visitaId).order('capturada_em', { ascending: false });
+      let query = db.from('obras_fotos').select('id,legenda,capturada_em');
+      query = occurrenceId ? query.eq('ocorrencia_id', occurrenceId) : query.eq('visita_id', visitaId);
+      const { data, error } = await query.order('capturada_em', { ascending: false });
       if (error) throw error;
       return (data ?? []).map((photo: any) => ({ id: photo.id, label: photo.legenda || new Date(photo.capturada_em).toLocaleString('pt-PT') })) as AttachmentOption[];
     },
   });
   const documentsQuery = useQuery({
-    queryKey: ['obras-formularios-documentos', obraId, visitaId],
+    queryKey: ['obras-formularios-documentos', obraId, visitaId, occurrenceId],
     enabled: !!obraId && !!visitaId,
     queryFn: async () => {
-      const { data: links, error: linksError } = await db.from('obras_documentos_ligacoes')
-        .select('documento_id').eq('obra_id', obraId).eq('visita_id', visitaId);
+      let query = db.from('obras_documentos_ligacoes').select('documento_id').eq('obra_id', obraId);
+      query = occurrenceId ? query.eq('ocorrencia_id', occurrenceId) : query.eq('visita_id', visitaId);
+      const { data: links, error: linksError } = await query;
       if (linksError) throw linksError;
       const ids = [...new Set((links ?? []).map((link: any) => link.documento_id))];
       if (!ids.length) return [] as AttachmentOption[];
@@ -96,7 +99,7 @@ export function FormResponses({ obraId, visitaId, canWrite }: { obraId: string; 
   const createResponse = useMutation({
     mutationFn: async (templateId: string) => {
       const { data, error } = await db.rpc('criar_obras_formulario_resposta', {
-        p_formulario_id: templateId, p_obra_id: obraId, p_visita_id: visitaId, p_ocorrencia_id: null,
+        p_formulario_id: templateId, p_obra_id: obraId, p_visita_id: visitaId, p_ocorrencia_id: occurrenceId ?? null,
       });
       if (error) throw error;
       return data;
