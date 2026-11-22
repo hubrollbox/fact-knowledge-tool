@@ -97,6 +97,7 @@ function zipEntries(bytes: Uint8Array): Set<string> | null {
   for (let index = 0; index < entryCount; index++) {
     if (cursor + 46 > centralOffset + centralSize || view.getUint32(cursor, true) !== 0x02014b50) return null;
     const flags = view.getUint16(cursor + 8, true);
+    const compressionMethod = view.getUint16(cursor + 10, true);
     const compressedSize = view.getUint32(cursor + 20, true);
     const uncompressedSize = view.getUint32(cursor + 24, true);
     const nameLength = view.getUint16(cursor + 28, true);
@@ -106,8 +107,9 @@ function zipEntries(bytes: Uint8Array): Set<string> | null {
     const recordEnd = cursor + 46 + nameLength + extraLength + commentLength;
 
     if ((flags & 0x0001) !== 0 || recordEnd > centralOffset + centralSize) return null;
+    if (![0, 8].includes(compressionMethod)) return null;
     if (compressedSize === 0xffffffff || uncompressedSize === 0xffffffff || localOffset === 0xffffffff) return null;
-    if (localOffset + 30 > bytes.length || view.getUint32(localOffset, true) !== 0x04034b50) return null;
+    if (localOffset + 30 > centralOffset || view.getUint32(localOffset, true) !== 0x04034b50) return null;
 
     let name: string;
     try {
@@ -115,7 +117,22 @@ function zipEntries(bytes: Uint8Array): Set<string> | null {
     } catch {
       return null;
     }
-    if (!name || name.startsWith("/") || name.includes("\\") || name.split("/").includes("..")) return null;
+    if (!name || name.startsWith("/") || name.includes("\\\\") || name.split("/").includes("..") || names.has(name)) return null;
+
+    const localFlags = view.getUint16(localOffset + 6, true);
+    const localMethod = view.getUint16(localOffset + 8, true);
+    const localNameLength = view.getUint16(localOffset + 26, true);
+    const localExtraLength = view.getUint16(localOffset + 28, true);
+    const localNameStart = localOffset + 30;
+    const localDataStart = localNameStart + localNameLength + localExtraLength;
+    let localName: string;
+    try {
+      localName = new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(localNameStart, localNameStart + localNameLength));
+    } catch {
+      return null;
+    }
+    if (localFlags !== flags || localMethod !== compressionMethod || localName !== name) return null;
+    if (localDataStart + compressedSize > centralOffset) return null;
 
     totalUncompressed += uncompressedSize;
     if (totalUncompressed > MAX_UNCOMPRESSED_SIZE) return null;
