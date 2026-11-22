@@ -121,6 +121,20 @@ BEGIN
     RAISE EXCEPTION 'Faltam permissões de execução nas funções do fluxo de formulários';
   END IF;
 
+  IF to_regprocedure('public.publicar_obras_formulario(uuid,jsonb)') IS NOT NULL THEN
+    RAISE EXCEPTION 'A assinatura antiga que aceitava uma definição arbitrária continua exposta';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'publicar_obras_formulario'
+      AND p.prosecdef = false
+      AND pg_get_function_identity_arguments(p.oid) = 'p_formulario_id uuid'
+  ) THEN
+    RAISE EXCEPTION 'A RPC pública de publicação tem de permanecer SECURITY INVOKER e aceitar apenas o ID do modelo';
+  END IF;
+
   IF has_function_privilege('authenticated', 'private_works_forms.obras_publicar_formulario_privileged(uuid,jsonb)', 'EXECUTE') THEN
     RAISE EXCEPTION 'authenticated não pode chamar o helper que publica definições arbitrárias';
   END IF;
