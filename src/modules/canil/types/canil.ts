@@ -1,6 +1,7 @@
 import type { Database } from '@/integrations/supabase/types';
 
 export type Animal = Database['public']['Tables']['canil_animais']['Row'];
+export type AnimalResumo = Pick<Animal, 'id' | 'nome' | 'raca' | 'foto_url'>;
 export type AnimalInsert = Database['public']['Tables']['canil_animais']['Insert'];
 export type AnimalUpdate = Omit<Database['public']['Tables']['canil_animais']['Update'], 'workspace_id'>;
 
@@ -19,3 +20,9 @@ export type NinhadaUpdate = Omit<Database['public']['Tables']['canil_ninhadas'][
 export type Reserva = Database['public']['Tables']['canil_reservas']['Row'];
 export type ReservaInsert = Database['public']['Tables']['canil_reservas']['Insert'];
 export type ReservaUpdate = Omit<Database['public']['Tables']['canil_reservas']['Update'], 'workspace_id'>;
+export type ReservaComAnimal = Reserva & { animal: AnimalResumo | null };
+export type RegistoClinicoComAnimal = RegistoClinico & { animal: AnimalResumo | null };
+export type NinhadaComProgenitores = Ninhada & {
+  mae: Pick<Animal, 'id' | 'nome'> | null;
+  pai: Pick<Animal, 'id' | 'nome'> | null;
+};

@@ -9,7 +9,8 @@ import { useAlertasVacinas } from '../hooks/useClinico';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useWorkspaceId } from '../hooks/useWorkspaceId';
-import { canilAnimalPath } from '../contracts';
+import { canilAnimalPath } from '../utils/routes';
+import type { RegistoClinicoComAnimal, ReservaComAnimal } from '../types/canil';
 
 function useConsultasHoje() {
   const workspaceId = useWorkspaceId();
@@ -65,7 +66,7 @@ export function AgendaDiaria() {
           {!reservas?.length ? (
             <p className="text-sm text-muted-foreground">Sem movimentos</p>
           ) : (
-            reservas.map((r) => {
+            reservas.map((r: ReservaComAnimal) => {
               const isEntrada = r.data_entrada === hojeStr;
               return (
                 <div
@@ -102,7 +103,7 @@ export function AgendaDiaria() {
           {!consultas?.length ? (
             <p className="text-sm text-muted-foreground">Sem consultas</p>
           ) : (
-            consultas.map((c) => (
+            consultas.map((c: RegistoClinicoComAnimal) => (
               <div
                 key={c.id}
                 onClick={() => c.animal && navigate(canilAnimalPath(c.animal.id))}

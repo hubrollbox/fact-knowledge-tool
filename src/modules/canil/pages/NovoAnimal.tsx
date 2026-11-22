@@ -48,8 +48,8 @@ export function NovoAnimal() {
       });
       toast({ title: 'Animal criado' });
       navigate(`/canil/animal/${created.id}`);
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: err instanceof Error ? err.message : 'Não foi possível guardar', variant: 'destructive' });
     }
   };
 

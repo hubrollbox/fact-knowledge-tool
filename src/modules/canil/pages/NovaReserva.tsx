@@ -45,8 +45,8 @@ export function NovaReserva() {
       });
       toast({ title: 'Reserva criada' });
       navigate('/canil/agenda');
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Erro', description: err instanceof Error ? err.message : 'Não foi possível guardar', variant: 'destructive' });
     }
   };
 
