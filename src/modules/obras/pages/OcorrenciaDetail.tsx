@@ -8,6 +8,7 @@ import { useObra, useOcorrencia, useVisita, useAcoes } from '../hooks/useObras';
 import { FotosGaleria } from '../components/FotosGaleria';
 import { AnaliseOcorrencia } from '../components/AnaliseOcorrencia';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
+import { FormResponses } from '../components/FormResponses';
 import { HistoricoOcorrencia } from '../components/HistoricoOcorrencia';
 import { AcompanhamentoOcorrencia } from '../components/AcompanhamentoOcorrencia';
 import { OcorrenciasRelacionadas } from '../components/OcorrenciasRelacionadas';
@@ -90,6 +91,8 @@ export function OcorrenciaDetail() {
         <CardHeader><CardTitle className="text-base">5. Documentos associados</CardTitle></CardHeader>
         <CardContent><DocumentosAssociados obraId={obra.id} ocorrenciaId={ocorrencia.id} /></CardContent>
       </Card>
+
+      {ocorrencia.visita_id && <FormResponses obraId={obra.id} visitaId={ocorrencia.visita_id} occurrenceId={ocorrencia.id} canWrite={canWrite} />}
 
       <Card>
         <CardHeader><CardTitle className="text-base">6. Acções associadas ({acoesOcorrencia.length})</CardTitle></CardHeader>
