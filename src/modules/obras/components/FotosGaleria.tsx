@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2, MapPin } from 'lucide-react';
 import { useFotos, useUploadFoto } from '../hooks/useFotosObra';
@@ -9,6 +9,16 @@ export function FotosGaleria({ visitaId, ocorrenciaId, canWrite }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const { data: fotos, isLoading } = useFotos({ visitaId, ocorrenciaId });
   const upload = useUploadFoto();
+  const [localUrls, setLocalUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const urls: Record<string, string> = {};
+    for (const photo of fotos ?? []) {
+      if (photo.cachedBlob instanceof Blob) urls[photo.id] = URL.createObjectURL(photo.cachedBlob);
+    }
+    setLocalUrls(urls);
+    return () => Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+  }, [fotos]);
 
   const onFiles = async (files: FileList | null) => {
     if (!files) return;
@@ -32,8 +42,8 @@ export function FotosGaleria({ visitaId, ocorrenciaId, canWrite }: Props) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {fotos.map((f) => (
-            <a key={f.id} href={f.url ?? '#'} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border border-border bg-muted">
-              {f.url && <img src={f.url} alt={f.legenda ?? 'Foto de obra'} className="aspect-square w-full object-cover" loading="lazy" />}
+            <a key={f.id} href={f.url ?? localUrls[f.id] ?? '#'} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border border-border bg-muted">
+              {(f.url ?? localUrls[f.id]) && <img src={f.url ?? localUrls[f.id]} alt={f.legenda ?? 'Foto de obra'} className="aspect-square w-full object-cover" loading="lazy" />}
               <div className="p-1.5 text-[11px] text-muted-foreground space-y-0.5">
                 {f.capturada_em && <div>{new Date(f.capturada_em).toLocaleString('pt-PT')}</div>}
                 {f.latitude != null && <div className="flex items-center gap-1"><MapPin className="h-3 w-3" />{f.latitude.toFixed(5)}, {f.longitude?.toFixed(5)}</div>}
