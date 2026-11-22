@@ -69,6 +69,11 @@ CREATE INDEX obras_acoes_anexos_action_idx
 ALTER TABLE public.obras_acoes_comentarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.obras_acoes_anexos ENABLE ROW LEVEL SECURITY;
 
+-- Default privileges in this project may grant broad access to authenticated.
+-- Revoke first: GRANT statements are additive, not restrictive.
+REVOKE ALL ON TABLE public.obras_acoes_comentarios FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.obras_acoes_anexos FROM PUBLIC, anon, authenticated;
+
 GRANT SELECT, INSERT ON public.obras_acoes_comentarios TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.obras_acoes_anexos TO authenticated;
 GRANT ALL ON public.obras_acoes_comentarios, public.obras_acoes_anexos TO service_role;
@@ -233,3 +238,54 @@ COMMENT ON COLUMN public.obras_acoes.visita_id IS
   'Visita que originou a acção; opcional e sempre pertencente à mesma obra e workspace.';
 COMMENT ON COLUMN public.obras_acoes.prioridade IS
   'Prioridade operacional: baixa, normal, alta ou urgente.';
+
+
+-- Cancelled actions must not produce deadline alerts when the queue is opened.
+CREATE OR REPLACE FUNCTION public.sincronizar_alertas_obras_acoes()
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_user uuid := (SELECT auth.uid());
+  v_count integer := 0;
+BEGIN
+  IF v_user IS NULL THEN
+    RAISE EXCEPTION 'É necessário iniciar sessão';
+  END IF;
+
+  INSERT INTO public.alertas (
+    workspace_id, user_id, modulo, tipo, titulo, descricao,
+    data_alerta, referencia_id, referencia_tipo
+  )
+  SELECT
+    a.workspace_id,
+    v_user,
+    'obras',
+    CASE WHEN a.prazo < CURRENT_DATE THEN 'acao_atrasada' ELSE 'acao_prazo_proximo' END,
+    CASE WHEN a.prazo < CURRENT_DATE THEN 'Acção em atraso' ELSE 'Prazo de acção próximo' END,
+    a.descricao,
+    a.prazo,
+    a.id,
+    'obras_acoes'
+  FROM public.obras_acoes AS a
+  WHERE a.responsavel_user_id = v_user
+    AND a.estado NOT IN ('concluida','cancelada')
+    AND a.prazo IS NOT NULL
+    AND a.prazo <= CURRENT_DATE + 3
+    AND private.obras_can_read(a.workspace_id)
+  ON CONFLICT (workspace_id, user_id, referencia_id, referencia_tipo, tipo, data_alerta)
+    WHERE modulo = 'obras'
+      AND user_id IS NOT NULL
+      AND referencia_id IS NOT NULL
+      AND referencia_tipo = 'obras_acoes'
+  DO NOTHING;
+
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN v_count;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.sincronizar_alertas_obras_acoes() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.sincronizar_alertas_obras_acoes() TO authenticated;
