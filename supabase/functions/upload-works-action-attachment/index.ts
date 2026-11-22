@@ -117,7 +117,7 @@ function zipEntries(bytes: Uint8Array): Set<string> | null {
     } catch {
       return null;
     }
-    if (!name || name.startsWith("/") || name.includes("\\\\") || name.split("/").includes("..") || names.has(name)) return null;
+    if (!name || name.startsWith("/") || name.includes("\\") || name.split("/").includes("..") || names.has(name)) return null;
 
     const localFlags = view.getUint16(localOffset + 6, true);
     const localMethod = view.getUint16(localOffset + 8, true);
