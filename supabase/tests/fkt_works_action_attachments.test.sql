@@ -17,7 +17,8 @@ BEGIN
 
   IF NOT has_table_privilege('authenticated','public.obras_acoes_anexos','SELECT')
     OR has_table_privilege('authenticated','public.obras_acoes_anexos','INSERT')
-    OR has_table_privilege('authenticated','public.obras_acoes_anexos','UPDATE') THEN
+    OR has_table_privilege('authenticated','public.obras_acoes_anexos','UPDATE')
+    OR has_table_privilege('authenticated','public.obras_acoes_anexos','DELETE') THEN
     RAISE EXCEPTION 'Utilizadores autenticados não podem criar ou alterar directamente associações de anexos';
   END IF;
 
@@ -49,7 +50,7 @@ BEGIN
   ) OR EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='obras_acoes_anexos'
-      AND cmd='INSERT' AND 'authenticated'=ANY(roles)
+      AND cmd IN ('INSERT','DELETE') AND 'authenticated'=ANY(roles)
   ) THEN
     RAISE EXCEPTION 'Políticas RLS de anexos não respeitam leitura por workspace e escrita exclusiva no servidor';
   END IF;
