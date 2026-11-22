@@ -108,10 +108,11 @@ BEGIN
       WHERE n.nspname = 'private_works_forms'
         AND p.proname IN (
           'obras_publicar_formulario_privileged',
+          'obras_publicar_formulario_draft_privileged',
           'obras_criar_formulario_resposta_privileged',
           'obras_concluir_formulario_resposta_privileged'
-        ) AND p.prosecdef) <> 3 THEN
-    RAISE EXCEPTION 'As três rotinas privilegiadas devem estar isoladas no schema dedicado';
+        ) AND p.prosecdef) <> 4 THEN
+    RAISE EXCEPTION 'As quatro rotinas privilegiadas devem estar isoladas no schema dedicado';
   END IF;
 
   IF NOT has_function_privilege('authenticated', 'public.publicar_obras_formulario(uuid)', 'EXECUTE')
