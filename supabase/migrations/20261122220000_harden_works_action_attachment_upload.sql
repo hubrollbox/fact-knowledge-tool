@@ -27,7 +27,8 @@ ON CONFLICT (id) DO UPDATE SET
 -- A user must not be able to create an attachment link directly, or call the
 -- old RPC to bypass server-side file inspection.
 DROP POLICY IF EXISTS obras_acoes_anexos_insert ON public.obras_acoes_anexos;
-REVOKE INSERT ON TABLE public.obras_acoes_anexos FROM PUBLIC, anon, authenticated;
+DROP POLICY IF EXISTS obras_acoes_anexos_delete ON public.obras_acoes_anexos;
+REVOKE INSERT, DELETE ON TABLE public.obras_acoes_anexos FROM PUBLIC, anon, authenticated;
 GRANT INSERT ON TABLE public.obras_acoes_anexos TO service_role;
 
 DROP FUNCTION IF EXISTS public.create_obras_acao_anexo(uuid, uuid, uuid, text, text, text, bigint);
