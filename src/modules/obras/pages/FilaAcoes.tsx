@@ -13,6 +13,7 @@ import { ESTADOS_ACAO } from '../types/obras';
 import { useAtribuirAcao, useFilaAcoes, useMembrosFilaAcoes, useOcorrenciasComLacunas, type AcaoFila } from '../hooks/useFilaAcoes';
 import { useActualizarEstado } from '../hooks/useObras';
 import { AcaoComentarios } from '../components/AcaoComentarios';
+import { AcaoAnexos } from '../components/AcaoAnexos';
 
 const hoje = () => {
   const d = new Date();
@@ -113,6 +114,7 @@ export function FilaAcoes() {
                   {canWrite && <div className="w-full max-w-xs space-y-1"><Label className="text-xs">Atribuir a membro</Label><Select value={a.responsavel_user_id ?? 'none'} onValueChange={v => alterarResponsavel(a,v)}><SelectTrigger className="h-9"><SelectValue placeholder="Seleccionar membro" /></SelectTrigger><SelectContent><SelectItem value="none">Sem atribuição</SelectItem>{membros.map(m => <SelectItem key={m.user_id} value={m.user_id}>Membro {m.user_id.slice(0,8)} · {m.role}</SelectItem>)}</SelectContent></Select></div>}
                 </div>
                 <AcaoComentarios acaoId={a.id} obraId={a.obra_id} workspaceId={a.workspace_id} />
+                <AcaoAnexos acaoId={a.id} obraId={a.obra_id} workspaceId={a.workspace_id} canWrite={canWrite} />
                 {a.ocorrencia_id && <div className="flex flex-wrap items-center gap-3 border-t pt-3 text-xs">
                   <Link className="inline-flex items-center gap-1 text-primary hover:underline" to={`/obras/${a.obra_id}/ocorrencia/${a.ocorrencia_id}`}>Abrir ocorrência <ExternalLink className="h-3 w-3" /></Link>
                   {!a.analise || (!a.analise.interpretacao && !a.analise.conclusao && !a.analise.recomendacao) ? <Badge variant="destructive">Sem análise</Badge> : <>{!a.analise.conclusao && <Badge variant="outline">Sem conclusão</Badge>}{!a.analise.recomendacao && <Badge variant="outline">Sem recomendação</Badge>}</>}
