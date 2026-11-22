@@ -64,10 +64,10 @@ export function RegistoClinicoForm({ animalId, open, onOpenChange }: Props) {
       toast({ title: 'Registo adicionado' });
       reset();
       onOpenChange(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: 'Erro',
-        description: err.message ?? 'Não foi possível guardar',
+        description: err instanceof Error ? err.message : 'Não foi possível guardar',
         variant: 'destructive',
       });
     }

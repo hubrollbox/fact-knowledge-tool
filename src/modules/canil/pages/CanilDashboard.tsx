@@ -8,6 +8,7 @@ import { useAnimais, useAnimaisArquivados } from '../hooks/useAnimais';
 import { useReservasHoje } from '../hooks/useReservas';
 import { useAlertasVacinas } from '../hooks/useClinico';
 import { AnimalCard } from '../components/AnimalCard';
+import type { ReservaComAnimal, RegistoClinicoComAnimal } from '../types/canil';
 
 export function CanilDashboard() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export function CanilDashboard() {
             {!reservas?.length ? (
               <p className="text-sm text-muted-foreground">Sem movimentos hoje</p>
             ) : (
-              reservas.map((r: any) => {
+              reservas.map((r: ReservaComAnimal) => {
                 const isEntrada = r.data_entrada === hoje;
                 return (
                   <div
@@ -76,7 +77,7 @@ export function CanilDashboard() {
             {!alertas?.length ? (
               <p className="text-sm text-muted-foreground">Sem alertas</p>
             ) : (
-              alertas.map((a: any) => (
+              alertas.map((a: RegistoClinicoComAnimal) => (
                 <div
                   key={a.id}
                   onClick={() => a.animal && navigate(`/canil/animal/${a.animal.id}`)}

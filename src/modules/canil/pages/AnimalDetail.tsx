@@ -20,6 +20,7 @@ import { useRegistosClinicos } from '../hooks/useClinico';
 import { useNinhadasDoAnimal } from '../hooks/useNinhadas';
 import { RegistoClinicoForm } from '../components/RegistoClinicoForm';
 import { toast } from '@/hooks/use-toast';
+import type { NinhadaComProgenitores } from '../types/canil';
 
 export function AnimalDetail() {
   const { id } = useParams<{ id: string }>();
@@ -199,7 +200,7 @@ export function AnimalDetail() {
           {!ninhadas?.length ? (
             <p className="text-sm text-muted-foreground">Não participou em ninhadas</p>
           ) : (
-            ninhadas.map((n: any) => (
+            ninhadas.map((n: NinhadaComProgenitores) => (
               <Card key={n.id}>
                 <CardContent className="p-4 text-sm">
                   <div className="flex items-center justify-between">
