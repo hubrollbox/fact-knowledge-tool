@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, ClipboardList, Loader2, Plus, Save } from 'lucide-react';
+import { CheckCircle2, ClipboardList, Loader2, Save } from 'lucide-react';
 import type { FormDefinition, FormField } from '../hooks/useFormTemplates';
 
 const db = supabase as any;
