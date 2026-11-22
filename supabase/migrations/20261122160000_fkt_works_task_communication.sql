@@ -204,7 +204,13 @@ BEGIN
       NEW.workspace_id, assignee, 'obras', 'acao_comentario',
       'Novo comentário numa acção', 'Foi adicionado um comentário a uma acção atribuída.',
       CURRENT_DATE, NEW.acao_id, 'obras_acoes'
-    );
+    )
+    ON CONFLICT (workspace_id, user_id, referencia_id, referencia_tipo, tipo, data_alerta)
+      WHERE modulo = 'obras'
+        AND user_id IS NOT NULL
+        AND referencia_id IS NOT NULL
+        AND referencia_tipo = 'obras_acoes'
+    DO NOTHING;
   END IF;
   RETURN NEW;
 END;
