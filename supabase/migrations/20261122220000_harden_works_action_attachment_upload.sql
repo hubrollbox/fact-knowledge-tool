@@ -105,6 +105,10 @@ BEGIN
     RAISE EXCEPTION 'Sem permissões para anexar ficheiros a esta acção';
   END IF;
 
+  -- Preserve the authenticated actor in append-only history triggers even
+  -- though this RPC runs with the server's service_role credentials.
+  PERFORM set_config('request.jwt.claim.sub', _actor_id::text, true);
+
   IF _storage_path IS NULL OR length(_storage_path) > 1024 THEN
     RAISE EXCEPTION 'Caminho do ficheiro inválido';
   END IF;
