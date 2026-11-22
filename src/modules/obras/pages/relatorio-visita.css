@@ -481,3 +481,16 @@
   font-size: 9px;
   overflow-wrap: anywhere;
 }
+
+
+/* Dynamic form responses in issued visit reports */
+.report-forms { display: grid; gap: 1rem; }
+.report-forms > div { break-inside: avoid; border: 1px solid #d1d5db; border-radius: 0.4rem; padding: 0.9rem; }
+.report-forms h3 { margin: 0 0 0.75rem; font-size: 0.95rem; }
+.report-form-section { margin-top: 0.75rem; break-inside: avoid; }
+.report-form-section h4 { margin: 0 0 0.4rem; font-size: 0.85rem; }
+.report-form-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.4rem; margin: 0; }
+.report-form-fields > div { display: grid; grid-template-columns: minmax(9rem, 32%) 1fr; gap: 0.75rem; padding: 0.35rem 0; border-bottom: 1px solid #e5e7eb; }
+.report-form-fields dt { font-weight: 600; }
+.report-form-fields dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media print { .report-forms > div, .report-form-section { break-inside: avoid; } }
