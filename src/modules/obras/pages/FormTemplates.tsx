@@ -28,7 +28,7 @@ export function FormTemplatesPage() {
   const navigate = useNavigate();
   const { canWrite, isLoading: roleLoading } = useWorkspaceRole();
   const { data: templates, isLoading, error } = useFormTemplates();
-  const { data: selected } = useFormTemplate(id);
+  const { data: selected, isLoading: selectedLoading } = useFormTemplate(id);
   const save = useSaveFormTemplate();
   const publish = usePublishFormTemplate();
   const archive = useArchiveFormTemplate();
@@ -80,7 +80,7 @@ export function FormTemplatesPage() {
     navigate('/obras/formularios', { replace: true });
   };
 
-  if (roleLoading || (id && !selected && isLoading)) return <p className="text-sm text-muted-foreground">A carregar...</p>;
+  if (roleLoading || (id && !selected && selectedLoading)) return <p className="text-sm text-muted-foreground">A carregar...</p>;
   if (id && !selected) return <p className="text-sm text-destructive">Modelo não encontrado ou sem permissões de consulta.</p>;
 
   if (!id) return (
