@@ -137,8 +137,7 @@ BEGIN
   NEW.updated_by := auth.uid();
   IF NEW.workspace_id IS DISTINCT FROM OLD.workspace_id
      OR NEW.created_by IS DISTINCT FROM OLD.created_by
-     OR NEW.created_at IS DISTINCT FROM OLD.created_at
-     OR NEW.current_version_id IS DISTINCT FROM OLD.current_version_id THEN
+     OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
     RAISE EXCEPTION 'Não é permitido alterar a identidade, o workspace ou a versão publicada do modelo directamente';
   END IF;
   IF NEW.estado = 'activo' AND NEW.current_version_id IS NULL THEN
@@ -172,6 +171,9 @@ LANGUAGE plpgsql
 SET search_path = ''
 AS $$
 BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'As respostas de formulários não podem ser apagadas';
+  END IF;
   IF OLD.estado = 'concluido' THEN
     RAISE EXCEPTION 'Uma resposta concluída é imutável';
   END IF;
@@ -242,15 +244,16 @@ BEGIN
   FOR v_section IN SELECT value FROM jsonb_array_elements(p_definicao->'sections') LOOP
     v_section_id := nullif(btrim(v_section->>'id'), '');
     IF v_section_id IS NULL OR nullif(btrim(v_section->>'title'), '') IS NULL
-       OR jsonb_typeof(v_section->'fields') <> 'array' THEN
+       OR jsonb_typeof(v_section->'fields') IS DISTINCT FROM 'array' THEN
       RAISE EXCEPTION 'Cada secção necessita de identificador, título e lista de campos';
     END IF;
     FOR v_field IN SELECT value FROM jsonb_array_elements(v_section->'fields') LOOP
       v_field_id := nullif(btrim(v_field->>'id'), '');
       v_type := v_field->>'type';
       IF v_field_id IS NULL OR nullif(btrim(v_field->>'label'), '') IS NULL
+         OR v_type IS NULL
          OR v_type NOT IN ('text', 'number', 'date', 'choice', 'boolean', 'attachment', 'photo')
-         OR jsonb_typeof(v_field->'required') <> 'boolean' THEN
+         OR jsonb_typeof(v_field->'required') IS DISTINCT FROM 'boolean' THEN
         RAISE EXCEPTION 'Cada campo necessita de identificador, rótulo, tipo suportado e indicação required';
       END IF;
       IF v_field_id = ANY(v_ids) THEN
@@ -258,7 +261,7 @@ BEGIN
       END IF;
       v_ids := array_append(v_ids, v_field_id);
       IF v_type = 'choice' AND (
-        jsonb_typeof(v_field->'options') <> 'array'
+        jsonb_typeof(v_field->'options') IS DISTINCT FROM 'array'
         OR jsonb_array_length(v_field->'options') = 0
       ) THEN
         RAISE EXCEPTION 'Os campos de escolha necessitam de pelo menos uma opção';
