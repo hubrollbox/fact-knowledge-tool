@@ -16,7 +16,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 
   SELECT public.workspace_can_read(_ws, auth.uid());
 $$;
@@ -27,7 +27,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 
   SELECT public.workspace_can_write(_ws, auth.uid());
 $$;
