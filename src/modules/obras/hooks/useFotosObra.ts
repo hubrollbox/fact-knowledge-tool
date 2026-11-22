@@ -12,7 +12,7 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
   const ws = useObrasWorkspace();
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['obras_fotos', key],
+    queryKey: ['obras_fotos', user?.id, ws, key],
     staleTime: 4 * 60 * 1000,
     refetchInterval: 4 * 60 * 1000,
     enabled: !!key,
@@ -53,7 +53,11 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
             return blob;
           })),
         ]);
-        return data.map((photo, i) => ({ ...photo, url: signed?.[i]?.signedUrl ?? null, cachedBlob: downloads[i] }));
+        return data.map((photo, i) => ({
+          ...photo,
+          url: signed?.[i]?.signedUrl ?? null,
+          cachedBlob: downloads[i] ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
+        }));
       } catch (error) {
         if (!isFalhaDeLigacao(error)) throw error;
         return cachedForFilter
