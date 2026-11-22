@@ -106,7 +106,10 @@ AS $$
 BEGIN
   IF NEW.responsavel_user_id IS NOT NULL
      AND NOT (
-       private.workspace_is_owner(NEW.responsavel_user_id, NEW.workspace_id)
+       EXISTS (
+         SELECT 1 FROM public.workspaces w
+         WHERE w.id = NEW.workspace_id AND w.user_id = NEW.responsavel_user_id
+       )
        OR EXISTS (
          SELECT 1
          FROM public.workspace_members wm
