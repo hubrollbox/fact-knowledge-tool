@@ -271,11 +271,22 @@ BEGIN
         RAISE EXCEPTION 'Identificador de campo repetido: %', v_field_id;
       END IF;
       v_ids := array_append(v_ids, v_field_id);
-      IF v_type = 'choice' AND (
-        jsonb_typeof(v_field->'options') IS DISTINCT FROM 'array'
-        OR jsonb_array_length(v_field->'options') = 0
-      ) THEN
-        RAISE EXCEPTION 'Os campos de escolha necessitam de pelo menos uma opção';
+      IF v_type = 'choice' THEN
+        IF jsonb_typeof(v_field->'options') IS DISTINCT FROM 'array'
+           OR jsonb_array_length(v_field->'options') = 0 THEN
+          RAISE EXCEPTION 'Os campos de escolha necessitam de pelo menos uma opção';
+        END IF;
+        IF EXISTS (
+          SELECT 1
+          FROM jsonb_array_elements(v_field->'options') option_value
+          WHERE jsonb_typeof(option_value) IS DISTINCT FROM 'string'
+             OR length(btrim(option_value #>> '{}')) = 0
+        ) OR (
+          SELECT count(*) <> count(DISTINCT option_value #>> '{}')
+          FROM jsonb_array_elements(v_field->'options') option_value
+        ) THEN
+          RAISE EXCEPTION 'As opções do campo % têm de ser textos não vazios e sem duplicados', v_field->>'label';
+        END IF;
       END IF;
     END LOOP;
   END LOOP;
