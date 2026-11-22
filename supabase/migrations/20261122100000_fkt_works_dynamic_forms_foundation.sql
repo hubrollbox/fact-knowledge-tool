@@ -452,8 +452,96 @@ BEGIN
         RAISE EXCEPTION 'O campo % tem de ser texto', v_field->>'label';
       ELSIF v_type = 'number' AND jsonb_typeof(v_value) <> 'number' THEN
         RAISE EXCEPTION 'O campo % tem de ser numérico', v_field->>'label';
-      ELSIF v_type = 'date' AND jsonb_typeof(v_value) <> 'string' THEN
-        RAISE EXCEPTION 'O campo % tem de conter uma data', v_field->>'label';
+      ELSIF v_type = 'date' THEN
+        IF jsonb_typeof(v_value) <> 'string'
+           OR (v_value #>> '{}') !~ '^\\d{4}-\\d{2}-\\d{2}
+        RAISE EXCEPTION 'O campo % tem de ser uma confirmação', v_field->>'label';
+      ELSIF v_type = 'choice' THEN
+        IF jsonb_typeof(v_value) <> 'string' OR NOT EXISTS (
+          SELECT 1 FROM jsonb_array_elements(v_field->'options') opt
+          WHERE opt.value = v_value
+        ) THEN
+          RAISE EXCEPTION 'A escolha do campo % não é válida', v_field->>'label';
+        END IF;
+      ELSIF v_type IN ('attachment', 'photo') THEN
+        IF jsonb_typeof(v_value) <> 'array' THEN
+          RAISE EXCEPTION 'Os anexos do campo % têm de ser uma lista de fotografias', v_field->>'label';
+        END IF;
+        FOR v_option IN SELECT value FROM jsonb_array_elements(v_value) LOOP
+          BEGIN
+            v_photo_id := (v_option #>> '{}')::uuid;
+          EXCEPTION WHEN invalid_text_representation THEN
+            RAISE EXCEPTION 'Identificador de fotografia inválido no campo %', v_field->>'label';
+          END;
+          IF v_type = 'photo' AND NOT EXISTS (
+            SELECT 1 FROM public.obras_fotos f
+            WHERE f.id = v_photo_id
+              AND f.workspace_id = v_response.workspace_id
+              AND (f.visita_id = v_response.visita_id OR
+                   (v_response.ocorrencia_id IS NOT NULL AND f.ocorrencia_id = v_response.ocorrencia_id))
+          ) THEN
+            RAISE EXCEPTION 'Uma fotografia do campo % não pertence a esta visita ou ocorrência', v_field->>'label';
+          ELSIF v_type = 'attachment' AND NOT EXISTS (
+            SELECT 1
+            FROM public.obras_documentos d
+            JOIN public.obras_documentos_ligacoes l
+              ON l.documento_id = d.id
+             AND l.workspace_id = d.workspace_id
+             AND l.obra_id = d.obra_id
+            WHERE d.id = v_photo_id
+              AND d.workspace_id = v_response.workspace_id
+              AND d.obra_id = v_response.obra_id
+              AND (l.visita_id = v_response.visita_id OR
+                   (v_response.ocorrencia_id IS NOT NULL AND l.ocorrencia_id = v_response.ocorrencia_id))
+          ) THEN
+            RAISE EXCEPTION 'Um anexo do campo % não está associado a esta visita ou ocorrência', v_field->>'label';
+          END IF;
+        END LOOP;
+      END IF;
+    END LOOP;
+  END LOOP;
+
+  UPDATE public.obras_formularios_respostas
+  SET estado = 'concluido',
+      completed_by = auth.uid(),
+      completed_at = clock_timestamp(),
+      updated_by = auth.uid(),
+      updated_at = clock_timestamp()
+  WHERE id = v_response.id
+  RETURNING * INTO v_response;
+  RETURN v_response;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.concluir_obras_formulario_resposta(p_resposta_id uuid)
+RETURNS public.obras_formularios_respostas
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $$ SELECT private_works_forms.obras_concluir_formulario_resposta_privileged(p_resposta_id); $$;
+
+REVOKE ALL ON FUNCTION public.publicar_obras_formulario(uuid, jsonb) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.criar_obras_formulario_resposta(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.concluir_obras_formulario_resposta(uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION private_works_forms.obras_publicar_formulario_privileged(uuid, jsonb) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION private_works_forms.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_publicar_formulario_privileged(uuid, jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.publicar_obras_formulario(uuid, jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.criar_obras_formulario_resposta(uuid, uuid, uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.concluir_obras_formulario_resposta(uuid) TO authenticated;
+
+COMMIT;
+ THEN
+          RAISE EXCEPTION 'O campo % tem de conter uma data válida no formato AAAA-MM-DD', v_field->>'label';
+        END IF;
+        BEGIN
+          PERFORM (v_value #>> '{}')::date;
+        EXCEPTION WHEN others THEN
+          RAISE EXCEPTION 'O campo % contém uma data inexistente', v_field->>'label';
+        END;
       ELSIF v_type = 'boolean' AND jsonb_typeof(v_value) <> 'boolean' THEN
         RAISE EXCEPTION 'O campo % tem de ser uma confirmação', v_field->>'label';
       ELSIF v_type = 'choice' THEN
