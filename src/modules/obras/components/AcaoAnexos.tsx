@@ -2,24 +2,12 @@ import { useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, Paperclip, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
-const BUCKET = 'obras-documentos';
+const BUCKET = 'obras-acoes-anexos';
 const MAX_SIZE = 25 * 1024 * 1024;
-const ALLOWED_TYPES = new Set([
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain',
-  'image/jpeg',
-  'image/png',
-]);
+const ALLOWED_EXTENSIONS = new Set(['pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png']);
 
 type Props = {
   acaoId: string;
@@ -47,9 +35,8 @@ const formatarTamanho = (bytes: number) => {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };
 
-export function AcaoAnexos({ acaoId, obraId, workspaceId, canWrite }: Props) {
+export function AcaoAnexos({ acaoId, workspaceId, canWrite }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
   const queryClient = useQueryClient();
   const queryKey = ['obras_acao_anexos', acaoId];
 
@@ -81,49 +68,25 @@ export function AcaoAnexos({ acaoId, obraId, workspaceId, canWrite }: Props) {
 
   const upload = useMutation({
     mutationFn: async (file: File) => {
-      if (!user?.id) throw new Error('É necessário iniciar sessão.');
       if (!canWrite) throw new Error('Não tem permissões para anexar ficheiros.');
-      if (!file || !ALLOWED_TYPES.has(file.type)) {
-        throw new Error('Formato não permitido. Utilize PDF, Office, TXT, JPG ou PNG.');
+      const extension = file?.name.toLowerCase().split('.').pop() ?? '';
+      if (!file || !ALLOWED_EXTENSIONS.has(extension)) {
+        throw new Error('Formato não permitido. Utilize PDF, DOCX, XLSX, PPTX, TXT, JPG ou PNG.');
       }
       if (file.size < 1 || file.size > MAX_SIZE) {
         throw new Error('O ficheiro tem de ter conteúdo e não pode exceder 25 MB.');
       }
       if (file.name.length > 255) throw new Error('O nome do ficheiro é demasiado longo.');
 
-      const documentoId = crypto.randomUUID();
-      const versaoId = crypto.randomUUID();
-      const nomeSeguro = file.name
-        .normalize('NFKC')
-        .replace(/[^a-zA-Z0-9._-]/g, '_')
-        .slice(0, 120) || 'ficheiro';
-      const storagePath = `${workspaceId}/${obraId}/${documentoId}/${versaoId}/${nomeSeguro}`;
-
-      const uploaded = await supabase.storage.from(BUCKET).upload(storagePath, file, {
-        contentType: file.type,
-        upsert: false,
+      const form = new FormData();
+      form.append('acao_id', acaoId);
+      form.append('file', file, file.name);
+      const { data, error } = await supabase.functions.invoke('upload-works-action-attachment', {
+        body: form,
       });
-      if (uploaded.error) throw uploaded.error;
-
-      const created = await (supabase as any).rpc('create_obras_acao_anexo', {
-        _acao_id: acaoId,
-        _documento_id: documentoId,
-        _versao_id: versaoId,
-        _storage_path: storagePath,
-        _nome_ficheiro: file.name,
-        _mime_type: file.type,
-        _tamanho_bytes: file.size,
-      });
-
-      if (created.error) {
-        const cleanup = await supabase.storage.from(BUCKET).remove([storagePath]);
-        if (cleanup.error) {
-          throw new Error(`Não foi possível registar o anexo: ${created.error.message}. A limpeza do ficheiro também falhou: ${cleanup.error.message}`);
-        }
-        throw created.error;
-      }
-
-      return created.data as string;
+      if (error) throw error;
+      if (!data?.id) throw new Error('O servidor não confirmou a associação do anexo.');
+      return data.id as string;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey });
@@ -146,7 +109,7 @@ export function AcaoAnexos({ acaoId, obraId, workspaceId, canWrite }: Props) {
               ref={inputRef}
               type="file"
               className="hidden"
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+              accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png"
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0];
                 event.currentTarget.value = '';
