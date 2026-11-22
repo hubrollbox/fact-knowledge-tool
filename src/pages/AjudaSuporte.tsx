@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PublicHeader } from '@/components/layout/PublicHeader';
+import { Footer } from '@/components/layout/Footer';
 
 type ModuleKey = 'core' | 'works' | 'lex' | 'vet' | 'dev';
 type TicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved';
@@ -353,5 +355,11 @@ export default function AjudaSuporte() {
     </div>
   );
 
-  return user ? <AppLayout>{page}</AppLayout> : page;
+  return user ? <AppLayout>{page}</AppLayout> : (
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <PublicHeader />
+      <main className="flex-1">{page}</main>
+      <Footer />
+    </div>
+  );
 }

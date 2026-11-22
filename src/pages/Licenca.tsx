@@ -1,8 +1,10 @@
 import { Footer } from '@/components/layout/Footer';
+import { PublicHeader } from '@/components/layout/PublicHeader';
 
 export default function Licenca() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PublicHeader />
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 space-y-6">
         <h1 className="text-2xl font-bold text-foreground">Licença de Utilização</h1>
         <p className="text-sm text-muted-foreground">Última atualização: 19 de novembro de 2026</p>

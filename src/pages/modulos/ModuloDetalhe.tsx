@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { getModulo } from '@/data/modulos';
 import { Footer } from '@/components/layout/Footer';
+import { PublicHeader } from '@/components/layout/PublicHeader';
 import { ModuloIcon } from '@/components/modulos/ModuloIcon';
 import { ModuloCTA } from '@/components/modulos/ModuloCTA';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -36,16 +37,7 @@ export default function ModuloDetalhe() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-lg font-bold tracking-tight">FKT</Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/modulos" className="text-muted-foreground hover:text-foreground">Módulos</Link>
-            <Link to="/login" className="text-muted-foreground hover:text-foreground">Entrar</Link>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-6 py-6 text-sm text-muted-foreground flex items-center gap-2">

@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { modulos } from '@/data/modulos';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Footer } from '@/components/layout/Footer';
+import { PublicHeader } from '@/components/layout/PublicHeader';
 import { ModuloIcon } from '@/components/modulos/ModuloIcon';
 import { useEffect } from 'react';
 
@@ -15,16 +16,7 @@ export default function ModulosHub() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-lg font-bold tracking-tight">FKT</Link>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/modulos" className="text-foreground">Módulos</Link>
-            <Link to="/ajuda-suporte" className="text-muted-foreground hover:text-foreground">Ajuda e Suporte</Link>
-            <Link to="/login" className="text-muted-foreground hover:text-foreground">Entrar</Link>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-16">
         <div className="text-center space-y-3 mb-12">
