@@ -64,9 +64,16 @@ BEGIN
       AND tgname='obras_acoes_comentario_notificacao' AND NOT tgisinternal
   ) THEN RAISE EXCEPTION 'Falta notificação interna de comentários'; END IF;
 
-  IF has_table_privilege('authenticated','public.obras_acoes_comentarios','UPDATE')
+  IF NOT has_table_privilege('authenticated','public.obras_acoes_comentarios','SELECT')
+    OR NOT has_table_privilege('authenticated','public.obras_acoes_comentarios','INSERT')
+    OR has_table_privilege('authenticated','public.obras_acoes_comentarios','UPDATE')
     OR has_table_privilege('authenticated','public.obras_acoes_comentarios','DELETE') THEN
-    RAISE EXCEPTION 'Comentários não são imutáveis'; END IF;
+    RAISE EXCEPTION 'Privilégios de comentários não respeitam SELECT/INSERT apenas'; END IF;
+
+  IF position(`cancelada` in lower(pg_get_functiondef(
+    'public.sincronizar_alertas_obras_acoes()'::regprocedure
+  ))) = 0 THEN
+    RAISE EXCEPTION 'A sincronização de alertas não exclui acções canceladas'; END IF;
 END;
 $$ $test$, 'FKT Works actions enforce workspace isolation, traceability and communication');
 
