@@ -89,17 +89,10 @@ export function usePublishFormTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: template, error: readError } = await db.from('obras_formularios')
-        .select('draft_definicao').eq('id', id).single();
-      if (readError) throw readError;
-      if (!template?.draft_definicao) throw new Error('Guarde primeiro a definição do formulário.');
       const { error } = await db.rpc('publicar_obras_formulario', {
-        p_formulario_id: id, p_definicao: template.draft_definicao,
+        p_formulario_id: id,
       });
       if (error) throw error;
-      const { error: clearError } = await db.from('obras_formularios')
-        .update({ draft_definicao: null }).eq('id', id);
-      if (clearError) throw clearError;
     },
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['obras-formularios'] });
