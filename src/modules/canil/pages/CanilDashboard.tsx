@@ -89,9 +89,11 @@ export function CanilDashboard() {
                       {a.produto && ` · ${a.produto}`}
                     </div>
                   </div>
-                  <Badge variant="destructive">
-                    {format(parseISO(a.data_proxima), 'd MMM', { locale: pt })}
-                  </Badge>
+                  {a.data_proxima && (
+                    <Badge variant="destructive">
+                      {format(parseISO(a.data_proxima), 'd MMM', { locale: pt })}
+                    </Badge>
+                  )}
                 </div>
               ))
             )}
