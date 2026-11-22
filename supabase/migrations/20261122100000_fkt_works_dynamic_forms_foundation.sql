@@ -202,7 +202,7 @@ BEGIN
   NEW.updated_by := auth.uid();
   RETURN NEW;
 END;
-$;
+$$;
 
 CREATE TRIGGER obras_formularios_respostas_protect
   BEFORE UPDATE OR DELETE ON public.obras_formularios_respostas
@@ -299,7 +299,7 @@ BEGIN
 
   RETURN v_version;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.publicar_obras_formulario(p_formulario_id uuid, p_definicao jsonb)
 RETURNS public.obras_formularios_versoes
@@ -373,7 +373,7 @@ BEGIN
   RETURNING * INTO v_result;
   RETURN v_result;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.criar_obras_formulario_resposta(
   p_formulario_id uuid, p_obra_id uuid, p_visita_id uuid, p_ocorrencia_id uuid DEFAULT NULL
@@ -482,7 +482,7 @@ BEGIN
   RETURNING * INTO v_response;
   RETURN v_response;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.concluir_obras_formulario_resposta(p_resposta_id uuid)
 RETURNS public.obras_formularios_respostas
