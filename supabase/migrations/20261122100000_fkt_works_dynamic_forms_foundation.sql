@@ -3,6 +3,10 @@
 
 BEGIN;
 
+CREATE SCHEMA IF NOT EXISTS private_works_forms;
+REVOKE ALL ON SCHEMA private_works_forms FROM PUBLIC, anon, authenticated;
+GRANT USAGE ON SCHEMA private_works_forms TO authenticated;
+
 CREATE TABLE public.obras_formularios (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
@@ -205,7 +209,7 @@ CREATE TRIGGER obras_formularios_respostas_protect
   FOR EACH ROW EXECUTE FUNCTION private.obras_formularios_resposta_protect();
 
 -- Publishing creates a new immutable version and atomically makes it current.
-CREATE OR REPLACE FUNCTION private.obras_publicar_formulario_privileged(
+CREATE OR REPLACE FUNCTION private_works_forms.obras_publicar_formulario_privileged(
   p_formulario_id uuid,
   p_definicao jsonb
 )
@@ -306,7 +310,7 @@ AS $ SELECT private.obras_publicar_formulario_privileged(p_formulario_id, p_defi
 
 -- A response is created from the current published version, never from a
 -- client-supplied schema. Composite FKs enforce same-workspace relationships.
-CREATE OR REPLACE FUNCTION private.obras_criar_formulario_resposta_privileged(
+CREATE OR REPLACE FUNCTION private_works_forms.obras_criar_formulario_resposta_privileged(
   p_formulario_id uuid,
   p_obra_id uuid,
   p_visita_id uuid,
@@ -381,7 +385,7 @@ SET search_path = ''
 AS $ SELECT private.obras_criar_formulario_resposta_privileged(p_formulario_id, p_obra_id, p_visita_id, p_ocorrencia_id); $;
 
 -- Completion validates mandatory values and attachment ownership on the server.
-CREATE OR REPLACE FUNCTION private.obras_concluir_formulario_resposta_privileged(p_resposta_id uuid)
+CREATE OR REPLACE FUNCTION private_works_forms.obras_concluir_formulario_resposta_privileged(p_resposta_id uuid)
 RETURNS public.obras_formularios_respostas
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -493,7 +497,6 @@ REVOKE ALL ON FUNCTION public.concluir_obras_formulario_resposta(uuid) FROM PUBL
 REVOKE ALL ON FUNCTION private.obras_publicar_formulario_privileged(uuid, jsonb) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION private.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION private.obras_concluir_formulario_resposta_privileged(uuid) FROM PUBLIC, anon;
-GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT EXECUTE ON FUNCTION private.obras_publicar_formulario_privileged(uuid, jsonb) TO authenticated;
 GRANT EXECUTE ON FUNCTION private.obras_criar_formulario_resposta_privileged(uuid, uuid, uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION private.obras_concluir_formulario_resposta_privileged(uuid) TO authenticated;
