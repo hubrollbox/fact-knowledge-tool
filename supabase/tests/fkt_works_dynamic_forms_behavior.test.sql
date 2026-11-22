@@ -31,7 +31,7 @@ VALUES
   ('d3800000-0000-4000-8000-000000000001', 'b3800000-0000-4000-8000-000000000001', 'c3800000-0000-4000-8000-000000000001', current_date),
   ('d3800000-0000-4000-8000-000000000002', 'b3800000-0000-4000-8000-000000000002', 'c3800000-0000-4000-8000-000000000002', current_date);
 
-SELECT plan(5);
+SELECT plan(4);
 
 -- Editor creates and publishes a model, then creates and completes a response.
 SET LOCAL ROLE authenticated;
