@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ESTADOS_ACAO } from '../types/obras';
 import { useAtribuirAcao, useFilaAcoes, useMembrosFilaAcoes, useOcorrenciasComLacunas, type AcaoFila } from '../hooks/useFilaAcoes';
 import { useActualizarEstado } from '../hooks/useObras';
+import { AcaoComentarios } from '../components/AcaoComentarios';
 
 const hoje = () => {
   const d = new Date();
@@ -47,10 +48,10 @@ export function FilaAcoes() {
     return !term || [a.descricao, a.responsavel, a.obras?.nome, a.obras_ocorrencias?.titulo].some(v => v?.toLocaleLowerCase('pt-PT').includes(term));
   }), [acoes, estado, responsavel, obra, prazo, pesquisa, user?.id]);
 
-  const abertas = acoes.filter(a => a.estado !== 'concluida');
+  const abertas = acoes.filter(a => !['concluida','cancelada'].includes(a.estado));
   const atrasadas = abertas.filter(a => a.prazo && a.prazo < hoje());
   const proximas = abertas.filter(a => a.prazo && a.prazo >= hoje() && a.prazo <= new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10));
-  const dataAtraso = (a: AcaoFila) => !!a.prazo && a.prazo < hoje() && a.estado !== 'concluida';
+  const dataAtraso = (a: AcaoFila) => !!a.prazo && a.prazo < hoje() && !['concluida','cancelada'].includes(a.estado);
 
   const alterarResponsavel = (a: AcaoFila, id: string) => {
     const membro = membros.find(m => m.user_id === id);
@@ -105,12 +106,13 @@ export function FilaAcoes() {
               <CardContent className="space-y-3 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0"><div className="font-medium">{a.descricao}</div><div className="mt-1 text-xs text-muted-foreground">{a.obras?.nome ?? 'Obra'}{a.obras_ocorrencias ? ` · ${a.obras_ocorrencias.titulo}` : ''}</div></div>
-                  <div className="flex flex-wrap items-center gap-2"><Badge variant={dataAtraso(a) ? 'destructive' : a.estado === 'concluida' ? 'secondary' : 'outline'}>{dataAtraso(a) ? 'Atrasada' : ESTADOS_ACAO[a.estado as keyof typeof ESTADOS_ACAO] ?? a.estado}</Badge>{a.prazo && <Badge variant="outline"><CalendarClock className="mr-1 h-3 w-3" />{dataPt(a.prazo)}</Badge>}{canWrite && <Select value={a.estado} onValueChange={estado => actualizarEstado.mutate({ table: 'obras_acoes', id: a.id, estado })}><SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ESTADOS_ACAO).map(([k,v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>}</div>
+                  <div className="flex flex-wrap items-center gap-2"><Badge variant={dataAtraso(a) ? 'destructive' : a.estado === 'concluida' ? 'secondary' : 'outline'}>{dataAtraso(a) ? 'Atrasada' : ESTADOS_ACAO[a.estado as keyof typeof ESTADOS_ACAO] ?? a.estado}</Badge><Badge variant="outline">Prioridade: {a.prioridade || 'normal'}</Badge>{a.prazo && <Badge variant="outline"><CalendarClock className="mr-1 h-3 w-3" />{dataPt(a.prazo)}</Badge>}{canWrite && <Select value={a.estado} onValueChange={estado => actualizarEstado.mutate({ table: 'obras_acoes', id: a.id, estado })}><SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ESTADOS_ACAO).map(([k,v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>}</div>
                 </div>
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div className="text-xs text-muted-foreground">Responsável: {a.responsavel || 'Não atribuído'}</div>
                   {canWrite && <div className="w-full max-w-xs space-y-1"><Label className="text-xs">Atribuir a membro</Label><Select value={a.responsavel_user_id ?? 'none'} onValueChange={v => alterarResponsavel(a,v)}><SelectTrigger className="h-9"><SelectValue placeholder="Seleccionar membro" /></SelectTrigger><SelectContent><SelectItem value="none">Sem atribuição</SelectItem>{membros.map(m => <SelectItem key={m.user_id} value={m.user_id}>Membro {m.user_id.slice(0,8)} · {m.role}</SelectItem>)}</SelectContent></Select></div>}
                 </div>
+                <AcaoComentarios acaoId={a.id} obraId={a.obra_id} workspaceId={a.workspace_id} />
                 {a.ocorrencia_id && <div className="flex flex-wrap items-center gap-3 border-t pt-3 text-xs">
                   <Link className="inline-flex items-center gap-1 text-primary hover:underline" to={`/obras/${a.obra_id}/ocorrencia/${a.ocorrencia_id}`}>Abrir ocorrência <ExternalLink className="h-3 w-3" /></Link>
                   {!a.analise || (!a.analise.interpretacao && !a.analise.conclusao && !a.analise.recomendacao) ? <Badge variant="destructive">Sem análise</Badge> : <>{!a.analise.conclusao && <Badge variant="outline">Sem conclusão</Badge>}{!a.analise.recomendacao && <Badge variant="outline">Sem recomendação</Badge>}</>}
