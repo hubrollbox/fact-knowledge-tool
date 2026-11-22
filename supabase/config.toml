@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.oauth-callback]
 verify_jwt = false
+
+[functions.upload-works-action-attachment]
+verify_jwt = true
