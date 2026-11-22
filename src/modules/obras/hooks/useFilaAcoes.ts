@@ -14,6 +14,8 @@ export type AcaoFila = {
   responsavel_user_id: string | null;
   prazo: string | null;
   estado: string;
+  prioridade: string;
+  visita_id: string | null;
   created_at: string;
   obras: { nome: string } | null;
   obras_ocorrencias: { id: string; titulo: string; estado: string } | null;
@@ -70,7 +72,7 @@ export function useMembrosFilaAcoes() {
       if (workspace?.user_id && !members.some(m => m.user_id === workspace.user_id)) {
         members.unshift({ user_id: workspace.user_id, role: 'owner' });
       }
-      return members;
+      return members.filter(m => ['owner','admin','editor'].includes(m.role));
     },
   });
 }

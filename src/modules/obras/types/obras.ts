@@ -16,5 +16,5 @@ export type ReferenciaOcorrenciaInsert = T['obras_ocorrencia_referencias']['Inse
 export const ESTADOS_OBRA = { ativa:'Ativa', suspensa:'Suspensa', concluida:'Concluída' } as const;
 export const GRAVIDADES = { baixa:'Baixa', media:'Média', alta:'Alta', critica:'Crítica' } as const;
 export const ESTADOS_OCORRENCIA = { aberta:'Aberta', em_resolucao:'Em resolução', resolvida:'Resolvida' } as const;
-export const ESTADOS_ACAO = { pendente:'Pendente', em_curso:'Em curso', concluida:'Concluída' } as const;
+export const ESTADOS_ACAO = { pendente:'Pendente', em_curso:'Em curso', bloqueada:'Bloqueada', concluida:'Concluída', cancelada:'Cancelada' } as const;
 export const gravidadeVariant = (g:string) => g==='critica'||g==='alta'?'destructive':g==='media'?'secondary':'outline';
