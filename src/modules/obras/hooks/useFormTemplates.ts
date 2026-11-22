@@ -45,6 +45,11 @@ export function useFormTemplate(id?: string) {
     queryFn: async () => {
       const { data, error } = await db.from('obras_formularios').select('*').eq('id', id).single();
       if (error) throw error;
+      if (!data.draft_definicao && data.current_version_id) {
+        const { data: version, error: versionError } = await db.from('obras_formularios_versoes').select('definicao').eq('id', data.current_version_id).single();
+        if (versionError) throw versionError;
+        data.draft_definicao = version.definicao;
+      }
       return data as FormTemplate;
     },
   });
@@ -59,7 +64,7 @@ export function useSaveFormTemplate() {
       if (input.id) {
         const { error } = await db.from('obras_formularios').update({
           nome: input.nome, descricao: input.descricao || null, tipo: input.tipo,
-          draft_definicao: input.definicao, estado: 'rascunho',
+          draft_definicao: input.definicao,
         }).eq('id', input.id).eq('workspace_id', workspaceId).eq('estado', 'rascunho');
         if (error) throw error;
         return input.id;
