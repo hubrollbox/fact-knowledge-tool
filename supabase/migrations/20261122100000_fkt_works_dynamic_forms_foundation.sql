@@ -17,6 +17,7 @@ STABLE
 SECURITY DEFINER
 SET search_path = ''
 AS $
+
   SELECT public.workspace_can_read(_ws, auth.uid());
 $$;
 
@@ -27,6 +28,7 @@ STABLE
 SECURITY DEFINER
 SET search_path = ''
 AS $
+
   SELECT public.workspace_can_write(_ws, auth.uid());
 $$;
 
