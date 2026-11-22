@@ -7,6 +7,29 @@ CREATE SCHEMA IF NOT EXISTS private_works_forms;
 REVOKE ALL ON SCHEMA private_works_forms FROM PUBLIC, anon, authenticated;
 GRANT USAGE ON SCHEMA private_works_forms TO authenticated;
 
+-- Keep Works policies aligned with the canonical workspace membership model.
+-- The legacy private functions predate the workspace authorization rebuild and
+-- must not become a second, divergent source of permission semantics.
+CREATE OR REPLACE FUNCTION private.obras_can_read(_ws uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.workspace_can_read(_ws, auth.uid());
+$$;
+
+CREATE OR REPLACE FUNCTION private.obras_can_write(_ws uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.workspace_can_write(_ws, auth.uid());
+$$;
+
 CREATE TABLE public.obras_formularios (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
@@ -129,8 +152,8 @@ CREATE POLICY obras_formularios_respostas_select
   USING (private.obras_can_read(workspace_id));
 CREATE POLICY obras_formularios_respostas_update
   ON public.obras_formularios_respostas FOR UPDATE TO authenticated
-  USING (private.obras_can_write(workspace_id) AND estado = 'rascunho')
-  WITH CHECK (private.obras_can_write(workspace_id) AND estado = 'rascunho');
+  USING (private.obras_can_write(workspace_id))
+  WITH CHECK (private.obras_can_write(workspace_id));
 
 CREATE OR REPLACE FUNCTION private.obras_formularios_set_updated_at()
 RETURNS trigger
