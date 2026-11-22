@@ -293,6 +293,7 @@ export async function listarFotosCacheOffline(userId: string, workspaceId: strin
       const tx = db.transaction(PHOTOS, 'readwrite');
       const store = tx.objectStore(PHOTOS);
       const request = store.index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
+      let result: WorksOfflineCachedPhoto[] = [];
       request.onsuccess = () => {
         const now = Date.now();
         const rows = (request.result ?? []) as WorksOfflineCachedPhoto[];
@@ -302,10 +303,12 @@ export async function listarFotosCacheOffline(userId: string, workspaceId: strin
         });
         const expiredIds = new Set(expired.map((photo) => photo.id));
         for (const id of expiredIds) store.delete(id);
-        resolve(rows.filter((photo) => !expiredIds.has(photo.id)));
+        result = rows.filter((photo) => !expiredIds.has(photo.id));
       };
       request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar fotografias offline.'));
+      tx.oncomplete = () => resolve(result);
       tx.onerror = () => reject(tx.error ?? new Error('Não foi possível limpar a cache offline.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Limpeza da cache offline cancelada.'));
     });
   } finally { db.close(); }
 }
