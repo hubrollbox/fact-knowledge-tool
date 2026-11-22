@@ -20,6 +20,29 @@ const DB_VERSION = 4;
 const STORE = 'operations';
 const SNAPSHOTS = 'snapshots';
 const PHOTOS = 'photos';
+export const MAX_OFFLINE_PHOTO_BYTES = 20 * 1024 * 1024;
+export const MAX_OFFLINE_PHOTO_CACHE_BYTES = 100 * 1024 * 1024;
+export const MAX_OFFLINE_PHOTO_CACHE_COUNT = 50;
+export const OFFLINE_PHOTO_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function selecionarFotosParaEviccao(
+  photos: WorksOfflineCachedPhoto[],
+  maxBytes = MAX_OFFLINE_PHOTO_CACHE_BYTES,
+  maxCount = MAX_OFFLINE_PHOTO_CACHE_COUNT,
+): string[] {
+  const ordered = [...photos].sort((a, b) => a.cachedAt.localeCompare(b.cachedAt));
+  let totalBytes = ordered.reduce((sum, photo) => sum + photo.blob.size, 0);
+  let count = ordered.length;
+  const remove: string[] = [];
+  for (const photo of ordered) {
+    if (totalBytes <= maxBytes && count <= maxCount) break;
+    remove.push(photo.id);
+    totalBytes -= photo.blob.size;
+    count -= 1;
+  }
+  return remove;
+}
+
 
 function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === 'undefined') return Promise.reject(new Error('Este navegador não suporta armazenamento offline.'));
@@ -239,11 +262,23 @@ export interface WorksOfflineCachedPhoto {
 }
 
 export async function guardarFotoCacheOffline(input: Omit<WorksOfflineCachedPhoto, 'cachedAt'>): Promise<void> {
+  if (input.blob.size <= 0 || input.blob.size > MAX_OFFLINE_PHOTO_BYTES) {
+    throw new Error('A fotografia excede o limite de 20 MB da cache offline.');
+  }
   const db = await openDatabase();
   try {
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(PHOTOS, 'readwrite');
-      tx.objectStore(PHOTOS).put({ ...input, cachedAt: new Date().toISOString() });
+      const store = tx.objectStore(PHOTOS);
+      store.put({ ...input, cachedAt: new Date().toISOString() });
+      const request = store.index('scope').getAll(IDBKeyRange.only([input.userId, input.workspaceId]));
+      request.onsuccess = () => {
+        const rows = (request.result ?? []) as WorksOfflineCachedPhoto[];
+        for (const id of selecionarFotosParaEviccao(rows)) store.delete(id);
+      };
+      request.onerror = () => {
+        try { tx.abort(); } catch { /* transaction already finished */ }
+      };
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error ?? new Error('Não foi possível guardar a fotografia offline.'));
       tx.onabort = () => reject(tx.error ?? new Error('Cache da fotografia cancelada.'));
@@ -255,10 +290,25 @@ export async function listarFotosCacheOffline(userId: string, workspaceId: strin
   const db = await openDatabase();
   try {
     return await new Promise<WorksOfflineCachedPhoto[]>((resolve, reject) => {
-      const tx = db.transaction(PHOTOS, 'readonly');
-      const request = tx.objectStore(PHOTOS).index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
-      request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineCachedPhoto[]);
+      const tx = db.transaction(PHOTOS, 'readwrite');
+      const store = tx.objectStore(PHOTOS);
+      const request = store.index('scope').getAll(IDBKeyRange.only([userId, workspaceId]));
+      let result: WorksOfflineCachedPhoto[] = [];
+      request.onsuccess = () => {
+        const now = Date.now();
+        const rows = (request.result ?? []) as WorksOfflineCachedPhoto[];
+        const expired = rows.filter((photo) => {
+          const timestamp = Date.parse(photo.cachedAt);
+          return !Number.isFinite(timestamp) || now - timestamp > OFFLINE_PHOTO_CACHE_MAX_AGE_MS;
+        });
+        const expiredIds = new Set(expired.map((photo) => photo.id));
+        for (const id of expiredIds) store.delete(id);
+        result = rows.filter((photo) => !expiredIds.has(photo.id));
+      };
       request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar fotografias offline.'));
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () => reject(tx.error ?? new Error('Não foi possível limpar a cache offline.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Limpeza da cache offline cancelada.'));
     });
   } finally { db.close(); }
 }

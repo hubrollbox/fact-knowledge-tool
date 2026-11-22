@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, guardarFotoCacheOffline, listarFotosCacheOffline } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, guardarFotoCacheOffline, listarFotosCacheOffline, MAX_OFFLINE_PHOTO_CACHE_COUNT } from '../offline/offlineStore';
 
 const MAX = 20 * 1024 * 1024;
 
@@ -39,9 +39,13 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
         if (error) throw error;
         if (!data.length) return [];
         const paths = data.map((photo) => photo.storage_path);
-        const [{ data: signed }, downloads] = await Promise.all([
-          supabase.storage.from('obras-fotos').createSignedUrls(paths, 300),
-          Promise.all(data.map(async (photo) => {
+        const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 300);
+        const downloads = new Map<string, Blob>();
+        const cacheCandidates = data.slice(0, MAX_OFFLINE_PHOTO_CACHE_COUNT);
+        // Limit concurrent downloads to avoid loading an entire gallery into memory.
+        for (let offset = 0; offset < cacheCandidates.length; offset += 5) {
+          const batch = cacheCandidates.slice(offset, offset + 5);
+          const results = await Promise.all(batch.map(async (photo) => {
             const { data: blob, error: downloadError } = await supabase.storage.from('obras-fotos').download(photo.storage_path);
             if (downloadError || !blob || blob.size > MAX) return null;
             await guardarFotoCacheOffline({
@@ -50,13 +54,14 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
               legenda: photo.legenda, capturada_em: photo.capturada_em,
               latitude: photo.latitude, longitude: photo.longitude, blob,
             }).catch(() => undefined);
-            return blob;
-          })),
-        ]);
+            return { id: photo.id, blob };
+          }));
+          for (const result of results) if (result) downloads.set(result.id, result.blob);
+        }
         return data.map((photo, i) => ({
           ...photo,
           url: signed?.[i]?.signedUrl ?? null,
-          cachedBlob: downloads[i] ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
+          cachedBlob: downloads.get(photo.id) ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
         }));
       } catch (error) {
         if (!isFalhaDeLigacao(error)) throw error;
