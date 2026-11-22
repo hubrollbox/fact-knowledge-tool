@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { HardHat, Loader2, Plus, MapPin, ListChecks } from 'lucide-react';
+import { HardHat, Loader2, Plus, MapPin, ListChecks, ClipboardList } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useObras, useOcorrenciasAbertas } from '../hooks/useObras';
 import { ESTADOS_OBRA, GRAVIDADES, gravidadeVariant } from '../types/obras';
@@ -24,7 +24,7 @@ export function ObrasDashboard() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
         <div><h2 className="text-sm font-semibold">Acompanhamento operacional</h2><p className="text-xs text-muted-foreground">Consulte responsáveis, prazos e acções pendentes.</p></div>
-        <Button asChild size="sm" variant="outline"><Link to="/obras/acoes"><ListChecks className="mr-2 h-4 w-4" />Fila de acções</Link></Button>
+        <div className="flex flex-wrap gap-2"><Button asChild size="sm" variant="outline"><Link to="/obras/formularios"><ClipboardList className="mr-2 h-4 w-4" />Modelos de formulários</Link></Button><Button asChild size="sm" variant="outline"><Link to="/obras/acoes"><ListChecks className="mr-2 h-4 w-4" />Fila de acções</Link></Button></div>
       </div>
 
       <section className="space-y-3">
