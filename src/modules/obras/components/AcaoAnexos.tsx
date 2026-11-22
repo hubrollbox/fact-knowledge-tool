@@ -7,15 +7,7 @@ import { toast } from '@/hooks/use-toast';
 
 const BUCKET = 'obras-acoes-anexos';
 const MAX_SIZE = 25 * 1024 * 1024;
-const ALLOWED_TYPES = new Set([
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain',
-  'image/jpeg',
-  'image/png',
-]);
+const ALLOWED_EXTENSIONS = new Set(['pdf', 'docx', 'xlsx', 'pptx', 'txt', 'jpg', 'jpeg', 'png']);
 
 type Props = {
   acaoId: string;
@@ -43,7 +35,7 @@ const formatarTamanho = (bytes: number) => {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };
 
-export function AcaoAnexos({ acaoId, obraId, workspaceId, canWrite }: Props) {
+export function AcaoAnexos({ acaoId, workspaceId, canWrite }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const queryKey = ['obras_acao_anexos', acaoId];
@@ -77,8 +69,9 @@ export function AcaoAnexos({ acaoId, obraId, workspaceId, canWrite }: Props) {
   const upload = useMutation({
     mutationFn: async (file: File) => {
       if (!canWrite) throw new Error('Não tem permissões para anexar ficheiros.');
-      if (!file || !ALLOWED_TYPES.has(file.type)) {
-        throw new Error('Formato não permitido. Utilize PDF, Office, TXT, JPG ou PNG.');
+      const extension = file?.name.toLowerCase().split('.').pop() ?? '';
+      if (!file || !ALLOWED_EXTENSIONS.has(extension)) {
+        throw new Error('Formato não permitido. Utilize PDF, DOCX, XLSX, PPTX, TXT, JPG ou PNG.');
       }
       if (file.size < 1 || file.size > MAX_SIZE) {
         throw new Error('O ficheiro tem de ter conteúdo e não pode exceder 25 MB.');
