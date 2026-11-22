@@ -33,6 +33,36 @@ function hasBytes(bytes: Uint8Array, signature: number[]): boolean {
   return signature.every((value, index) => bytes[index] === value);
 }
 
+async function readRequestBodyLimited(req: Request, maxBytes: number): Promise<Uint8Array> {
+  if (!req.body) return new Uint8Array();
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel("Request body exceeds upload limit");
+        throw new RangeError("REQUEST_BODY_TOO_LARGE");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
+
 function zipEntries(bytes: Uint8Array): Set<string> | null {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const minOffset = Math.max(0, bytes.length - 65_557);
@@ -107,12 +137,22 @@ function detectFile(bytes: Uint8Array, originalName: string): DetectedFile | nul
     return tail.includes("%%EOF") ? { mime: "application/pdf", extension: "pdf" } : null;
   }
 
-  if ((extension === "jpg" || extension === "jpeg") && hasBytes(bytes, [0xff, 0xd8, 0xff])) {
+  if (
+    (extension === "jpg" || extension === "jpeg") &&
+    bytes.length >= 4 &&
+    hasBytes(bytes, [0xff, 0xd8, 0xff]) &&
+    bytes[bytes.length - 2] === 0xff &&
+    bytes[bytes.length - 1] === 0xd9
+  ) {
     return { mime: "image/jpeg", extension: "jpg" };
   }
 
   if (extension === "png" && hasBytes(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
-    if (bytes.length < 24 || new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(12, false) !== 0x49484452) return null;
+    if (bytes.length < 45) return null;
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (view.getUint32(12, false) !== 0x49484452) return null;
+    if (view.getUint32(bytes.length - 8, false) !== 0x49454e44) return null;
+    if (view.getUint32(bytes.length - 12, false) !== 0) return null;
     return { mime: "image/png", extension: "png" };
   }
 
@@ -168,10 +208,50 @@ Deno.serve(async (req: Request) => {
     if (authError || !userData.user) return response({ error: "Sessão inválida ou expirada." }, 401);
     const userId = userData.user.id;
 
-    const contentLength = Number(req.headers.get("content-length") ?? "0");
-    if (contentLength > MAX_SIZE + 128 * 1024) return response({ error: "O ficheiro excede o limite de 25 MB." }, 413);
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().startsWith("multipart/form-data;")) {
+      return response({ error: "O pedido tem de usar multipart/form-data." }, 415);
+    }
+    const contentEncoding = req.headers.get("content-encoding");
+    if (contentEncoding && contentEncoding.toLowerCase() !== "identity") {
+      return response({ error: "Pedidos com conteúdo comprimido não são aceites." }, 415);
+    }
 
-    const form = await req.formData();
+    const maxRequestBytes = MAX_SIZE + 256 * 1024;
+    const contentLengthHeader = req.headers.get("content-length");
+    if (contentLengthHeader !== null) {
+      const contentLength = Number(contentLengthHeader);
+      if (!Number.isSafeInteger(contentLength) || contentLength < 0 || contentLength > maxRequestBytes) {
+        return response({ error: "O pedido excede o limite de 25 MB." }, 413);
+      }
+    }
+
+    let requestBody: Uint8Array;
+    try {
+      requestBody = await readRequestBodyLimited(req, maxRequestBytes);
+    } catch (error) {
+      if (error instanceof RangeError && error.message === "REQUEST_BODY_TOO_LARGE") {
+        return response({ error: "O pedido excede o limite de 25 MB." }, 413);
+      }
+      throw error;
+    }
+
+    const boundedRequest = new Request(req.url, {
+      method: "POST",
+      headers: req.headers,
+      body: requestBody,
+    });
+    const form = await boundedRequest.formData();
+    const formEntries = [...form.entries()];
+    if (
+      formEntries.length !== 2 ||
+      form.getAll("acao_id").length !== 1 ||
+      form.getAll("file").length !== 1 ||
+      formEntries.some(([key]) => key !== "acao_id" && key !== "file")
+    ) {
+      return response({ error: "O pedido contém campos inválidos." }, 400);
+    }
+
     const actionId = form.get("acao_id");
     const file = form.get("file");
     if (typeof actionId !== "string" || !isUuid(actionId) || !(file instanceof File)) {
