@@ -39,7 +39,7 @@ export function CanilDashboard() {
             {!reservas?.length ? (
               <p className="text-sm text-muted-foreground">Sem movimentos hoje</p>
             ) : (
-              reservas.map((r: any) => {
+              reservas.map((r) => {
                 const isEntrada = r.data_entrada === hoje;
                 return (
                   <div
@@ -76,7 +76,7 @@ export function CanilDashboard() {
             {!alertas?.length ? (
               <p className="text-sm text-muted-foreground">Sem alertas</p>
             ) : (
-              alertas.map((a: any) => (
+              alertas.map((a) => (
                 <div
                   key={a.id}
                   onClick={() => a.animal && navigate(`/canil/animal/${a.animal.id}`)}
