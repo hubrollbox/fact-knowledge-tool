@@ -185,17 +185,19 @@ BEGIN
      OR NEW.versao_id IS DISTINCT FROM OLD.versao_id
      OR NEW.definicao_snapshot IS DISTINCT FROM OLD.definicao_snapshot
      OR NEW.created_by IS DISTINCT FROM OLD.created_by
-     OR NEW.created_at IS DISTINCT FROM OLD.created_at
-     OR NEW.estado IS DISTINCT FROM OLD.estado
-     OR NEW.completed_by IS DISTINCT FROM OLD.completed_by
-     OR NEW.completed_at IS DISTINCT FROM OLD.completed_at THEN
+     OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
     RAISE EXCEPTION 'Só é permitido alterar as respostas de um formulário em rascunho';
+  END IF;
+  IF NEW.estado NOT IN ('rascunho', 'concluido')
+     OR (NEW.estado = 'concluido' AND (NEW.completed_at IS NULL OR NEW.completed_by IS NULL))
+     OR (NEW.estado = 'rascunho' AND (NEW.completed_at IS NOT NULL OR NEW.completed_by IS NOT NULL)) THEN
+    RAISE EXCEPTION 'Transição de estado ou metadados de conclusão inválidos';
   END IF;
   NEW.updated_at := clock_timestamp();
   NEW.updated_by := auth.uid();
   RETURN NEW;
 END;
-$$;
+$;
 
 CREATE TRIGGER obras_formularios_respostas_protect
   BEFORE UPDATE OR DELETE ON public.obras_formularios_respostas
