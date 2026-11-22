@@ -15,8 +15,8 @@ RETURNS boolean
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
-AS $$
+SET search_path = ''
+AS $
   SELECT public.workspace_can_read(_ws, auth.uid());
 $$;
 
@@ -25,8 +25,8 @@ RETURNS boolean
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
-AS $$
+SET search_path = ''
+AS $
   SELECT public.workspace_can_write(_ws, auth.uid());
 $$;
 
@@ -251,6 +251,8 @@ DECLARE
   v_section jsonb;
   v_field jsonb;
   v_ids text[] := ARRAY[]::text[];
+  v_section_ids text[] := ARRAY[]::text[];
+  v_total_fields integer := 0;
   v_section_id text;
   v_field_id text;
   v_type text;
@@ -262,6 +264,10 @@ BEGIN
      OR jsonb_typeof(p_definicao->'sections') <> 'array'
      OR jsonb_array_length(p_definicao->'sections') = 0 THEN
     RAISE EXCEPTION 'A definição tem de conter pelo menos uma secção';
+  END IF;
+  IF octet_length(p_definicao::text) > 262144
+     OR jsonb_array_length(p_definicao->'sections') > 50 THEN
+    RAISE EXCEPTION 'A definição excede os limites permitidos (256 KiB e 50 secções)';
   END IF;
 
   SELECT * INTO v_form
@@ -281,6 +287,17 @@ BEGIN
        OR jsonb_typeof(v_section->'fields') IS DISTINCT FROM 'array' THEN
       RAISE EXCEPTION 'Cada secção necessita de identificador, título e lista de campos';
     END IF;
+    IF v_section_id = ANY(v_section_ids) THEN
+      RAISE EXCEPTION 'Identificador de secção repetido: %', v_section_id;
+    END IF;
+    v_section_ids := array_append(v_section_ids, v_section_id);
+    IF jsonb_array_length(v_section->'fields') > 200 THEN
+      RAISE EXCEPTION 'Uma secção não pode conter mais de 200 campos';
+    END IF;
+    v_total_fields := v_total_fields + jsonb_array_length(v_section->'fields');
+    IF v_total_fields > 200 THEN
+      RAISE EXCEPTION 'O formulário não pode conter mais de 200 campos';
+    END IF;
     FOR v_field IN SELECT value FROM jsonb_array_elements(v_section->'fields') LOOP
       v_field_id := nullif(btrim(v_field->>'id'), '');
       v_type := v_field->>'type';
@@ -296,8 +313,9 @@ BEGIN
       v_ids := array_append(v_ids, v_field_id);
       IF v_type = 'choice' THEN
         IF jsonb_typeof(v_field->'options') IS DISTINCT FROM 'array'
-           OR jsonb_array_length(v_field->'options') = 0 THEN
-          RAISE EXCEPTION 'Os campos de escolha necessitam de pelo menos uma opção';
+           OR jsonb_array_length(v_field->'options') = 0
+           OR jsonb_array_length(v_field->'options') > 100 THEN
+          RAISE EXCEPTION 'Os campos de escolha necessitam de 1 a 100 opções';
         END IF;
         IF EXISTS (
           SELECT 1
