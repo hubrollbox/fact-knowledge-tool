@@ -65,7 +65,7 @@ export function useSaveFormTemplate() {
         const { error } = await db.from('obras_formularios').update({
           nome: input.nome, descricao: input.descricao || null, tipo: input.tipo,
           draft_definicao: input.definicao,
-        }).eq('id', input.id).eq('workspace_id', workspaceId).eq('estado', 'rascunho');
+        }).eq('id', input.id).eq('workspace_id', workspaceId);
         if (error) throw error;
         return input.id;
       }
