@@ -39,7 +39,7 @@ export function CanilDashboard() {
             {!reservas?.length ? (
               <p className="text-sm text-muted-foreground">Sem movimentos hoje</p>
             ) : (
-              reservas.map((r: any) => {
+              reservas.map((r) => {
                 const isEntrada = r.data_entrada === hoje;
                 return (
                   <div
@@ -76,7 +76,7 @@ export function CanilDashboard() {
             {!alertas?.length ? (
               <p className="text-sm text-muted-foreground">Sem alertas</p>
             ) : (
-              alertas.map((a: any) => (
+              alertas.map((a) => (
                 <div
                   key={a.id}
                   onClick={() => a.animal && navigate(`/canil/animal/${a.animal.id}`)}
@@ -89,9 +89,11 @@ export function CanilDashboard() {
                       {a.produto && ` · ${a.produto}`}
                     </div>
                   </div>
-                  <Badge variant="destructive">
-                    {format(parseISO(a.data_proxima), 'd MMM', { locale: pt })}
-                  </Badge>
+                  {a.data_proxima && (
+                    <Badge variant="destructive">
+                      {format(parseISO(a.data_proxima), 'd MMM', { locale: pt })}
+                    </Badge>
+                  )}
                 </div>
               ))
             )}

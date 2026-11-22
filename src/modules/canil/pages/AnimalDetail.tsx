@@ -199,7 +199,7 @@ export function AnimalDetail() {
           {!ninhadas?.length ? (
             <p className="text-sm text-muted-foreground">Não participou em ninhadas</p>
           ) : (
-            ninhadas.map((n: any) => (
+            ninhadas.map((n) => (
               <Card key={n.id}>
                 <CardContent className="p-4 text-sm">
                   <div className="flex items-center justify-between">
