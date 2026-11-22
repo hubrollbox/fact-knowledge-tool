@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline, combinarEdicaoOffline } from './offlineStore';
+import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline, combinarEdicaoOffline, selecionarFotosParaEviccao } from './offlineStore';
 
 describe('offlineStore', () => {
   it('cria operações pendentes com tentativas a zero e sem erro', () => {
@@ -82,5 +82,32 @@ describe('composição de edições offline', () => {
       { id: 'r2', workspace_id: 'w1', titulo: 'B' },
     );
     expect(result.changedFields).toEqual(['titulo']);
+  });
+});
+
+
+describe('limites da cache offline de fotografias', () => {
+  it('remove primeiro as fotografias mais antigas quando excede o orçamento', () => {
+    const photo = (id: string, cachedAt: string, size: number) => ({
+      id, cachedAt, blob: new Blob([new Uint8Array(size)]),
+    }) as any;
+
+    const photos = [
+      photo('oldest', '2026-01-01T00:00:00.000Z', 4),
+      photo('middle', '2026-01-02T00:00:00.000Z', 4),
+      photo('newest', '2026-01-03T00:00:00.000Z', 4),
+    ];
+
+    expect(selecionarFotosParaEviccao(photos, 8, 10)).toEqual(['oldest']);
+  });
+
+  it('respeita também o número máximo de fotografias', () => {
+    const photos = ['one', 'two', 'three'].map((id, index) => ({
+      id,
+      cachedAt: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+      blob: new Blob(['x']),
+    })) as any;
+
+    expect(selecionarFotosParaEviccao(photos, 100, 2)).toEqual(['one']);
   });
 });
