@@ -27,7 +27,6 @@ export function FormTemplatesPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { canWrite, isLoading: roleLoading } = useWorkspaceRole();
-  const { data: templates, isLoading, error } = useFormTemplates();
   const { data: selected, isLoading: selectedLoading } = useFormTemplate(id);
   const save = useSaveFormTemplate();
   const publish = usePublishFormTemplate();
