@@ -207,7 +207,7 @@ Deno.serve(async (req: Request) => {
         .select("role")
         .eq("workspace_id", action.workspace_id)
         .eq("user_id", userId)
-        .in("role", ["admin", "editor"])
+        .in("role", ["owner", "admin", "editor"])
         .maybeSingle();
       if (membershipError) throw membershipError;
       canWrite = Boolean(membership);
