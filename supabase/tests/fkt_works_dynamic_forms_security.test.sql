@@ -68,6 +68,51 @@ BEGIN
     OR has_table_privilege('authenticated', 'public.obras_formularios_respostas', 'DELETE') THEN
     RAISE EXCEPTION 'As respostas só podem ser criadas pela função autorizada e não podem ser apagadas directamente';
   END IF;
+  IF NOT has_column_privilege('authenticated', 'public.obras_formularios', 'draft_definicao', 'INSERT')
+    OR NOT has_column_privilege('authenticated', 'public.obras_formularios', 'draft_definicao', 'UPDATE') THEN
+    RAISE EXCEPTION 'A definição de rascunho não tem privilégios de escrita necessários';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'obras_formularios'
+      AND policyname = 'obras_formularios_insert'
+      AND cmd = 'INSERT' AND with_check LIKE '%obras_can_write%'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'obras_formularios'
+      AND policyname = 'obras_formularios_update'
+      AND cmd = 'UPDATE' AND with_check LIKE '%obras_can_write%'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'obras_formularios_respostas'
+      AND policyname = 'obras_formularios_respostas_update'
+      AND cmd = 'UPDATE' AND with_check LIKE '%obras_can_write%'
+  ) THEN
+    RAISE EXCEPTION 'As políticas de escrita não aplicam a autorização por workspace em WITH CHECK';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE (n.nspname = 'public' AND p.proname IN (
+      'publicar_obras_formulario',
+      'criar_obras_formulario_resposta',
+      'concluir_obras_formulario_resposta'
+    )) AND p.prosecdef
+  ) THEN
+    RAISE EXCEPTION 'As funções públicas RPC não podem executar como SECURITY DEFINER';
+  END IF;
+  IF (SELECT count(*) FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE n.nspname = 'private_works_forms'
+        AND p.proname IN (
+          'obras_publicar_formulario_privileged',
+          'obras_criar_formulario_resposta_privileged',
+          'obras_concluir_formulario_resposta_privileged'
+        ) AND p.prosecdef) <> 3 THEN
+    RAISE EXCEPTION 'As três rotinas privilegiadas devem estar isoladas no schema dedicado';
+  END IF;
 
   IF NOT has_function_privilege('authenticated', 'public.publicar_obras_formulario(uuid,jsonb)', 'EXECUTE')
     OR NOT has_function_privilege('authenticated', 'public.criar_obras_formulario_resposta(uuid,uuid,uuid,uuid)', 'EXECUTE')
