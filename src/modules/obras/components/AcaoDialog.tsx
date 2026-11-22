@@ -6,16 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useCriarAcao } from '../hooks/useObras';
-import type { Ocorrencia } from '../types/obras';
+import type { Ocorrencia, Visita } from '../types/obras';
 
-export function AcaoDialog({ obraId, ocorrencias }: { obraId: string; ocorrencias: Ocorrencia[] }) {
+export function AcaoDialog({ obraId, ocorrencias, visitas = [] }: { obraId: string; ocorrencias: Ocorrencia[]; visitas?: Visita[] }) {
   const [open, setOpen] = useState(false);
   const criar = useCriarAcao();
-  const vazio = { descricao: '', responsavel: '', prazo: '', ocorrencia_id: 'none' };
+  const vazio = { descricao: '', responsavel: '', prazo: '', ocorrencia_id: 'none', visita_id: 'none', prioridade: 'normal' };
   const [f, setF] = useState(vazio);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await criar.mutateAsync({ obra_id: obraId, descricao: f.descricao.trim(), responsavel: f.responsavel || null, prazo: f.prazo || null, ocorrencia_id: f.ocorrencia_id === 'none' ? null : f.ocorrencia_id });
+    await criar.mutateAsync({ obra_id: obraId, descricao: f.descricao.trim(), responsavel: f.responsavel || null, prazo: f.prazo || null, ocorrencia_id: f.ocorrencia_id === 'none' ? null : f.ocorrencia_id, visita_id: f.visita_id === 'none' ? null : f.visita_id, prioridade: f.prioridade } as any);
     setF(vazio); setOpen(false);
   };
   return (
@@ -29,6 +29,8 @@ export function AcaoDialog({ obraId, ocorrencias }: { obraId: string; ocorrencia
             <div><Label>Responsável</Label><Input value={f.responsavel} onChange={(e) => setF({ ...f, responsavel: e.target.value })} /></div>
             <div><Label>Prazo</Label><Input type="date" value={f.prazo} onChange={(e) => setF({ ...f, prazo: e.target.value })} /></div>
           </div>
+          <div><Label>Prioridade</Label><Select value={f.prioridade} onValueChange={(v) => setF({ ...f, prioridade: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="baixa">Baixa</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="alta">Alta</SelectItem><SelectItem value="urgente">Urgente</SelectItem></SelectContent></Select></div>
+          <div><Label>Visita de origem</Label><Select value={f.visita_id} onValueChange={(v) => setF({ ...f, visita_id: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Nenhuma</SelectItem>{visitas.map((v) => <SelectItem key={v.id} value={v.id}>{new Date(v.data_visita).toLocaleDateString('pt-PT')} · {v.tecnico || 'Visita'}</SelectItem>)}</SelectContent></Select></div>
           <div><Label>Ocorrência ligada</Label>
             <Select value={f.ocorrencia_id} onValueChange={(v) => setF({ ...f, ocorrencia_id: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
