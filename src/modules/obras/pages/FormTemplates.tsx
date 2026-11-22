@@ -48,7 +48,7 @@ export function FormTemplatesPage() {
     }
   }, [id, selected]);
 
-  const isEditable = !id || selected?.estado === 'rascunho';
+  const isEditable = !id || selected?.estado !== 'arquivado';
   const canEdit = canWrite && isEditable;
   const updateSection = (sectionId: string, patch: Partial<FormSection>) =>
     setDefinition((current) => ({ ...current, sections: current.sections.map((section) => section.id === sectionId ? { ...section, ...patch } : section) }));
