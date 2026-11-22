@@ -14,6 +14,8 @@ export type AcaoFila = {
   responsavel_user_id: string | null;
   prazo: string | null;
   estado: string;
+  prioridade: string;
+  visita_id: string | null;
   created_at: string;
   obras: { nome: string } | null;
   obras_ocorrencias: { id: string; titulo: string; estado: string } | null;
