@@ -34,7 +34,7 @@ BEGIN
     RAISE EXCEPTION 'Nome de ficheiro inválido';
   END IF;
 
-  IF _mime_type NOT IN (
+  IF _mime_type IS NULL OR _mime_type NOT IN (
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -85,6 +85,8 @@ BEGIN
     FROM storage.objects AS o
     WHERE o.bucket_id = 'obras-documentos'
       AND o.name = _storage_path
+      AND o.metadata->>'mimetype' = _mime_type
+      AND (o.metadata->>'size')::bigint = _tamanho_bytes
   ) THEN
     RAISE EXCEPTION 'O ficheiro não foi carregado para o arquivo documental';
   END IF;
