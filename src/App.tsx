@@ -59,6 +59,7 @@ import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
 import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
 import { OcorrenciaDetail } from "./modules/obras/pages/OcorrenciaDetail";
 import { FilaAcoes } from "./modules/obras/pages/FilaAcoes";
+import { FormTemplatesPage, FormTemplatesListPage } from "./modules/obras/pages/FormTemplates";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,9 @@ const App = () => (
             <Route path="/obras" element={<ProtectedRoute module="obras"><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/nova" element={<ProtectedRoute module="obras"><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/acoes" element={<ProtectedRoute module="obras"><AppLayout><FilaAcoes /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/formularios" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesListPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/formularios/novo" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesPage /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/formularios/:id" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesPage /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id" element={<ProtectedRoute module="obras"><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute module="obras"><RelatorioVisita /></ProtectedRoute>} />
             <Route path="/obras/:id/ocorrencia/:ocorrenciaId" element={<ProtectedRoute module="obras"><AppLayout><OcorrenciaDetail /></AppLayout></ProtectedRoute>} />
