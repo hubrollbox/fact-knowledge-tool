@@ -549,7 +549,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   ws uuid;
 BEGIN
@@ -603,7 +603,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$;
+$$;
 REVOKE ALL ON FUNCTION private.obras_check_workspace() FROM PUBLIC, anon, authenticated;
 
 COMMIT;
