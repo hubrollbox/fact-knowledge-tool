@@ -56,6 +56,7 @@ import { NovaObra } from "./modules/obras/pages/NovaObra";
 import { ObraDetail } from "./modules/obras/pages/ObraDetail";
 import { VisitaDetail } from "./modules/obras/pages/VisitaDetail";
 import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
+import { RelatorioDiario } from "./modules/obras/pages/RelatorioDiario";
 import { OcorrenciaDetail } from "./modules/obras/pages/OcorrenciaDetail";
 import { FilaAcoes } from "./modules/obras/pages/FilaAcoes";
 import { FormTemplatesPage, FormTemplatesListPage } from "./modules/obras/pages/FormTemplates";
@@ -114,6 +115,7 @@ const App = () => (
             <Route path="/obras/formularios/novo" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesPage /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/formularios/:id" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesPage /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id" element={<ProtectedRoute module="obras"><AppLayout><ObraDetail /></AppLayout></ProtectedRoute>} />
+            <Route path="/obras/:id/diario/relatorio" element={<ProtectedRoute module="obras"><RelatorioDiario /></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId/relatorio" element={<ProtectedRoute module="obras"><RelatorioVisita /></ProtectedRoute>} />
             <Route path="/obras/:id/ocorrencia/:ocorrenciaId" element={<ProtectedRoute module="obras"><AppLayout><OcorrenciaDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/:id/visita/:visitaId" element={<ProtectedRoute module="obras"><AppLayout><VisitaDetail /></AppLayout></ProtectedRoute>} />
