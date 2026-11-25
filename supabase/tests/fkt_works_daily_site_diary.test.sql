@@ -25,7 +25,7 @@ SELECT has_index('public','obras_visitas','obras_visitas_workspace_date_type_idx
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','a3900000-0000-4000-8000-000000000001',true);
 SELECT lives_ok($test$
-DO $
+DO $$
 DECLARE _visit_id uuid := 'd3900000-0000-4000-8000-000000000001'; _author uuid;
         _blocked boolean := false; _history_count integer;
 BEGIN
@@ -43,7 +43,7 @@ BEGIN
     WHERE entidade='obras_visitas' AND entidade_id=_visit_id AND operacao IN ('INSERT','UPDATE');
   IF _history_count <> 2 THEN RAISE EXCEPTION 'Expected insert and update history events, got %',_history_count; END IF;
 END;
-$
+$$
 $test$, 'authenticated author is assigned, immutable, and insert/update are recorded in history');
 RESET ROLE;
 SELECT * FROM finish();
