@@ -284,12 +284,13 @@ export function RelatorioVisita() {
       </section>
 
       <section className="report-section">
-        <h2>2. Dados da visita</h2>
+        <h2>2. Diário de obra</h2>
         <div className="report-grid">
+          <div><span>Tipo de registo</span><strong>{{ diario: 'Diário de obra', visita: 'Visita', reuniao: 'Reunião', fiscalizacao: 'Fiscalização' }[(visita as any).tipo_registo ?? 'visita']}</strong></div>
           <div><span>Técnico / Fiscal</span><strong>{visita.tecnico || '—'}</strong></div>
           <div><span>Condições meteorológicas</span><strong>{visita.condicoes_meteo || '—'}</strong></div>
         </div>
-        <div className="report-notes"><span>Notas gerais da visita</span><p>{visita.notas || 'Não foram registadas notas gerais.'}</p></div>
+        {([['Trabalhos executados', (visita as any).trabalhos_executados], ['Equipas e intervenientes', (visita as any).equipa_intervenientes], ['Equipamentos', (visita as any).equipamentos], ['Materiais', (visita as any).materiais], ['Condicionantes', (visita as any).condicionantes], ['Atrasos e motivos', (visita as any).atrasos], ['Notas complementares', visita.notas]] as [string, string | null][]).map(([label, value]) => <div className="report-notes" key={label}><span>{label}</span><p>{value || 'Não registado.'}</p></div>)}
       </section>
 
       <section className="report-section">
