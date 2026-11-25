@@ -34,6 +34,14 @@ jobs:
       - name: Rebuild local database from repository migrations
         run: supabase db reset --local
 
+      - name: Verify FKT Vet migration #75 is repeatable
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+          psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' \\
+            --set ON_ERROR_STOP=1 \\
+            --file supabase/migrations/20261120183029_fkt_vet_workspace_integrity_and_history.sql
+
       - name: Run pgTAP database tests
         run: supabase test db --local
 
