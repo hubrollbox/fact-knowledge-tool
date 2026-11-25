@@ -1,7 +1,9 @@
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
@@ -24,6 +26,13 @@ export function ObraDetail() {
   const { data: acoes } = useAcoes(id);
   const { canWrite } = useWorkspaceRole();
   const upd = useActualizarEstado();
+  const [dataDesde, setDataDesde] = useState('');
+  const [dataAte, setDataAte] = useState('');
+  const [tipoRegisto, setTipoRegisto] = useState('todos');
+  const visitasFiltradas = useMemo(() => (visitas ?? []).filter((item) => {
+    const row = item as any;
+    return (!dataDesde || row.data_visita >= dataDesde) && (!dataAte || row.data_visita <= dataAte) && (tipoRegisto === 'todos' || (row.tipo_registo ?? 'visita') === tipoRegisto);
+  }), [visitas, dataDesde, dataAte, tipoRegisto]);
 
   if (isLoading) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
   if (!obra) return <p className="text-sm text-muted-foreground">Obra não encontrada.</p>;
@@ -47,7 +56,7 @@ export function ObraDetail() {
 
       <Tabs defaultValue="visitas">
         <TabsList>
-          <TabsTrigger value="visitas">Visitas ({visitas?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="visitas">Diário ({visitas?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="planeamento">Planeamento</TabsTrigger>
@@ -56,12 +65,18 @@ export function ObraDetail() {
 
         <TabsContent value="visitas" className="space-y-3">
           {canWrite && <VisitaDialog obraId={obra.id} />}
-          {!visitas?.length ? <p className="text-sm text-muted-foreground">Ainda não há visitas. Inicie uma visita quando estiver no terreno.</p> : visitas.map((v) => (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 rounded-md border p-3">
+            <div><label className="text-xs text-muted-foreground">Desde</label><Input type="date" value={dataDesde} onChange={(e) => setDataDesde(e.target.value)} /></div>
+            <div><label className="text-xs text-muted-foreground">Até</label><Input type="date" value={dataAte} onChange={(e) => setDataAte(e.target.value)} /></div>
+            <div><label className="text-xs text-muted-foreground">Tipo de registo</label><Select value={tipoRegisto} onValueChange={setTipoRegisto}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem><SelectItem value="diario">Diário de obra</SelectItem><SelectItem value="visita">Visita</SelectItem><SelectItem value="reuniao">Reunião</SelectItem><SelectItem value="fiscalizacao">Fiscalização</SelectItem></SelectContent></Select></div>
+          </div>
+          {!visitas?.length ? <p className="text-sm text-muted-foreground">Ainda não existem registos no diário de obra.</p> : !visitasFiltradas.length ? <p className="text-sm text-muted-foreground">Não existem registos para os filtros seleccionados.</p> : visitasFiltradas.map((v) => { const row = v as any; const labels: Record<string,string> = { diario: 'Diário de obra', visita: 'Visita', reuniao: 'Reunião', fiscalizacao: 'Fiscalização' }; return (
             <Link key={v.id} to={`/obras/${obra.id}/visita/${v.id}`} className="block border border-border rounded-md p-3 hover:bg-muted/50">
-              <div className="text-sm font-medium">{new Date(v.data_visita).toLocaleDateString('pt-PT')}{v.hora_inicio && ` · ${v.hora_inicio.slice(0, 5)}`}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><div className="text-sm font-medium">{new Date(v.data_visita).toLocaleDateString('pt-PT')}{v.hora_inicio && ` · ${v.hora_inicio.slice(0, 5)}`}</div><Badge variant="outline">{labels[row.tipo_registo ?? 'visita'] ?? 'Visita'}</Badge></div>
               <div className="text-xs text-muted-foreground">{[v.tecnico, v.condicoes_meteo].filter(Boolean).join(' · ') || 'Sem detalhes'}</div>
+              {row.trabalhos_executados && <p className="mt-2 text-sm line-clamp-2">{row.trabalhos_executados}</p>}
             </Link>
-          ))}
+          ); })}
         </TabsContent>
 
         <TabsContent value="ocorrencias" className="space-y-3">
