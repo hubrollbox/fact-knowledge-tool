@@ -23,7 +23,7 @@ BEGIN
  OR NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.obras_actividades_dependencias'::regclass AND conname='obras_actividades_dependencias_predecessor_fk') THEN RAISE EXCEPTION 'As dependências não estão limitadas à mesma obra/workspace'; END IF;
  IF NOT has_table_privilege('authenticated','public.obras_actividades','SELECT') OR NOT has_table_privilege('authenticated','public.obras_actividades','INSERT') OR NOT has_table_privilege('authenticated','public.obras_actividades','UPDATE') OR NOT has_table_privilege('authenticated','public.obras_actividades','DELETE') THEN RAISE EXCEPTION 'Permissões de actividade incompletas'; END IF;
  IF has_table_privilege('authenticated','public.obras_actividades_dependencias','UPDATE') OR has_table_privilege('authenticated','public.obras_actividades_dependencias','TRUNCATE') THEN RAISE EXCEPTION 'Privilégios excessivos em dependências'; END IF;
- IF position('SECURITY INVOKER' in upper(pg_get_functiondef('public.definir_dependencias_obras_actividade(uuid,uuid[])'::regprocedure)))=0 THEN RAISE EXCEPTION 'RPC de dependências deve ser SECURITY INVOKER'; END IF;
+ IF (SELECT prosecdef FROM pg_proc WHERE oid='public.definir_dependencias_obras_actividade(uuid,uuid[])'::regprocedure) THEN RAISE EXCEPTION 'RPC de dependências não pode ser SECURITY DEFINER'; END IF;
  IF position('ciclo' in lower(pg_get_functiondef('private.validar_obras_actividade_dependencia()'::regprocedure)))=0 THEN RAISE EXCEPTION 'A função de dependências não rejeita ciclos'; END IF;
 END;
 $$ $test$, 'FKT Works planning enforces workspace isolation, dependency integrity and least privilege');
