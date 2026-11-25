@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { clearPersistedAuthSession, supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -77,7 +77,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+      // A failed Auth API request must not leave the current account cached in
+      // the browser. The user needs to be able to switch accounts immediately.
+      if (error) {
+        console.warn('Logout remoto falhou; a sessão local será removida.', error);
+        await clearPersistedAuthSession();
+      }
+    } catch (error) {
+      console.warn('Logout remoto lançou um erro; a sessão local será removida.', error);
+      await clearPersistedAuthSession();
+    } finally {
+      // Keep the UI correct even if the storage event is delayed by a Preview
+      // auth broker or is not delivered after a failed request.
+      setSession(null);
+      setUser(null);
+    }
   };
 
   return (

@@ -6,13 +6,23 @@ import { brokeredPreviewStorage } from './previewAuthStorage';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://gllrqrqonwuacjxbtgnp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsbHJxcnFvbnd1YWNqeGJ0Z25wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDE4MjUsImV4cCI6MjA4NzAxNzgyNX0.PxWqLBGOul-GglgsQPxAvx9kYl4l0cB-Ckn3wyFd8Og";
 
+const authStorage = brokeredPreviewStorage();
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: brokeredPreviewStorage(),
+    storage: authStorage,
     persistSession: true,
     autoRefreshToken: true,
   }
 });
+
+/** Removes the local session when remote auth revocation is unavailable. */
+export async function clearPersistedAuthSession() {
+  if (!authStorage) return;
+
+  const storageKey = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+  await authStorage.removeItem(storageKey);
+}
