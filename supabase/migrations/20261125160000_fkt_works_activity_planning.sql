@@ -80,6 +80,12 @@ BEGIN
   JOIN public.obras_actividades p ON p.id=d.depende_de_id AND p.workspace_id=d.workspace_id AND p.obra_id=d.obra_id
   WHERE d.actividade_id=NEW.id AND d.workspace_id=NEW.workspace_id AND d.obra_id=NEW.obra_id AND p.estado<>'concluida'
  ) THEN RAISE EXCEPTION 'Não é possível iniciar ou concluir a actividade enquanto existirem dependências por concluir' USING ERRCODE='23514'; END IF;
+ IF NEW.estado<>'concluida' AND EXISTS (
+  SELECT 1 FROM public.obras_actividades_dependencias d
+  JOIN public.obras_actividades dependent ON dependent.id=d.actividade_id AND dependent.workspace_id=d.workspace_id AND dependent.obra_id=d.obra_id
+  WHERE d.depende_de_id=NEW.id AND d.workspace_id=NEW.workspace_id AND d.obra_id=NEW.obra_id
+    AND dependent.estado IN ('em_curso','concluida')
+ ) THEN RAISE EXCEPTION 'Não é possível reabrir uma actividade enquanto existirem actividades dependentes em curso ou concluídas' USING ERRCODE='23514'; END IF;
  RETURN NEW;
 END; $$;
 REVOKE ALL ON FUNCTION private.validar_obras_actividade() FROM PUBLIC, anon, authenticated;
