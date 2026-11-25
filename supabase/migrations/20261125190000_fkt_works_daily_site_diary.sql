@@ -25,7 +25,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = ''
-AS $
+AS $function$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     IF NEW.created_by IS NULL THEN NEW.created_by := (SELECT auth.uid()); END IF;
@@ -37,7 +37,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$function$;
 REVOKE ALL ON FUNCTION private.validar_autoria_obras_visita() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS obras_visitas_validar_autoria ON public.obras_visitas;
 CREATE TRIGGER obras_visitas_validar_autoria
