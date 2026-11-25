@@ -29,10 +29,12 @@ export function ObraDetail() {
   const [dataDesde, setDataDesde] = useState('');
   const [dataAte, setDataAte] = useState('');
   const [tipoRegisto, setTipoRegisto] = useState('todos');
+  const [pesquisaDiario, setPesquisaDiario] = useState('');
   const visitasFiltradas = useMemo(() => (visitas ?? []).filter((item) => {
     const row = item as any;
-    return (!dataDesde || row.data_visita >= dataDesde) && (!dataAte || row.data_visita <= dataAte) && (tipoRegisto === 'todos' || (row.tipo_registo ?? 'visita') === tipoRegisto);
-  }), [visitas, dataDesde, dataAte, tipoRegisto]);
+    const texto = [row.tecnico, row.condicoes_meteo, row.trabalhos_executados, row.equipa_intervenientes, row.equipamentos, row.materiais, row.condicionantes, row.atrasos, row.notas].filter(Boolean).join(' ').toLocaleLowerCase('pt-PT');
+    return (!dataDesde || row.data_visita >= dataDesde) && (!dataAte || row.data_visita <= dataAte) && (tipoRegisto === 'todos' || (row.tipo_registo ?? 'visita') === tipoRegisto) && (!pesquisaDiario.trim() || texto.includes(pesquisaDiario.trim().toLocaleLowerCase('pt-PT')));
+  }), [visitas, dataDesde, dataAte, tipoRegisto, pesquisaDiario]);
 
   if (isLoading) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
   if (!obra) return <p className="text-sm text-muted-foreground">Obra não encontrada.</p>;
@@ -64,11 +66,12 @@ export function ObraDetail() {
         </TabsList>
 
         <TabsContent value="visitas" className="space-y-3">
-          {canWrite && <VisitaDialog obraId={obra.id} />}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 rounded-md border p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">{canWrite && <VisitaDialog obraId={obra.id} />}<Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/diario/relatorio${dataDesde || dataAte ? `?${new URLSearchParams({ ...(dataDesde ? { desde: dataDesde } : {}), ...(dataAte ? { ate: dataAte } : {}) }).toString()}` : ''}`}>Relatório do período</Link></Button></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 rounded-md border p-3">
             <div><label className="text-xs text-muted-foreground">Desde</label><Input type="date" value={dataDesde} onChange={(e) => setDataDesde(e.target.value)} /></div>
             <div><label className="text-xs text-muted-foreground">Até</label><Input type="date" value={dataAte} onChange={(e) => setDataAte(e.target.value)} /></div>
             <div><label className="text-xs text-muted-foreground">Tipo de registo</label><Select value={tipoRegisto} onValueChange={setTipoRegisto}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem><SelectItem value="diario">Diário de obra</SelectItem><SelectItem value="visita">Visita</SelectItem><SelectItem value="reuniao">Reunião</SelectItem><SelectItem value="fiscalizacao">Fiscalização</SelectItem></SelectContent></Select></div>
+            <div><label className="text-xs text-muted-foreground">Pesquisar no diário</label><Input value={pesquisaDiario} onChange={(e) => setPesquisaDiario(e.target.value)} placeholder="Trabalhos, materiais, equipa…" /></div>
           </div>
           {!visitas?.length ? <p className="text-sm text-muted-foreground">Ainda não existem registos no diário de obra.</p> : !visitasFiltradas.length ? <p className="text-sm text-muted-foreground">Não existem registos para os filtros seleccionados.</p> : visitasFiltradas.map((v) => { const row = v as any; const labels: Record<string,string> = { diario: 'Diário de obra', visita: 'Visita', reuniao: 'Reunião', fiscalizacao: 'Fiscalização' }; return (
             <Link key={v.id} to={`/obras/${obra.id}/visita/${v.id}`} className="block border border-border rounded-md p-3 hover:bg-muted/50">
