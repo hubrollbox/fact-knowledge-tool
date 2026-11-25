@@ -14,6 +14,7 @@ import { AcaoDialog } from '../components/AcaoDialog';
 import { DocumentosObra } from '../components/DocumentosObra';
 import { OfflineSyncStatus } from '../components/OfflineSyncStatus';
 import { AcaoComentarios } from '../components/AcaoComentarios';
+import { PlaneamentoObra } from '../components/PlaneamentoObra';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -49,6 +50,7 @@ export function ObraDetail() {
           <TabsTrigger value="visitas">Visitas ({visitas?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="planeamento">Planeamento</TabsTrigger>
           <TabsTrigger value="documentos">Documentos</TabsTrigger>
         </TabsList>
 
@@ -65,6 +67,10 @@ export function ObraDetail() {
         <TabsContent value="ocorrencias" className="space-y-3">
           {canWrite && <OcorrenciaDialog obraId={obra.id} />}
           {!ocorrencias?.length ? <p className="text-sm text-muted-foreground">Ainda não há ocorrências.</p> : ocorrencias.map((o) => <OcorrenciaItem key={o.id} o={o} canWrite={canWrite} />)}
+        </TabsContent>
+
+        <TabsContent value="planeamento" className="space-y-3">
+          <PlaneamentoObra obraId={obra.id} workspaceId={obra.workspace_id} canWrite={canWrite} />
         </TabsContent>
 
         <TabsContent value="documentos" className="space-y-3">
