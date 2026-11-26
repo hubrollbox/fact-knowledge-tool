@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import { useObra, useVisitas } from '../hooks/useObras';
 import './relatorio-visita.css';
 
@@ -30,9 +32,66 @@ export function RelatorioDiario() {
     (!desde || item.data_visita >= desde) && (!ate || item.data_visita <= ate),
   ).sort((a, b) => a.data_visita.localeCompare(b.data_visita) || (a.hora_inicio ?? '').localeCompare(b.hora_inicio ?? '')), [visitas, desde, ate]);
 
-  if (obraLoading || visitasLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar diário de obra…</div>;
+  const visitaIds = useMemo(() => registos.map((item) => item.id), [registos]);
+  const { data: anexos = { photos: [], documents: [] }, isLoading: anexosLoading, isError: anexosError } = useQuery({
+    queryKey: ['obras-diario-anexos-relatorio', visitaIds],
+    enabled: !visitasLoading && visitaIds.length > 0,
+    queryFn: async () => {
+      const [photosResult, linksResult] = await Promise.all([
+        supabase.from('obras_fotos').select('id,visita_id,storage_path,legenda,capturada_em,latitude,longitude')
+          .in('visita_id', visitaIds).order('capturada_em', { ascending: true }),
+        supabase.from('obras_documentos_ligacoes').select('documento_id,visita_id')
+          .in('visita_id', visitaIds),
+      ]);
+      if (photosResult.error) throw photosResult.error;
+      if (linksResult.error) throw linksResult.error;
+      const photos = photosResult.data ?? [];
+      const photoUrls = photos.length
+        ? await supabase.storage.from('obras-fotos').createSignedUrls(photos.map((photo) => photo.storage_path), 300)
+        : { data: [], error: null };
+      if (photoUrls.error) throw photoUrls.error;
+      const photosWithUrls = photos.map((photo, index) => ({
+        ...photo, url: photoUrls.data?.[index]?.signedUrl ?? null,
+      }));
+      const documentIds = [...new Set((linksResult.data ?? []).map((link) => link.documento_id))];
+      if (!documentIds.length) return { photos: photosWithUrls, documents: [] as any[] };
+      const [documentsResult, versionsResult] = await Promise.all([
+        supabase.from('obras_documentos').select('id,titulo,categoria,entidade_origem,identificador').in('id', documentIds),
+        supabase.from('obras_documento_versoes').select('id,documento_id,numero_versao,nome_ficheiro,storage_path,created_at')
+          .in('documento_id', documentIds).order('numero_versao', { ascending: false }),
+      ]);
+      if (documentsResult.error) throw documentsResult.error;
+      if (versionsResult.error) throw versionsResult.error;
+      const versions = versionsResult.data ?? [];
+      const signed = versions.length
+        ? await supabase.storage.from('obras-documentos').createSignedUrls(versions.map((version) => version.storage_path), 900)
+        : { data: [], error: null };
+      if (signed.error) throw signed.error;
+      const versionsWithUrls = versions.map((version, index) => ({
+        ...version, signedUrl: signed.data?.[index]?.signedUrl ?? null,
+      }));
+      return {
+        photos: photosWithUrls,
+        documents: (documentsResult.data ?? []).map((document) => ({
+          ...document,
+          visitaIds: (linksResult.data ?? []).filter((link) => link.documento_id === document.id).map((link) => link.visita_id),
+          versions: versionsWithUrls.filter((version) => version.documento_id === document.id),
+        })),
+      };
+    },
+  });
+  const anexosPorVisita = useMemo(() => Object.fromEntries(visitaIds.map((visitaId) => [
+    visitaId,
+    {
+      photos: anexos.photos.filter((photo: any) => photo.visita_id === visitaId),
+      documents: anexos.documents.filter((document: any) => document.visitaIds.includes(visitaId)),
+    },
+  ])), [anexos, visitaIds]);
+
+  if (obraLoading || visitasLoading || anexosLoading) return <div className="p-8 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />A preparar diário de obra…</div>;
   if (!obra) return <div className="p-8">Obra não encontrada.</div>;
   if (isError) return <div className="p-8">Não foi possível carregar os registos do diário. Não emita o relatório até confirmar os dados.</div>;
+  if (anexosError) return <div className="p-8">Não foi possível carregar fotografias ou documentos associados. Não emita o relatório até confirmar os anexos.</div>;
 
   const periodo = desde || ate
     ? `${desde ? dataPt(desde) : 'Início não definido'} — ${ate ? dataPt(ate) : 'Sem data final'}`
@@ -87,6 +146,8 @@ export function RelatorioDiario() {
               <div><dt>Autor (ID)</dt><dd>{row.created_by || 'Não identificado nos dados disponíveis'}</dd></div>
             </dl>
             {campos.map(([label, value]) => <div className="report-notes" key={label}><span>{label}</span><p>{value || 'Não registado.'}</p></div>)}
+            {anexosPorVisita[registo.id]?.photos.length > 0 && <div className="report-notes"><span>Registo fotográfico</span><div className="report-photo-grid">{anexosPorVisita[registo.id].photos.map((photo: any) => <figure className="report-photo" key={photo.id}>{photo.url ? <img src={photo.url} alt={photo.legenda || 'Fotografia da obra'} /> : <div className="report-photo-missing">Imagem indisponível</div>}<figcaption>{photo.legenda && <strong>{photo.legenda}<br /></strong>}{photo.capturada_em ? new Date(photo.capturada_em).toLocaleString('pt-PT') : 'Data/hora não registada'}{photo.latitude != null && <><br />Coordenadas: {photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</>}</figcaption></figure>)}</div></div>}
+            {anexosPorVisita[registo.id]?.documents.length > 0 && <div className="report-notes"><span>Documentos associados</span><ul className="space-y-2">{anexosPorVisita[registo.id].documents.map((document: any) => <li key={document.id}><strong>{document.titulo}</strong><p>{[document.categoria, document.entidade_origem, document.identificador].filter(Boolean).join(' · ')}</p>{document.versions.map((version: any) => <p key={version.id}>V{version.numero_versao} · {version.nome_ficheiro}{version.signedUrl && <> · <a href={version.signedUrl} target="_blank" rel="noreferrer">Abrir documento</a></>}</p>)}</li>)}</ul></div>}
           </article>;
         })}
       </section>
