@@ -37,15 +37,29 @@ export function RelatorioDiario() {
     queryKey: ['obras-diario-anexos-relatorio', visitaIds],
     enabled: !visitasLoading && visitaIds.length > 0,
     queryFn: async () => {
-      const [photosResult, linksResult] = await Promise.all([
-        supabase.from('obras_fotos').select('id,visita_id,storage_path,legenda,capturada_em,latitude,longitude')
+      const { data: occurrences, error: occurrencesError } = await supabase.from('obras_ocorrencias')
+        .select('id,visita_id').in('visita_id', visitaIds);
+      if (occurrencesError) throw occurrencesError;
+      const occurrenceIds = (occurrences ?? []).map((item) => item.id);
+      const [visitPhotos, occurrencePhotos, visitLinks, occurrenceLinks] = await Promise.all([
+        supabase.from('obras_fotos').select('id,visita_id,ocorrencia_id,storage_path,legenda,capturada_em,latitude,longitude')
           .in('visita_id', visitaIds).order('capturada_em', { ascending: true }),
-        supabase.from('obras_documentos_ligacoes').select('documento_id,visita_id')
+        occurrenceIds.length
+          ? supabase.from('obras_fotos').select('id,visita_id,ocorrencia_id,storage_path,legenda,capturada_em,latitude,longitude')
+              .in('ocorrencia_id', occurrenceIds).order('capturada_em', { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+        supabase.from('obras_documentos_ligacoes').select('documento_id,visita_id,ocorrencia_id')
           .in('visita_id', visitaIds),
+        occurrenceIds.length
+          ? supabase.from('obras_documentos_ligacoes').select('documento_id,visita_id,ocorrencia_id')
+              .in('ocorrencia_id', occurrenceIds)
+          : Promise.resolve({ data: [], error: null }),
       ]);
-      if (photosResult.error) throw photosResult.error;
-      if (linksResult.error) throw linksResult.error;
-      const photos = photosResult.data ?? [];
+      for (const result of [visitPhotos, occurrencePhotos, visitLinks, occurrenceLinks]) {
+        if (result.error) throw result.error;
+      }
+      const photos = [...new Map([...(visitPhotos.data ?? []), ...(occurrencePhotos.data ?? [])].map((photo) => [photo.id, photo])).values()];
+      const links = [...new Map([...(visitLinks.data ?? []), ...(occurrenceLinks.data ?? [])].map((link) => [link.documento_id, link])).values()];
       const photoUrls = photos.length
         ? await supabase.storage.from('obras-fotos').createSignedUrls(photos.map((photo) => photo.storage_path), 300)
         : { data: [], error: null };
@@ -53,7 +67,7 @@ export function RelatorioDiario() {
       const photosWithUrls = photos.map((photo, index) => ({
         ...photo, url: photoUrls.data?.[index]?.signedUrl ?? null,
       }));
-      const documentIds = [...new Set((linksResult.data ?? []).map((link) => link.documento_id))];
+      const documentIds = [...new Set(links.map((link) => link.documento_id))];
       if (!documentIds.length) return { photos: photosWithUrls, documents: [] as any[] };
       const [documentsResult, versionsResult] = await Promise.all([
         supabase.from('obras_documentos').select('id,titulo,categoria,entidade_origem,identificador').in('id', documentIds),
@@ -74,7 +88,7 @@ export function RelatorioDiario() {
         photos: photosWithUrls,
         documents: (documentsResult.data ?? []).map((document) => ({
           ...document,
-          visitaIds: (linksResult.data ?? []).filter((link) => link.documento_id === document.id).map((link) => link.visita_id),
+          visitaIds: [...new Set(links.filter((link) => link.documento_id === document.id).map((link) => link.visita_id ?? (occurrences ?? []).find((item) => item.id === link.ocorrencia_id)?.visita_id).filter(Boolean))],
           versions: versionsWithUrls.filter((version) => version.documento_id === document.id),
         })),
       };
