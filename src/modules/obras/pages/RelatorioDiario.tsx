@@ -59,7 +59,7 @@ export function RelatorioDiario() {
         if (result.error) throw result.error;
       }
       const photos = [...new Map([...(visitPhotos.data ?? []), ...(occurrencePhotos.data ?? [])].map((photo) => [photo.id, photo])).values()];
-      const links = [...new Map([...(visitLinks.data ?? []), ...(occurrenceLinks.data ?? [])].map((link) => [link.documento_id, link])).values()];
+      const links = [...new Map([...(visitLinks.data ?? []), ...(occurrenceLinks.data ?? [])].map((link) => [`${link.documento_id}:${link.visita_id ?? ''}:${link.ocorrencia_id ?? ''}`, link])).values()];
       const photoUrls = photos.length
         ? await supabase.storage.from('obras-fotos').createSignedUrls(photos.map((photo) => photo.storage_path), 300)
         : { data: [], error: null };
@@ -157,7 +157,7 @@ export function RelatorioDiario() {
             <dl className="report-facts">
               <div><dt>Responsável / técnico</dt><dd>{registo.tecnico || '—'}</dd></div>
               <div><dt>Condições meteorológicas</dt><dd>{registo.condicoes_meteo || '—'}</dd></div>
-              <div><dt>Autor (ID)</dt><dd>{row.created_by || 'Não identificado nos dados disponíveis'}</dd></div>
+              <div><dt>Autoria</dt><dd>{row.created_by ? 'Autor registado e identificado no sistema' : 'Autor não identificado nos dados disponíveis'}</dd></div>
             </dl>
             {campos.map(([label, value]) => <div className="report-notes" key={label}><span>{label}</span><p>{value || 'Não registado.'}</p></div>)}
             {anexosPorVisita[registo.id]?.photos.length > 0 && <div className="report-notes"><span>Registo fotográfico</span><div className="report-photo-grid">{anexosPorVisita[registo.id].photos.map((photo: any) => <figure className="report-photo" key={photo.id}>{photo.url ? <img src={photo.url} alt={photo.legenda || 'Fotografia da obra'} /> : <div className="report-photo-missing">Imagem indisponível</div>}<figcaption>{photo.legenda && <strong>{photo.legenda}<br /></strong>}{photo.capturada_em ? new Date(photo.capturada_em).toLocaleString('pt-PT') : 'Data/hora não registada'}{photo.latitude != null && <><br />Coordenadas: {photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</>}</figcaption></figure>)}</div></div>}
