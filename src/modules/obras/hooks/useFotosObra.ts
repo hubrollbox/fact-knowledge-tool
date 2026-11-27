@@ -15,7 +15,7 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
     queryKey: ['obras_fotos', user?.id, ws, key],
     staleTime: 4 * 60 * 1000,
     refetchInterval: 4 * 60 * 1000,
-    enabled: !!key,
+    enabled: !!key && !!ws && !!user?.id,
     queryFn: async () => {
       if (!user?.id || !ws) throw new Error('Sem sessão ou espaço de trabalho para consultar fotografias.');
       const cached = await listarFotosCacheOffline(user.id, ws).catch(() => []);
