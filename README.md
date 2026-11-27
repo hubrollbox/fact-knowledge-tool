@@ -126,7 +126,7 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [Visão do produto](docs/Visao.md) — propósito, arquitetura funcional, módulos e princípios.
 - [Modelo funcional e de dados do FKT Lex](docs/architecture/fkt-lex-data-model.md) — proposta e auditoria do domínio jurídico.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
-- [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.
+- [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.\n- [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
 - [Configuração Supabase](supabase/config.toml) — configuração local do projeto e das Edge Functions.
 
 A documentação específica de cada módulo deve ser lida em conjunto com o código e as migrações correspondentes. Uma matriz ou modelo funcional não substitui testes de permissões e validação funcional.
