@@ -95,7 +95,7 @@ export function useUpdateAnimal() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['canil_animais'] });
       qc.invalidateQueries({ queryKey: ['canil_animais_arquivados'] });
-      qc.invalidateQueries({ queryKey: ['canil_animal', data.id] });
+      qc.invalidateQueries({ queryKey: ['canil_animal', workspaceId, data.id] });
     },
   });
 }
