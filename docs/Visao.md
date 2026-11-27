@@ -31,26 +31,29 @@ O FKT disponibiliza uma base comum de trabalho e módulos especializados por dom
 
 ### 3.1. Core transversal
 
-O Core assegura as capacidades partilhadas pela plataforma:
+O Core assegura capacidades partilhadas pela plataforma, de acordo com o módulo e as permissões:
 
-- Organizações e espaços de trabalho (*workspaces*);
-- Gestão de utilizadores e respetivas permissões;
-- Organização de assuntos e registos;
-- Documentos, fotografias e outras evidências;
-- Fontes e referências;
-- Histórico e rastreabilidade;
-- Ações, responsáveis e prazos;
-- Validação, consulta e exportação de informação.
+- autenticação;
+- organização através de um workspace principal por conta;
+- gestão de utilizadores e permissões;
+- organização de assuntos e registos;
+- documentos, fotografias e outras evidências;
+- fontes e referências;
+- histórico e rastreabilidade;
+- ações, responsáveis e prazos;
+- consulta e exportação de informação.
 
 Estas capacidades constituem a infraestrutura comum. Não determinam, por si só, a forma como cada setor deve trabalhar.
 
 ### 3.2. Módulos especializados
 
-Cada módulo aplica o Core a um domínio concreto. Mantém a sua própria linguagem, estrutura de dados, regras, fluxos de trabalho e critérios de validação.
+Cada módulo aplica o Core a um domínio concreto. Mantém a sua própria linguagem, estrutura de dados, regras e fluxos de trabalho.
 
-Um mesmo espaço de trabalho poderá utilizar vários módulos, de acordo com as necessidades e permissões da organização. A utilização de um módulo não deverá obrigar a organização a adotar os restantes.
+**Modelo de utilização actualmente implementado:** cada conta está associada a um workspace principal e esse workspace tem um único módulo ativo de cada vez. O utilizador pode mudar o módulo ativo através da aplicação. Esta opção não significa que todos os módulos estejam concluídos ou disponíveis para utilização geral.
 
-Os módulos não são aplicações independentes: partilham a infraestrutura e os princípios do FKT, preservando a autonomia funcional necessária a cada atividade.
+Os módulos partilham a infraestrutura e os princípios do FKT, preservando a autonomia funcional necessária a cada atividade. Os dados e estruturas específicas de cada domínio não devem ser considerados intercambiáveis.
+
+A utilização simultânea de vários módulos no mesmo workspace não é descrita como capacidade actual nesta visão.
 
 ### 3.3. Método de trabalho comum
 
@@ -74,18 +77,18 @@ Não constitui uma condição de utilização do FKT nem substitui a validação
 
 Qualquer utilização de IA deverá respeitar os princípios de rastreabilidade, transparência e controlo do produto.
 
-## 4. Módulos e Âmbito
+## 4. Módulos e âmbito
 
-O FKT desenvolve-se através de módulos verticais. O seu estado deve ser distinguido entre desenvolvimento, preparação, piloto e disponibilidade efetiva.
+O FKT desenvolve-se através de módulos verticais. O estado indicado na aplicação deve ser distinguido entre piloto e preparação; a presença de código não equivale a disponibilidade geral.
 
-| Módulo | Âmbito | Enquadramento atual |
+| Módulo | Âmbito | Estado indicado no produto |
 |---|---|---|
-| **FKT Works** | Visitas, ocorrências, fotografias, ações, decisões técnicas e relatórios de fiscalização. | Primeiro módulo escolhido para piloto e validação comercial. |
+| **FKT Works** | Visitas, ocorrências, fotografias, ações, decisões técnicas e relatórios de fiscalização. | Piloto fechado; primeiro módulo escolhido para validação comercial. |
 | **FKT Lex** | Organização de processos, factos, documentos, referências e análise jurídica estruturada. | Em preparação. O FIRAC é aplicável neste módulo quando adequado. |
-| **FKT Vet** | Informação, histórico, cuidados e operações no domínio veterinário e animal. | Em preparação. |
-| **FKT Dev** | Decisões técnicas, incidentes, documentação e acompanhamento de trabalho de desenvolvimento. | Em preparação. |
+| **FKT Vet** | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. | Em preparação. |
+| **FKT Dev** | Projetos, issues, decisões técnicas e documentação. | Em preparação. |
 
-Esta lista representa o âmbito identificado para o produto. A inclusão de um módulo nesta visão não significa que esteja concluído, validado comercialmente ou disponível para utilização em produção.
+Esta lista representa o âmbito e os estados identificados no código do produto. Não constitui uma certificação de conclusão, validação funcional ou disponibilidade em produção.
 
 ### 4.1. FKT Works
 
@@ -93,21 +96,19 @@ O FKT Works é o primeiro módulo vertical selecionado para validação comercia
 
 Está orientado para profissionais que necessitam de registar e acompanhar a atividade de fiscalização e acompanhamento de obras, incluindo:
 
-- Registo de visitas;
-- Registo e acompanhamento de ocorrências;
-- Recolha e associação de fotografias e documentos;
-- Registo de decisões e ações;
-- Identificação de responsáveis e prazos;
-- Consulta do histórico;
-- Preparação de relatórios de acompanhamento.
+- registo de visitas;
+- registo e acompanhamento de ocorrências;
+- recolha e associação de fotografias e documentos;
+- registo de decisões e ações;
+- identificação de responsáveis e prazos;
+- consulta do histórico;
+- preparação de relatórios de acompanhamento.
 
 O objetivo é assegurar que a informação recolhida no terreno não fica isolada: deve manter ligação à obra, à visita, à ocorrência, à decisão e à ação correspondente.
 
 O FKT Works não deve ser apresentado como substituto de todas as ferramentas de gestão de obra. O seu foco é a organização da informação, a evidência, a rastreabilidade e o acompanhamento.
 
-## 5. Princípios Fundamentais
-
-Os seguintes princípios orientam a conceção e evolução da plataforma:
+## 5. Princípios fundamentais
 
 - **Estrutura antes da interface** — a informação deve ter organização e contexto.
 - **Evidência identificável** — os registos relevantes devem poder ser relacionados com as respetivas fontes.
@@ -115,21 +116,21 @@ Os seguintes princípios orientam a conceção e evolução da plataforma:
 - **Responsabilidade explícita** — ações, responsáveis e prazos devem ser identificáveis.
 - **Autonomia dos módulos** — cada domínio mantém os seus conceitos, regras e fluxos próprios.
 - **Core comum, sem uniformização artificial** — partilham-se capacidades transversais, não se forçam modelos de dados ou metodologias inadequados a cada setor.
-- **Controlo de acesso** — a informação deve estar acessível de acordo com a organização, o espaço de trabalho e as permissões atribuídas.
+- **Controlo de acesso** — a informação deve estar acessível de acordo com a organização, o workspace e as permissões atribuídas.
 - **IA opcional e controlada** — nenhuma funcionalidade de IA deve comprometer a validação, a transparência ou a responsabilidade humana.
 - **Evolução baseada em utilização real** — as decisões de produto devem ser sustentadas por necessidades verificadas.
 
-## 6. Público-Alvo
+## 6. Público-alvo
 
 O público do FKT depende dos módulos utilizados.
 
 De forma transversal, a plataforma destina-se a organizações e profissionais que precisam de:
 
-- Organizar informação operacional;
-- Relacionar registos com documentos e evidências;
-- Fundamentar decisões;
-- Acompanhar ações e responsabilidades;
-- Manter um histórico consultável e auditável.
+- organizar informação operacional;
+- relacionar registos com documentos e evidências;
+- fundamentar decisões;
+- acompanhar ações e responsabilidades;
+- manter um histórico consultável e auditável.
 
 No primeiro ciclo de validação, o foco comercial está nos profissionais e pequenas organizações ligados à fiscalização e ao acompanhamento de obras.
 
@@ -143,29 +144,25 @@ Não pretende ser um repositório genérico de ficheiros, uma folha de cálculo 
 
 Também não pretende substituir automaticamente os sistemas especializados já utilizados pelas organizações. A sua utilidade está em estruturar o percurso entre informação, evidência, decisão e acompanhamento.
 
-A diferenciação do FKT resulta da combinação de:
+A diferenciação pretendida resulta da combinação de uma infraestrutura transversal, módulos adaptados a necessidades concretas e relações explícitas entre registos, fontes, decisões e ações.
 
-- Uma infraestrutura transversal;
-- Módulos adaptados a necessidades concretas;
-- Relações explícitas entre registos, fontes, decisões e ações;
-- Histórico e rastreabilidade;
-- Controlo de acesso e responsabilidade.
-
-## 8. Visão de Longo Prazo
+## 8. Visão de longo prazo
 
 A evolução do FKT deverá ser progressiva.
 
 **Primeira etapa — validação:** consolidar o Core necessário e validar o FKT Works com profissionais e organizações reais, identificando necessidades, limitações e valor efetivo.
 
-**Segunda etapa — consolidação:** estabilizar a arquitetura modular, as permissões, a gestão de organizações e a utilização de vários módulos no mesmo espaço de trabalho.
+**Segunda etapa — consolidação:** estabilizar a arquitetura modular, as permissões, a gestão de organizações e o modelo de utilização de um módulo ativo por workspace.
 
 **Terceira etapa — expansão:** desenvolver e validar outros módulos, sem comprometer a coerência do Core nem impor dependências desnecessárias entre setores.
+
+Qualquer evolução futura para utilização simultânea de vários módulos no mesmo workspace deverá ser tratada como decisão de arquitetura explícita, acompanhada de análise de permissões, isolamento de dados e migração. Não é assumida como capacidade actual.
 
 **Longo prazo:** evoluir para uma plataforma modular utilizada por diferentes organizações, com módulos próprios para os seus contextos de trabalho e uma base comum de evidência, rastreabilidade e controlo.
 
 Esta evolução deverá ser orientada por utilização real, segurança e sustentabilidade do produto, não por funcionalidades especulativas.
 
-## 9. O Que o FKT Não É
+## 9. O que o FKT não é
 
 - Não é uma aplicação exclusivamente jurídica.
 - Não impõe o método FIRAC a todos os módulos.
@@ -177,7 +174,7 @@ Esta evolução deverá ser orientada por utilização real, segurança e susten
 
 O FKT é uma plataforma modular que organiza informação, relaciona evidências, fundamenta decisões e permite acompanhar ações.
 
-## 10. Mensagem Central
+## 10. Mensagem central
 
 **Informação organizada. Decisões fundamentadas. Ações acompanhadas.**
 
