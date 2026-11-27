@@ -4,18 +4,20 @@ import { useWorkspaceId } from './useWorkspaceId';
 import type { RegistoClinicoInsert } from '../types/canil';
 
 export function useRegistosClinicos(animalId: string | undefined) {
+  const workspaceId = useWorkspaceId();
   return useQuery({
-    queryKey: ['canil_clinico', animalId],
+    queryKey: ['canil_clinico', workspaceId, animalId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('canil_registos_clinicos')
         .select('*')
+        .eq('workspace_id', workspaceId!)
         .eq('animal_id', animalId!)
         .order('data_registo', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!animalId,
+    enabled: !!animalId && !!workspaceId,
   });
 }
 
@@ -34,7 +36,7 @@ export function useCreateRegistoClinico() {
       return data;
     },
     onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ['canil_clinico', data.animal_id] });
+      qc.invalidateQueries({ queryKey: ['canil_clinico', workspaceId, data.animal_id] });
       qc.invalidateQueries({ queryKey: ['canil_alertas_vacinas'] });
     },
   });
