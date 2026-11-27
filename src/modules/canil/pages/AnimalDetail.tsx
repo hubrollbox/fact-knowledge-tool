@@ -20,6 +20,7 @@ import { useRegistosClinicos } from '../hooks/useClinico';
 import { useNinhadasDoAnimal } from '../hooks/useNinhadas';
 import { RegistoClinicoForm } from '../components/RegistoClinicoForm';
 import { toast } from '@/hooks/use-toast';
+import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import type { NinhadaComProgenitores } from '../types/canil';
 
 export function AnimalDetail() {
@@ -27,6 +28,7 @@ export function AnimalDetail() {
   const navigate = useNavigate();
   const { data: animal, isLoading } = useAnimal(id);
   const updateAnimal = useUpdateAnimal();
+  const { canWrite } = useWorkspaceRole();
   const { data: registos } = useRegistosClinicos(id);
   const { data: ninhadas } = useNinhadasDoAnimal(id);
   const [novoRegisto, setNovoRegisto] = useState(false);
@@ -66,7 +68,7 @@ export function AnimalDetail() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex items-center gap-2">
-          {animal && (
+          {animal && canWrite && (
             <Button
               variant="outline"
               size="sm"
