@@ -38,7 +38,7 @@ const formatarTamanho = (bytes: number) => {
 export function AcaoAnexos({ acaoId, workspaceId, canWrite }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const queryKey = ['obras_acao_anexos', acaoId];
+  const queryKey = ['obras_acao_anexos', workspaceId, acaoId];
 
   const { data: anexos = [], isLoading, isError } = useQuery<Anexo[]>({
     queryKey,
