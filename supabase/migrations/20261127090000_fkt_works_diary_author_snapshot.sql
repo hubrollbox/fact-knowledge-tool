@@ -4,6 +4,18 @@ BEGIN;
 ALTER TABLE public.obras_visitas
   ADD COLUMN IF NOT EXISTS created_by_name text;
 
+-- Backfill before installing the stricter trigger: the previous trigger
+-- protects created_by but does not know about the newly-added snapshot column.
+UPDATE public.obras_visitas AS v
+SET created_by_name = NULLIF(left(btrim(COALESCE(
+  u.raw_user_meta_data ->> 'full_name',
+  u.raw_user_meta_data ->> 'name',
+  u.raw_user_meta_data ->> 'display_name'
+)), 120), '')
+FROM auth.users AS u
+WHERE v.created_by = u.id
+  AND v.created_by_name IS NULL;
+
 CREATE OR REPLACE FUNCTION private.validar_autoria_obras_visita()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -60,17 +72,6 @@ $function$;
 
 REVOKE ALL ON FUNCTION private.validar_autoria_obras_visita()
   FROM PUBLIC, anon, authenticated;
-
--- Backfill existing records when the account still has a display name.
-UPDATE public.obras_visitas AS v
-SET created_by_name = NULLIF(left(btrim(COALESCE(
-  u.raw_user_meta_data ->> 'full_name',
-  u.raw_user_meta_data ->> 'name',
-  u.raw_user_meta_data ->> 'display_name'
-)), 120), '')
-FROM auth.users AS u
-WHERE v.created_by = u.id
-  AND v.created_by_name IS NULL;
 
 COMMENT ON COLUMN public.obras_visitas.created_by_name IS
   'Nome apresentado da conta que criou o registo, guardado como snapshot e imutável. Não é utilizado para autorização.';
