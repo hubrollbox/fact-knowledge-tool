@@ -1,7 +1,15 @@
 -- =============================================================================
--- FKT — Factual Knowledge Tool
--- Complete Database Migration
--- Run this in your Supabase project → SQL Editor
+-- ARQUIVO HISTÓRICO — NÃO EXECUTAR
+--
+-- Este ficheiro é um snapshot legado de um esquema inicial e não representa
+-- o estado actual da base de dados FKT.
+--
+-- A fonte versionada para evolução do esquema são as migrações em
+-- supabase/migrations/. Aplique migrações apenas através do processo aprovado
+-- para o ambiente pretendido; não execute este ficheiro no SQL Editor.
+--
+-- Mantido apenas para consulta histórica. Não usar como instalação, reset ou
+-- mecanismo de sincronização da base de dados.
 -- =============================================================================
 
 -- ─────────────────────────────────────────────
