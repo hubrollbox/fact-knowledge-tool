@@ -46,7 +46,7 @@ jobs:
       - name: Verify FKT Works diary author migration is repeatable with legacy rows
         run: |
           DB_URL='postgresql://postgres:postgres@127.0.0.1:54322/postgres'
-          psql "$DB_URL" --set ON_ERROR_STOP=1 --file supabase/migrations/20261127090000_fkt_works_diary_author_snapshot.sql
+          psql "$DB_URL" --set ON_ERROR_STOP=1 --file supabase/migrations/20261127231613_fkt_works_diary_author_snapshot.sql
           psql "$DB_URL" --set ON_ERROR_STOP=1 <<'SQL'
           INSERT INTO auth.users (id,aud,role,email,raw_user_meta_data,created_at,updated_at)
           VALUES ('a4900000-0000-4000-8000-000000000001','authenticated','authenticated','fkt-works-author-backfill@example.test','{"full_name":"Autor Migração CI"}'::jsonb,now(),now());
@@ -57,7 +57,7 @@ jobs:
           INSERT INTO public.obras_visitas (id,workspace_id,obra_id,data_visita,created_by)
           VALUES ('d4900000-0000-4000-8000-000000000001','b4900000-0000-4000-8000-000000000001','c4900000-0000-4000-8000-000000000001',current_date,'a4900000-0000-4000-8000-000000000001');
           SQL
-          psql "$DB_URL" --set ON_ERROR_STOP=1 --file supabase/migrations/20261127090000_fkt_works_diary_author_snapshot.sql
+          psql "$DB_URL" --set ON_ERROR_STOP=1 --file supabase/migrations/20261127231613_fkt_works_diary_author_snapshot.sql
           psql "$DB_URL" --set ON_ERROR_STOP=1 <<'SQL'
           SELECT 1 / CASE
             WHEN (SELECT created_by_name FROM public.obras_visitas WHERE id='d4900000-0000-4000-8000-000000000001') IS NOT DISTINCT FROM 'Autor Migração CI'
