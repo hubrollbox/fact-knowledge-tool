@@ -3108,41 +3108,68 @@ export type Database = {
       }
       obras_visitas: {
         Row: {
+          atrasos: string | null
           condicoes_meteo: string | null
+          condicionantes: string | null
           created_at: string
+          created_by: string | null
+          created_by_name: string | null
           data_visita: string
+          equipa_intervenientes: string | null
+          equipamentos: string | null
           hora_fim: string | null
           hora_inicio: string | null
           id: string
+          materiais: string | null
           notas: string | null
           obra_id: string
           tecnico: string | null
+          tipo_registo: string
+          trabalhos_executados: string | null
           updated_at: string
           workspace_id: string
         }
         Insert: {
+          atrasos?: string | null
           condicoes_meteo?: string | null
+          condicionantes?: string | null
           created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
           data_visita?: string
+          equipa_intervenientes?: string | null
+          equipamentos?: string | null
           hora_fim?: string | null
           hora_inicio?: string | null
           id?: string
+          materiais?: string | null
           notas?: string | null
           obra_id: string
           tecnico?: string | null
+          tipo_registo?: string
+          trabalhos_executados?: string | null
           updated_at?: string
           workspace_id: string
         }
         Update: {
+          atrasos?: string | null
           condicoes_meteo?: string | null
+          condicionantes?: string | null
           created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
           data_visita?: string
+          equipa_intervenientes?: string | null
+          equipamentos?: string | null
           hora_fim?: string | null
           hora_inicio?: string | null
           id?: string
+          materiais?: string | null
           notas?: string | null
           obra_id?: string
           tecnico?: string | null
+          tipo_registo?: string
+          trabalhos_executados?: string | null
           updated_at?: string
           workspace_id?: string
         }

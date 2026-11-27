@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useObra, useVisitas } from '../hooks/useObras';
 import './relatorio-visita.css';
+import { formatDiaryAuthor } from '../utils/formatDiaryAuthor';
 
 const TIPOS: Record<string, string> = {
   diario: 'Diário de obra',
@@ -139,7 +140,7 @@ export function RelatorioDiario() {
       <section className="report-section">
         <h2>2. Registos cronológicos</h2>
         {!registos.length ? <p className="report-muted">Não existem registos no período indicado.</p> : registos.map((registo, index) => {
-          const row = registo as typeof registo & { tipo_registo?: string; trabalhos_executados?: string | null; equipa_intervenientes?: string | null; equipamentos?: string | null; materiais?: string | null; condicionantes?: string | null; atrasos?: string | null; created_by?: string | null };
+          const row = registo as typeof registo & { tipo_registo?: string; trabalhos_executados?: string | null; equipa_intervenientes?: string | null; equipamentos?: string | null; materiais?: string | null; condicionantes?: string | null; atrasos?: string | null; created_by?: string | null; created_by_name?: string | null };
           const campos: [string, string | null | undefined][] = [
             ['Trabalhos executados', row.trabalhos_executados],
             ['Equipas e intervenientes', row.equipa_intervenientes],
@@ -157,7 +158,7 @@ export function RelatorioDiario() {
             <dl className="report-facts">
               <div><dt>Responsável / técnico</dt><dd>{registo.tecnico || '—'}</dd></div>
               <div><dt>Condições meteorológicas</dt><dd>{registo.condicoes_meteo || '—'}</dd></div>
-              <div><dt>Autoria</dt><dd>{row.created_by ? 'Autor registado e identificado no sistema' : 'Autor não identificado nos dados disponíveis'}</dd></div>
+              <div><dt>Autoria</dt><dd>{formatDiaryAuthor(row.created_by, row.created_by_name)}</dd></div>
             </dl>
             {campos.map(([label, value]) => <div className="report-notes" key={label}><span>{label}</span><p>{value || 'Não registado.'}</p></div>)}
             {anexosPorVisita[registo.id]?.photos.length > 0 && <div className="report-notes"><span>Registo fotográfico</span><div className="report-photo-grid">{anexosPorVisita[registo.id].photos.map((photo: any) => <figure className="report-photo" key={photo.id}>{photo.url ? <img src={photo.url} alt={photo.legenda || 'Fotografia da obra'} /> : <div className="report-photo-missing">Imagem indisponível</div>}<figcaption>{photo.legenda && <strong>{photo.legenda}<br /></strong>}{photo.capturada_em ? new Date(photo.capturada_em).toLocaleString('pt-PT') : 'Data/hora não registada'}{photo.latitude != null && <><br />Coordenadas: {photo.latitude.toFixed(5)}, {photo.longitude?.toFixed(5)}</>}</figcaption></figure>)}</div></div>}
