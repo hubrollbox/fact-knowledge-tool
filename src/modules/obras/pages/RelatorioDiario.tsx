@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useObra, useVisitas } from '../hooks/useObras';
+import { useObrasWorkspace } from '../hooks/useObrasWorkspace';
 import './relatorio-visita.css';
 import { formatDiaryAuthor } from '../utils/formatDiaryAuthor';
 
@@ -23,6 +24,7 @@ function dataPt(value?: string | null) {
 
 export function RelatorioDiario() {
   const { id } = useParams();
+  const workspaceId = useObrasWorkspace();
   const [params] = useSearchParams();
   const desde = params.get('desde') || '';
   const ate = params.get('ate') || '';
@@ -35,8 +37,8 @@ export function RelatorioDiario() {
 
   const visitaIds = useMemo(() => registos.map((item) => item.id), [registos]);
   const { data: anexos = { photos: [], documents: [] }, isLoading: anexosLoading, isError: anexosError } = useQuery({
-    queryKey: ['obras-diario-anexos-relatorio', visitaIds],
-    enabled: !visitasLoading && visitaIds.length > 0,
+    queryKey: ['obras-diario-anexos-relatorio', workspaceId, visitaIds],
+    enabled: !!workspaceId && !visitasLoading && visitaIds.length > 0,
     queryFn: async () => {
       const { data: occurrences, error: occurrencesError } = await supabase.from('obras_ocorrencias')
         .select('id,visita_id').in('visita_id', visitaIds);
