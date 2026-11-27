@@ -68,6 +68,9 @@ export function RelatorioDiario() {
       const photosWithUrls = photos.map((photo, index) => ({
         ...photo, url: photoUrls.data?.[index]?.signedUrl ?? null,
       }));
+      if (photosWithUrls.some((photo) => !photo.url)) {
+        throw new Error('Uma ou mais fotografias não puderam ser disponibilizadas para o relatório.');
+      }
       const documentIds = [...new Set(links.map((link) => link.documento_id))];
       if (!documentIds.length) return { photos: photosWithUrls, documents: [] as any[] };
       const [documentsResult, versionsResult] = await Promise.all([
@@ -85,6 +88,9 @@ export function RelatorioDiario() {
       const versionsWithUrls = versions.map((version, index) => ({
         ...version, signedUrl: signed.data?.[index]?.signedUrl ?? null,
       }));
+      if (versionsWithUrls.some((version) => !version.signedUrl)) {
+        throw new Error('Um ou mais documentos não puderam ser disponibilizados para o relatório.');
+      }
       return {
         photos: photosWithUrls,
         documents: (documentsResult.data ?? []).map((document) => ({
