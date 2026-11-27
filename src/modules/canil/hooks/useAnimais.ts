@@ -40,18 +40,21 @@ export function useAnimaisArquivados() {
 }
 
 export function useAnimal(id: string | undefined) {
+  const workspaceId = useWorkspaceId();
   return useQuery({
-    queryKey: ['canil_animal', id],
+    queryKey: ['canil_animal', workspaceId, id],
     queryFn: async () => {
+      if (!workspaceId) throw new Error('Sem workspace activo');
       const { data, error } = await supabase
         .from('canil_animais')
         .select('*')
+        .eq('workspace_id', workspaceId)
         .eq('id', id!)
         .single();
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!workspaceId,
   });
 }
 
@@ -75,11 +78,14 @@ export function useCreateAnimal() {
 
 export function useUpdateAnimal() {
   const qc = useQueryClient();
+  const workspaceId = useWorkspaceId();
   return useMutation({
     mutationFn: async ({ id, ...updates }: AnimalUpdate & { id: string }) => {
+      if (!workspaceId) throw new Error('Sem workspace activo');
       const { data, error } = await supabase
         .from('canil_animais')
         .update(updates)
+        .eq('workspace_id', workspaceId)
         .eq('id', id)
         .select()
         .single();
