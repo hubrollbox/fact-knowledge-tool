@@ -339,7 +339,7 @@ export function useActualizarEstado() {
             window.dispatchEvent(new Event('fkt:offline-queue-changed'));
             throw new Error('Foi detectada uma alteração concorrente ao estado. A alteração local foi preservada para resolução.');
           }
-          let update = supabase.from(table).update({ estado }).eq('id', id);
+          let update = supabase.from(table).update({ estado }).eq('workspace_id', ws).eq('id', id);
           if (current.updated_at) update = update.eq('updated_at', current.updated_at) as typeof update;
           const { data, error } = await update.select('id').maybeSingle();
           if (error) throw error;
