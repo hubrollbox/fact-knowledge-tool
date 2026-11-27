@@ -59,12 +59,7 @@ jobs:
           SQL
           psql "$DB_URL" --set ON_ERROR_STOP=1 --file supabase/migrations/20261127090000_fkt_works_diary_author_snapshot.sql
           psql "$DB_URL" --set ON_ERROR_STOP=1 <<'SQL'
-          DO $
-          BEGIN
-            IF (SELECT created_by_name FROM public.obras_visitas WHERE id='d4900000-0000-4000-8000-000000000001') IS DISTINCT FROM 'Autor Migração CI' THEN
-              RAISE EXCEPTION 'Author migration did not backfill an existing legacy row';
-            END IF;
-          END $;
+          psql "$DB_URL" --set ON_ERROR_STOP=1 --command "SELECT CASE WHEN (SELECT created_by_name FROM public.obras_visitas WHERE id='d4900000-0000-4000-8000-000000000001') IS NOT DISTINCT FROM 'Autor Migração CI' THEN 1 ELSE 1/0 END"
           DELETE FROM public.obras_visitas WHERE id='d4900000-0000-4000-8000-000000000001';
           DELETE FROM public.obras WHERE id='c4900000-0000-4000-8000-000000000001';
           DELETE FROM public.workspaces WHERE id='b4900000-0000-4000-8000-000000000001';
