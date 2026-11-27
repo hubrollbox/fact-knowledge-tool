@@ -44,8 +44,8 @@ export function FormResponses({ obraId, visitaId, occurrenceId, canWrite }: { ob
     },
   });
   const responsesQuery = useQuery({
-    queryKey: ['obras-formularios-respostas', visitaId, occurrenceId],
-    enabled: !!visitaId,
+    queryKey: ['obras-formularios-respostas', workspaceId, visitaId, occurrenceId],
+    enabled: !!workspaceId && !!visitaId,
     queryFn: async () => {
       let query = db.from('obras_formularios_respostas').select('*').eq('visita_id', visitaId);
       if (occurrenceId) query = query.eq('ocorrencia_id', occurrenceId);
@@ -55,8 +55,8 @@ export function FormResponses({ obraId, visitaId, occurrenceId, canWrite }: { ob
     },
   });
   const photosQuery = useQuery({
-    queryKey: ['obras-formularios-fotos', visitaId, occurrenceId],
-    enabled: !!visitaId,
+    queryKey: ['obras-formularios-fotos', workspaceId, visitaId, occurrenceId],
+    enabled: !!workspaceId && !!visitaId,
     queryFn: async () => {
       let query = db.from('obras_fotos').select('id,legenda,capturada_em');
       query = occurrenceId ? query.eq('ocorrencia_id', occurrenceId) : query.eq('visita_id', visitaId);
@@ -66,8 +66,8 @@ export function FormResponses({ obraId, visitaId, occurrenceId, canWrite }: { ob
     },
   });
   const documentsQuery = useQuery({
-    queryKey: ['obras-formularios-documentos', obraId, visitaId, occurrenceId],
-    enabled: !!obraId && !!visitaId,
+    queryKey: ['obras-formularios-documentos', workspaceId, obraId, visitaId, occurrenceId],
+    enabled: !!workspaceId && !!obraId && !!visitaId,
     queryFn: async () => {
       let query = db.from('obras_documentos_ligacoes').select('documento_id').eq('obra_id', obraId);
       query = occurrenceId ? query.eq('ocorrencia_id', occurrenceId) : query.eq('visita_id', visitaId);
@@ -94,7 +94,7 @@ export function FormResponses({ obraId, visitaId, occurrenceId, canWrite }: { ob
   }, [responsesQuery.data]);
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['obras-formularios-respostas', visitaId] });
+    queryClient.invalidateQueries({ queryKey: ['obras-formularios-respostas', workspaceId, visitaId] });
   };
   const createResponse = useMutation({
     mutationFn: async (templateId: string) => {
