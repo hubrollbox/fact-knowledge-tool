@@ -4,10 +4,26 @@ BEGIN;
 ALTER TABLE public.obras_visitas
   ADD COLUMN IF NOT EXISTS created_by_name text;
 
+-- Backfill legacy rows while the previous trigger is temporarily disabled.
+-- This also makes re-running this migration safe when old rows still lack a name.
+ALTER TABLE public.obras_visitas DISABLE TRIGGER obras_visitas_validar_autoria;
+
+UPDATE public.obras_visitas AS v
+SET created_by_name = NULLIF(left(btrim(COALESCE(
+  u.raw_user_meta_data ->> 'full_name',
+  u.raw_user_meta_data ->> 'name',
+  u.raw_user_meta_data ->> 'display_name'
+)), 120), '')
+FROM auth.users AS u
+WHERE v.created_by = u.id
+  AND v.created_by_name IS NULL;
+
+ALTER TABLE public.obras_visitas ENABLE TRIGGER obras_visitas_validar_autoria;
+
 CREATE OR REPLACE FUNCTION private.validar_autoria_obras_visita()
 RETURNS trigger
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
 DECLARE
@@ -26,18 +42,14 @@ BEGIN
         USING ERRCODE = '42501';
     END IF;
 
-    -- Snapshot only the authenticated creator's display name. User metadata is
-    -- used for presentation only; it is never used for authorization.
+    -- Metadata is used only as a display label, never for authorization.
+    -- Read the verified request claims instead of querying auth.users at runtime.
     IF _user_id IS NOT NULL THEN
-      SELECT NULLIF(left(btrim(COALESCE(
-        u.raw_user_meta_data ->> 'full_name',
-        u.raw_user_meta_data ->> 'name',
-        u.raw_user_meta_data ->> 'display_name'
-      )), 120), '')
-      INTO _author_name
-      FROM auth.users AS u
-      WHERE u.id = _user_id;
-
+      _author_name := NULLIF(left(btrim(COALESCE(
+        (SELECT auth.jwt()) -> 'user_metadata' ->> 'full_name',
+        (SELECT auth.jwt()) -> 'user_metadata' ->> 'name',
+        (SELECT auth.jwt()) -> 'user_metadata' ->> 'display_name'
+      )), 120), '');
       NEW.created_by_name := _author_name;
     ELSE
       NEW.created_by_name := NULL;
@@ -60,17 +72,6 @@ $function$;
 
 REVOKE ALL ON FUNCTION private.validar_autoria_obras_visita()
   FROM PUBLIC, anon, authenticated;
-
--- Backfill existing records when the account still has a display name.
-UPDATE public.obras_visitas AS v
-SET created_by_name = NULLIF(left(btrim(COALESCE(
-  u.raw_user_meta_data ->> 'full_name',
-  u.raw_user_meta_data ->> 'name',
-  u.raw_user_meta_data ->> 'display_name'
-)), 120), '')
-FROM auth.users AS u
-WHERE v.created_by = u.id
-  AND v.created_by_name IS NULL;
 
 COMMENT ON COLUMN public.obras_visitas.created_by_name IS
   'Nome apresentado da conta que criou o registo, guardado como snapshot e imutável. Não é utilizado para autorização.';
