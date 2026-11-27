@@ -39,11 +39,13 @@ export function useFormTemplates() {
 }
 
 export function useFormTemplate(id?: string) {
+  const workspaceId = useObrasWorkspace();
   return useQuery({
-    queryKey: ['obras-formulario', id],
-    enabled: !!id,
+    queryKey: ['obras-formulario', workspaceId, id],
+    enabled: !!id && !!workspaceId,
     queryFn: async () => {
-      const { data, error } = await db.from('obras_formularios').select('*').eq('id', id).single();
+      const { data, error } = await db.from('obras_formularios').select('*')
+        .eq('workspace_id', workspaceId).eq('id', id).single();
       if (error) throw error;
       if (!data.draft_definicao && data.current_version_id) {
         const { data: version, error: versionError } = await db.from('obras_formularios_versoes').select('definicao').eq('id', data.current_version_id).single();
@@ -78,7 +80,7 @@ export function useSaveFormTemplate() {
     },
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ['obras-formularios'] });
-      queryClient.invalidateQueries({ queryKey: ['obras-formulario', id] });
+      queryClient.invalidateQueries({ queryKey: ['obras-formulario', workspaceId, id] });
       toast({ title: 'Modelo guardado', description: 'O rascunho foi guardado com sucesso.' });
     },
     onError: (error: Error) => toast({ title: 'Não foi possível guardar', description: error.message, variant: 'destructive' }),
@@ -105,9 +107,12 @@ export function usePublishFormTemplate() {
 
 export function useArchiveFormTemplate() {
   const queryClient = useQueryClient();
+  const workspaceId = useObrasWorkspace();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await db.from('obras_formularios').update({ estado: 'arquivado' }).eq('id', id);
+      if (!workspaceId) throw new Error('Não existe um workspace activo.');
+      const { error } = await db.from('obras_formularios').update({ estado: 'arquivado' })
+        .eq('workspace_id', workspaceId).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
