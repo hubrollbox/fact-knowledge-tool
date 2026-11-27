@@ -150,12 +150,14 @@ export function AnimalDetail() {
         </TabsContent>
 
         <TabsContent value="clinico" className="mt-4 space-y-3">
-          <div className="flex justify-end">
-            <Button onClick={() => setNovoRegisto(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Adicionar registo
-            </Button>
-          </div>
+          {canWrite && (
+            <div className="flex justify-end">
+              <Button onClick={() => setNovoRegisto(true)}>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Adicionar registo
+              </Button>
+            </div>
+          )}
           {!registos?.length ? (
             <p className="text-sm text-muted-foreground">Sem registos clínicos</p>
           ) : (
@@ -189,7 +191,7 @@ export function AnimalDetail() {
               ))}
             </div>
           )}
-          {id && (
+          {id && canWrite && (
             <RegistoClinicoForm
               animalId={id}
               open={novoRegisto}
