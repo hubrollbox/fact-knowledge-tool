@@ -32,8 +32,8 @@ export function useObra(id?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['obra', id],
-    enabled: !!id,
+    queryKey: ['obra', ws, id],
+    enabled: !!id && !!ws,
     queryFn: async () => {
       try {
         const { data, error } = await supabase.from('obras').select('*').eq('id', id!).maybeSingle();
@@ -51,7 +51,7 @@ export function useObra(id?: string) {
 export function useVisitas(obraId?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
-  return useQuery({ queryKey: ['obras_visitas', obraId], enabled: !!obraId, queryFn: async () => {
+  return useQuery({ queryKey: ['obras_visitas', ws, obraId], enabled: !!obraId && !!ws, queryFn: async () => {
     let remote: any[] = [];
     if (navigator.onLine) {
       try {
@@ -75,7 +75,7 @@ export function useVisitas(obraId?: string) {
 export function useOcorrencias(obraId?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
-  return useQuery({ queryKey: ['obras_ocorrencias', obraId], enabled: !!obraId, queryFn: async () => {
+  return useQuery({ queryKey: ['obras_ocorrencias', ws, obraId], enabled: !!obraId && !!ws, queryFn: async () => {
     let remote: any[] = [];
     if (navigator.onLine) {
       try {
@@ -101,8 +101,8 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['obras_ocorrencia', obraId, ocorrenciaId],
-    enabled: !!obraId && !!ocorrenciaId,
+    queryKey: ['obras_ocorrencia', ws, obraId, ocorrenciaId],
+    enabled: !!obraId && !!ocorrenciaId && !!ws,
     queryFn: async () => {
       if (navigator.onLine) {
         try {
@@ -132,7 +132,7 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
 export function useAcoes(obraId?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
-  return useQuery({ queryKey: ['obras_acoes', obraId], enabled: !!obraId, queryFn: async () => {
+  return useQuery({ queryKey: ['obras_acoes', ws, obraId], enabled: !!obraId && !!ws, queryFn: async () => {
     try {
       const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
       if (error) throw error;
@@ -149,8 +149,8 @@ export function useVisita(id?: string) {
   const ws = useObrasWorkspace();
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['obras_visita', id],
-    enabled: !!id,
+    queryKey: ['obras_visita', ws, id],
+    enabled: !!id && !!ws,
     queryFn: async () => {
       if (navigator.onLine) {
         try {
@@ -305,7 +305,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias', variables.obraId] });
-      qc.invalidateQueries({ queryKey: entity === 'visita' ? ['obras_visita', variables.id] : ['obras_ocorrencia', variables.obraId] });
+      qc.invalidateQueries({ queryKey: entity === 'visita' ? ['obras_visita', ws, variables.id] : ['obras_ocorrencia', ws, variables.obraId] });
     },
     onError: onErr,
   });
