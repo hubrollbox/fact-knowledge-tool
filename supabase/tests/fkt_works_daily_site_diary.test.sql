@@ -10,7 +10,7 @@ INSERT INTO public.workspaces (id,user_id,modulo,name) VALUES
 INSERT INTO public.obras (id,workspace_id,nome) VALUES
  ('c3900000-0000-4000-8000-000000000001','b3900000-0000-4000-8000-000000000001','Obra diário teste');
 
-SELECT plan(12);
+SELECT plan(13);
 SELECT has_column('public','obras_visitas','tipo_registo','visit records support diary entry types');
 SELECT has_column('public','obras_visitas','created_by_name','visit records preserve a human-readable author snapshot');
 SELECT has_column('public','obras_visitas','trabalhos_executados','visit records store executed work');
@@ -21,10 +21,20 @@ SELECT has_column('public','obras_visitas','condicionantes','visit records store
 SELECT has_column('public','obras_visitas','atrasos','visit records store delays');
 SELECT has_trigger('public','obras_visitas','obras_visitas_historico','visit changes are captured in immutable history');
 SELECT has_trigger('public','obras_visitas','obras_visitas_validar_autoria','diary entry authorship is set and immutable');
+SELECT ok(
+  (SELECT NOT p.prosecdef FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='private' AND p.proname='validar_autoria_obras_visita'),
+  'diary authorship trigger runs as SECURITY INVOKER'
+);
 SELECT has_index('public','obras_visitas','obras_visitas_workspace_date_type_idx','diary filtering has a workspace/date/type index');
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub','a3900000-0000-4000-8000-000000000001',true);
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"a3900000-0000-4000-8000-000000000001","role":"authenticated","user_metadata":{"full_name":"Autor Diário Teste"}}',
+  true
+);
 SELECT lives_ok($test$
 DO $$
 DECLARE _visit_id uuid := 'd3900000-0000-4000-8000-000000000001'; _author uuid; _author_name text;
