@@ -36,7 +36,7 @@ export function useObra(id?: string) {
     enabled: !!id && !!ws,
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.from('obras').select('*').eq('id', id!).maybeSingle();
+        const { data, error } = await supabase.from('obras').select('*').eq('workspace_id', ws!).eq('id', id!).maybeSingle();
         if (error) throw error;
         if (data && user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: id!, entity: 'obra', data }).catch(() => undefined);
         return data;
@@ -55,7 +55,7 @@ export function useVisitas(obraId?: string) {
     let remote: any[] = [];
     if (navigator.onLine) {
       try {
-        const { data, error } = await supabase.from('obras_visitas').select('*').eq('obra_id', obraId!).order('data_visita', { ascending: false });
+        const { data, error } = await supabase.from('obras_visitas').select('*').eq('workspace_id', ws!).eq('obra_id', obraId!).order('data_visita', { ascending: false });
         if (error) throw error;
         remote = data ?? [];
         if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'visitas', data: remote }).catch(() => undefined);
@@ -79,7 +79,7 @@ export function useOcorrencias(obraId?: string) {
     let remote: any[] = [];
     if (navigator.onLine) {
       try {
-        const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('workspace_id', ws!).eq('obra_id', obraId!).order('created_at', { ascending: false });
         if (error) throw error;
         remote = data ?? [];
         if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'ocorrencias', data: remote }).catch(() => undefined);
@@ -106,7 +106,7 @@ export function useOcorrencia(obraId?: string, ocorrenciaId?: string) {
     queryFn: async () => {
       if (navigator.onLine) {
         try {
-          const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('obra_id', obraId!).eq('id', ocorrenciaId!).maybeSingle();
+          const { data, error } = await supabase.from('obras_ocorrencias').select('*').eq('workspace_id', ws!).eq('obra_id', obraId!).eq('id', ocorrenciaId!).maybeSingle();
           if (error) throw error;
           if (data) {
             if (user?.id && ws) {
@@ -134,7 +134,7 @@ export function useAcoes(obraId?: string) {
   const { user } = useAuth();
   return useQuery({ queryKey: ['obras_acoes', ws, obraId], enabled: !!obraId && !!ws, queryFn: async () => {
     try {
-      const { data, error } = await supabase.from('obras_acoes').select('*').eq('obra_id', obraId!).order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('obras_acoes').select('*').eq('workspace_id', ws!).eq('obra_id', obraId!).order('created_at', { ascending: false });
       if (error) throw error;
       if (user?.id && ws) await guardarSnapshotOffline({ userId: user.id, workspaceId: ws, obraId: obraId!, entity: 'acoes', data: data ?? [] }).catch(() => undefined);
       return data;
@@ -154,7 +154,7 @@ export function useVisita(id?: string) {
     queryFn: async () => {
       if (navigator.onLine) {
         try {
-          const { data, error } = await supabase.from('obras_visitas').select('*').eq('id', id!).maybeSingle();
+          const { data, error } = await supabase.from('obras_visitas').select('*').eq('workspace_id', ws!).eq('id', id!).maybeSingle();
           if (error) throw error;
           if (data) {
             if (user?.id && ws) {
@@ -267,7 +267,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
       }
       if (navigator.onLine) {
         try {
-          const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+          const { data: current, error: readError } = await supabase.from(table).select('*').eq('workspace_id', ws).eq('id', id).maybeSingle();
           if (readError) throw readError;
           if (!current || current.workspace_id !== ws) throw new Error('Registo não encontrado neste espaço de trabalho.');
           if (!base) base = current;
@@ -284,7 +284,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
               throw new Error('Foi detectada uma alteração concorrente. A edição local foi preservada para resolução.');
             }
           }
-          let update = supabase.from(table).update(changes as never).eq('id', id);
+          let update = supabase.from(table).update(changes as never).eq('workspace_id', ws).eq('id', id);
           if (current.updated_at) update = update.eq('updated_at', current.updated_at) as typeof update;
           const { data, error } = await update.select().maybeSingle();
           if (error) throw error;
@@ -304,7 +304,7 @@ export function useEditarRegistoOffline(entity: EntidadeEditavel) {
       return { ...base, ...changes, id, workspace_id: ws };
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias', variables.obraId] });
+      qc.invalidateQueries({ queryKey: [entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias', ws, variables.obraId] });
       qc.invalidateQueries({ queryKey: entity === 'visita' ? ['obras_visita', ws, variables.id] : ['obras_ocorrencia', ws, variables.obraId] });
     },
     onError: onErr,
@@ -331,7 +331,7 @@ export function useActualizarEstado() {
           return table;
         }
         try {
-          const { data: current, error: readError } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+          const { data: current, error: readError } = await supabase.from(table).select('*').eq('workspace_id', ws).eq('id', id).maybeSingle();
           if (readError) throw readError;
           if (!current || current.workspace_id !== ws) throw new Error('Ocorrência não encontrada.');
           if (base && compararCamposOffline(base, current, ['estado']).length) {
@@ -353,7 +353,7 @@ export function useActualizarEstado() {
           return table;
         }
       }
-      const { error } = await supabase.from(table).update({ estado }).eq('id', id);
+      const { error } = await supabase.from(table).update({ estado }).eq('workspace_id', workspaceId!).eq('id', id);
       if (error) throw error;
       return table;
     },
