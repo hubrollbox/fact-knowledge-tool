@@ -89,6 +89,7 @@ export function useSaveFormTemplate() {
 
 export function usePublishFormTemplate() {
   const queryClient = useQueryClient();
+  const workspaceId = useObrasWorkspace();
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await db.rpc('publicar_obras_formulario', {
@@ -98,7 +99,7 @@ export function usePublishFormTemplate() {
     },
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['obras-formularios'] });
-      queryClient.invalidateQueries({ queryKey: ['obras-formulario', id] });
+      queryClient.invalidateQueries({ queryKey: ['obras-formulario', workspaceId, id] });
       toast({ title: 'Modelo publicado', description: 'Foi criada uma nova versão imutável.' });
     },
     onError: (error: Error) => toast({ title: 'Não foi possível publicar', description: error.message, variant: 'destructive' }),
