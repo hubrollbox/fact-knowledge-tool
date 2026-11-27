@@ -79,12 +79,13 @@ export function useMembrosFilaAcoes() {
 
 export function useAtribuirAcao() {
   const qc = useQueryClient();
+  const workspaceId = useObrasWorkspace();
   return useMutation({
     mutationFn: async ({ id, responsavel_user_id, responsavel }: {
       id: string; responsavel_user_id: string | null; responsavel: string | null;
     }) => {
       const { error } = await (supabase as any).from('obras_acoes')
-        .update({ responsavel_user_id, responsavel }).eq('id', id);
+        .update({ responsavel_user_id, responsavel }).eq('workspace_id', workspaceId!).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
