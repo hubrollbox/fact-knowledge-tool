@@ -123,7 +123,7 @@ Não incluir no MVP permissões de edição de resultados, edição de critério
 
 ### Limite conhecido das URLs assinadas
 
-Uma URL assinada já emitida é uma capacidade temporária e pode continuar utilizável até expirar, mesmo depois da revogação da concessão. Com TTL de 60 segundos, o risco fica limitado temporalmente, mas não é revogação instantânea.
+Uma URL assinada já emitida é uma capacidade temporária e pode continuar utilizável até expirar, mesmo depois da revogação da concessão. Se for usado um URL assinado como excepção, escolher um TTL tão curto quanto operacionalmente viável e documentar que a revogação não é instantânea.
 
 Se o requisito do produto passar a ser revogação imediata ou se a sensibilidade dos ficheiros o exigir, usar proxy/Edge Function autenticada que revalide a concessão em cada download. Esta alternativa tem custo de tráfego/execução e deve ser avaliada antes de se prometer revogação instantânea.
 
