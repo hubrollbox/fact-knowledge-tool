@@ -18,6 +18,25 @@ const CAMPOS: Record<string, string> = {
   tipo: 'Tipo',
   titulo_referencia: 'Referência',
   notas: 'Notas',
+  prioridade: 'Prioridade',
+  legenda: 'Legenda da fotografia',
+  capturada_em: 'Data da fotografia',
+  latitude: 'Latitude',
+  longitude: 'Longitude',
+  resultado: 'Resultado da verificação',
+  fundamentacao: 'Fundamentação',
+  evidencia: 'Evidência',
+};
+
+const ENTIDADES: Record<string, string> = {
+  obras_ocorrencias: 'Ocorrência',
+  obras_acoes: 'Acção',
+  obras_ocorrencia_analises: 'Análise técnica',
+  obras_ocorrencia_factos: 'Facto registado',
+  obras_ocorrencia_referencias: 'Referência técnica',
+  obras_fotos: 'Fotografia',
+  obras_documentos_ligacoes: 'Documento associado',
+  obras_documento_versoes: 'Versão documental',
 };
 
 const OPERACOES: Record<string, string> = {
@@ -82,7 +101,7 @@ export function HistoricoOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) 
             return (
               <li key={event.id} className="border-l-2 border-muted pl-3 space-y-1">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <span className="text-xs font-medium">{OPERACOES[event.operacao] ?? event.operacao} · {event.entidade.replaceAll('_', ' ')}</span>
+                  <span className="text-xs font-medium">{OPERACOES[event.operacao] ?? event.operacao} · {ENTIDADES[event.entidade] ?? event.entidade.replaceAll('_', ' ')}</span>
                   <time className="text-[11px] text-muted-foreground">{new Date(event.ocorrido_em).toLocaleString('pt-PT')}</time>
                 </div>
                 {changes.length > 0 && (
@@ -95,7 +114,7 @@ export function HistoricoOcorrencia({ ocorrenciaId }: { ocorrenciaId: string }) 
                     ))}
                   </ul>
                 )}
-                <p className="text-[10px] text-muted-foreground">Utilizador: {event.actor_id ?? 'Não identificado'}</p>
+                <p className="text-[10px] text-muted-foreground">{event.actor_id ? `Autor identificado · ID ${String(event.actor_id).slice(0, 8)}` : 'Autor não identificado'}</p>
               </li>
             );
           })}
