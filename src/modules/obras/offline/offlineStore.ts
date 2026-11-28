@@ -267,23 +267,33 @@ export async function guardarFotoCacheOffline(input: Omit<WorksOfflineCachedPhot
   }
   const db = await openDatabase();
   try {
+    const photo: WorksOfflineCachedPhoto = { ...input, cachedAt: new Date().toISOString() };
+    const existing = await new Promise<WorksOfflineCachedPhoto[]>((resolve, reject) => {
+      const tx = db.transaction(PHOTOS, 'readonly');
+      const request = tx.objectStore(PHOTOS).index('scope').getAll(IDBKeyRange.only([input.userId, input.workspaceId]));
+      request.onsuccess = () => resolve((request.result ?? []) as WorksOfflineCachedPhoto[]);
+      request.onerror = () => reject(request.error ?? new Error('Não foi possível consultar a cache de fotografias.'));
+      tx.onabort = () => reject(tx.error ?? new Error('Consulta da cache de fotografias cancelada.'));
+    });
+    const scoped = existing.filter((row) => row.id !== photo.id);
+    const idsToRemove = selecionarFotosParaEviccao([...scoped, photo]);
+
+    // Commit eviction separately. If the following put hits the browser quota,
+    // the cleanup remains committed and a retry has room to succeed.
+    if (idsToRemove.length) {
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(PHOTOS, 'readwrite');
+        const store = tx.objectStore(PHOTOS);
+        for (const id of idsToRemove) store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error('Não foi possível libertar espaço na cache offline.'));
+        tx.onabort = () => reject(tx.error ?? new Error('Limpeza da cache offline cancelada.'));
+      });
+    }
+
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(PHOTOS, 'readwrite');
-      const store = tx.objectStore(PHOTOS);
-      const photo: WorksOfflineCachedPhoto = { ...input, cachedAt: new Date().toISOString() };
-      // Evict before writing: a put that exceeds the browser quota aborts the
-      // transaction, so cleaning up after put is too late to recover.
-      const request = store.index('scope').getAll(IDBKeyRange.only([input.userId, input.workspaceId]));
-      request.onsuccess = () => {
-        const existing = (request.result ?? []) as WorksOfflineCachedPhoto[];
-        const scoped = existing.filter((row) => row.id !== photo.id);
-        const idsToRemove = selecionarFotosParaEviccao([...scoped, photo]);
-        for (const id of idsToRemove) store.delete(id);
-        store.put(photo);
-      };
-      request.onerror = () => {
-        try { tx.abort(); } catch { /* transaction already finished */ }
-      };
+      tx.objectStore(PHOTOS).put(photo);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error ?? new Error('Não foi possível guardar a fotografia offline.'));
       tx.onabort = () => reject(tx.error ?? new Error('Cache da fotografia cancelada.'));
