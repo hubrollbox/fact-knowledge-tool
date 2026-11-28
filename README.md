@@ -130,6 +130,7 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Inspect — arquitectura funcional](docs/architecture/fkt-inspect-functional-architecture.md) — públicos, fluxo de auditoria, âmbito inicial e limites do produto.
 - [FKT Inspect — modelo de dados e segurança](docs/architecture/fkt-inspect-data-model-security.md) — modelo lógico, acesso externo, RLS, Storage e testes obrigatórios.
 - [FKT Inspect — modelo relacional lógico](docs/architecture/fkt-inspect-relational-model.md) — entidades, relações, constraints, RLS, Storage e testes pgTAP propostos.
+- [FKT Inspect — matriz RLS e Storage](docs/architecture/fkt-inspect-rls-policy-matrix.md) — regras propostas por grupo de tabelas, operações, convites e ficheiros.
 - [FKT Inspect — decisão de arquitectura multi-cliente](docs/architecture/fkt-inspect-multi-client-architecture-decision.md) — separação entre workspace, clientes e auditorias partilhadas.
 - [FKT Food Safety — modelo inicial de auditoria](docs/architecture/fkt-food-safety-audit-model.md) — estrutura inicial para segurança alimentar e higiene na restauração; sujeita a validação técnica.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
