@@ -53,7 +53,7 @@ Manter os campos existentes; adicionar:
 - CHECK: estado `identified` exige `operator_party_id IS NOT NULL`; estado `pending` não declara identidade confirmada.
 - O operador é distinto do cliente contratual. Pode coincidir, mas a BD não o assume.
 
-### 2.5 `inspect_client_establishments` — já existe
+### 2.5 `inspect_client_establishments` — planeada na Fase 2
 Manter relação N:M temporal de carteira. A vigência usa intervalo `[valid_from, valid_until)`; impedir sobreposições para a mesma organização/cliente/estabelecimento. Não usar esta relação como prova de quem explora legalmente o restaurante.
 
 ### 2.6 `inspect_establishment_memberships` — nova
