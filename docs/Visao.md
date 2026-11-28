@@ -87,7 +87,7 @@ O FKT desenvolve-se através de módulos verticais. O estado indicado na aplica�
 | **FKT Lex** | Organização de processos, factos, documentos, referências e análise jurídica estruturada. | Em preparação. O FIRAC é aplicável neste módulo quando adequado. |
 | **FKT Vet** | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. | Em preparação. |
 | **FKT Dev** | Projetos, issues, decisões técnicas e documentação. | Em preparação. |
-| **FKT Inspect** | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. | Próximo MVP; documentação e desenho em revisão, ainda não implementado. |
+| **FKT Inspect** | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. | Fundação de dados e primeira interface de carteira no repositório; CI aprovado no commit de referência. Ainda não disponível em produção. |
 
 Esta lista representa o âmbito e os estados identificados no código do produto. Não constitui uma certificação de conclusão, validação funcional ou disponibilidade em produção.
 
@@ -117,7 +117,7 @@ O FKT Inspect é o próximo MVP do FKT: módulo de auditoria, recolha de evidên
 
 O produto destina-se tanto a consultores/auditores que trabalham com vários clientes como a empresas que executam verificações internas. O modelo deverá permitir acesso externo estritamente limitado aos dados do cliente correspondente, sem criar um workspace por cliente nem expor a carteira de uma consultora.
 
-O Inspect tem a primeira migração de fundação e os respectivos testes preparados no repositório; **ainda não está validado nem disponível na aplicação**. A prioridade de produto foi alterada em 28/11/2026: o próximo MVP a concluir é o FKT Inspect. O desenvolvimento deve preservar os módulos existentes e a única base de dados Supabase configurada. O âmbito, modelo de dados, segurança e catálogo inicial estão descritos em:
+O Inspect tem a migração de fundação, a primeira interface de gestão de clientes e estabelecimentos, a identidade visual verde tropa escuro e a integração de FAQ preparadas no repositório. Os workflows CI e de testes Supabase locais passaram no commit de referência `9486fe0` para a fundação; as alterações posteriores de tema, FAQ e documentação têm os seus próprios workflows em validação. **O módulo ainda não está disponível em produção:** a migração não foi aplicada à BD remota e o fluxo de activação continua por concluir. A prioridade de produto foi alterada em 28/11/2026: o próximo MVP a concluir é o FKT Inspect. O desenvolvimento deve preservar os módulos existentes e a única base de dados Supabase configurada. O âmbito, modelo de dados, segurança e catálogo inicial estão descritos em:
 - [Arquitectura funcional do FKT Inspect](architecture/fkt-inspect-functional-architecture.md);
 - [Modelo de dados e segurança do FKT Inspect](architecture/fkt-inspect-data-model-security.md);
 - [Modelo inicial de auditoria FKT Food Safety](architecture/fkt-food-safety-audit-model.md).
