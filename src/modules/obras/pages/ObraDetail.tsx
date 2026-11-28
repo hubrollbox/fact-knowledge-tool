@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, ArrowLeft, ClipboardPlus, ListPlus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useObra, useVisitas, useOcorrencias, useAcoes, useActualizarEstado } from '../hooks/useObras';
 import { ESTADOS_ACAO, ESTADOS_OBRA } from '../types/obras';
@@ -56,7 +56,7 @@ export function ObraDetail() {
 
       {canWrite && (
         <section aria-label="Registos rápidos" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
+          <div className="[&>button]:min-h-12 [&>button]:w-full">
             <VisitaDialog obraId={obra.id} />
           </div>
           <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
