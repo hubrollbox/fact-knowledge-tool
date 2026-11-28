@@ -24,8 +24,12 @@ A estrutura de dados deve ser comum sempre que possível; permissões, linguagem
 6. Uma obra pode ter vários orçamentos: inicial, revisão, alternativo, trabalhos adicionais e trabalhos a menos.
 7. Os orçamentos têm estados e histórico.
 8. Uma aprovação é registada explicitamente, com entidade/pessoa, data e comprovativo quando disponível.
-9. Um orçamento aprovado não é sobrescrito; alterações posteriores originam nova versão.
+9. Um orçamento aprovado continua editável: cada edição cria uma nova versão, preserva a versão aprovada e exige nova aprovação quando a alteração é material; o fluxo deve ser simples e rápido.
 10. A execução e as medições devem poder ser comparadas com o orçamento/adjudicação.
+11. O IVA é configurado por orçamento como predefinição e pode ser substituído por linha; suportam-se preços com e sem IVA.
+12. Linhas podem ser quantitativas ou de verba global; a decomposição de custos internos é opcional.
+13. Descontos são por linha no MVP; custos adicionais são linhas explícitas; descontos globais, retenções e cauções ficam fora do cálculo inicial.
+14. Os perfis profissionais Empreiteiro/Fiscal são atribuídos por obra e não substituem os papéis técnicos do workspace.
 
 ## Estrutura do orçamento
 
@@ -90,9 +94,12 @@ A aprovação é um registo de uma decisão comunicada pelo utilizador. O FKT n�
 O histórico deve preservar:
 - versões e relações entre versões;
 - autor e data;
+- campos alterados e valores anterior/novo;
 - transições de estado;
 - entidade/pessoa que aprovou;
 - observações e comprovativos.
+
+Alterações materiais (âmbito/trabalhos, quantidades, unidades, preços, descontos, IVA, totais, prazos e condições comerciais) colocam a nova versão pendente de aprovação. Correcções de gralhas e notas internas sem impacto comercial ficam apenas no histórico. A aprovação anterior mantém-se consultável.
 
 ## Medições e controlo de execução
 
@@ -134,6 +141,7 @@ As medições e alterações devem ligar-se à obra e, quando aplicável, a visi
 ## Sequência de implementação
 
 1. Modelo de dados, isolamento por workspace, RLS e histórico.
+   Documento detalhado: `fkt-works-budgeting-data-model.md`.
 2. Criação e edição de orçamentos simples/detalhados.
 3. Importação Excel e PDF com pré-visualização e validação.
 4. Aprovação, estados e versionamento imutável.
@@ -144,7 +152,7 @@ As medições e alterações devem ligar-se à obra e, quando aplicável, a visi
 ## Critérios transversais de qualidade
 
 - Nenhum dado importado é aceite silenciosamente.
-- Nenhum orçamento aprovado é alterado sem nova versão.
+- Nenhum orçamento aprovado é alterado silenciosamente; edições criam versão e histórico. Alterações materiais aguardam nova aprovação.
 - Isolamento entre workspaces garantido no servidor e Storage.
 - Cálculos determinísticos e cobertos por testes.
 - Histórico e autoria verificáveis.
