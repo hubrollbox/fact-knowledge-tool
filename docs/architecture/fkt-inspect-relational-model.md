@@ -577,17 +577,9 @@ Não equiparar automaticamente papel Core (owner/editor) a função HACCP. Defin
 
 A mesma pessoa pode acumular funções; a autorização é a união controlada das atribuições activas, nunca um bypass por ser owner/admin. Separar gestão de workspace de acesso a conteúdo operacional.
 
-### 20.10. Pendências que bloqueiam DDL
+### 20.10. Estado após fecho das decisões
 
-- fechar modelo de party e reconciliação de dados da carteira;
-- escolher modelo de tarefas e ocorrências programadas;
-- fechar cardinalidades de lotes e transformações;
-- fechar origem tipada de não conformidades;
-- definir matriz RLS por tabela/operação/perfil e grants;
-- decidir retenção, correcção e registo retroactivo;
-- validar o modelo com profissional competente e restaurante piloto.
-
-Até estas decisões estarem fechadas, as tabelas listadas na secção 19 permanecem candidatas, não devem ser convertidas directamente em migração.
+As decisões de arquitectura anteriormente pendentes foram fechadas na secção 21 e no dicionário físico. O DDL continua bloqueado apenas por validação dos processos/parâmetros específicos com profissional HACCP e restaurante piloto, comparação final com o esquema Core/migrações locais, revisão de segurança por tabela e execução de testes locais/CI. Não aplicar migrações remotas sem autorização explícita.
 
 
 ## 21. Decisões fechadas para o modelo físico do MVP — 28/11/2026
