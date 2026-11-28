@@ -78,7 +78,7 @@ export function ObraDetail() {
         </TabsList>
 
         <TabsContent value="visitas" className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">{canWrite && <VisitaDialog obraId={obra.id} />}<Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/diario/relatorio${dataDesde || dataAte ? `?${new URLSearchParams({ ...(dataDesde ? { desde: dataDesde } : {}), ...(dataAte ? { ate: dataAte } : {}) }).toString()}` : ''}`}>Relatório do período</Link></Button></div>
+          <div className="flex flex-wrap items-center justify-between gap-2"><Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/diario/relatorio${dataDesde || dataAte ? `?${new URLSearchParams({ ...(dataDesde ? { desde: dataDesde } : {}), ...(dataAte ? { ate: dataAte } : {}) }).toString()}` : ''}`}>Relatório do período</Link></Button></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 rounded-md border p-3">
             <div><label className="text-xs text-muted-foreground">Desde</label><Input type="date" value={dataDesde} onChange={(e) => setDataDesde(e.target.value)} /></div>
             <div><label className="text-xs text-muted-foreground">Até</label><Input type="date" value={dataAte} onChange={(e) => setDataAte(e.target.value)} /></div>
