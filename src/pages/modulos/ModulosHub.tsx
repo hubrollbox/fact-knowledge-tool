@@ -11,7 +11,7 @@ export default function ModulosHub() {
   useEffect(() => {
     document.title = 'Módulos — FKT';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Conhece os módulos disponíveis no FKT: FKT Works, FKT Lex, FKT Vet e FKT Dev.');
+    if (meta) meta.setAttribute('content', 'Conhece os módulos do FKT: Works, Lex, Vet, Dev e Inspect. O Inspect está em preparação e ainda não está disponível.');
   }, []);
 
   return (
@@ -26,7 +26,7 @@ export default function ModulosHub() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modulos.map((mod) => (
             <Link key={mod.slug} to={`/modulos/${mod.slug}`} className="group">
               <Card className="h-full transition-all group-hover:shadow-md group-hover:border-primary/40">
