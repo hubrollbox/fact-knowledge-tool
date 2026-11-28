@@ -2,7 +2,8 @@
 -- Local/CI validation only. Do not apply remotely without explicit approval.
 
 CREATE SCHEMA IF NOT EXISTS private;
-REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
+-- Preserve authenticated USAGE granted by the Core security migration.
 
 -- Preserve existing Core module values and add Inspect.
 ALTER TABLE public.workspaces
