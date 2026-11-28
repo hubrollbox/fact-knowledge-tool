@@ -66,7 +66,7 @@ Os nomes são conceptuais, não nomes SQL finais.
 
 - `id`
 - `workspace_id` — único e obrigatório
-- `tipo` — consultoria ou operador
+- `tipo` — `consultancy`, `operator` ou `both`
 - `nome`, estado e timestamps
 
 Relação proposta: uma Organização Inspect por workspace. Não se propõe alterar a regra Core de um workspace principal por utilizador.
@@ -75,17 +75,19 @@ Relação proposta: uma Organização Inspect por workspace. Não se propõe alt
 
 - `id`
 - `inspect_organisation_id`
-- designação, contactos mínimos, estado e timestamps
+- `party_id` — entidade contratante registada em `inspect_parties`
+- referência/estado da relação comercial e timestamps
 
-Representa a entidade contratante/auditada gerida por uma consultora. Não é um utilizador nem um workspace.
+Representa a relação de cliente contratual gerida pela organização Inspect. Não é um utilizador nem um workspace e não concede acesso externo por si só.
 
 ### 4.3. Estabelecimento
 
 - `id`
-- `client_id`
+- `inspect_organisation_id`
+- `operator_party_id nullable` — entidade que opera o estabelecimento, quando identificada
 - designação, morada, actividade e estado
 
-Cada estabelecimento pertence a exactamente um cliente da mesma Organização Inspect. Para o operador que usa o módulo internamente, os estabelecimentos pertencem à organização proprietária por uma relação própria ou por um cliente interno explicitamente tipificado; a escolha física deve evitar duplicação e manter constraints claras.
+O estabelecimento pertence à carteira da organização Inspect, não a um único cliente contratual. A ligação ao cliente contratual é registada na auditoria concreta; assim, cliente contratual e operador podem coincidir ou ser entidades diferentes. Se for necessário gerir contratos/portefólios antes de existir auditoria, uma tabela de ligação explícita pode ser avaliada posteriormente. Para o operador que audita internamente, não se cria um cliente fictício.
 
 ### 4.4. Auditoria
 
@@ -111,15 +113,16 @@ A tabela de convites é separada da concessão activa. Convites por email não s
 
 ### 4.6. Permissões por recurso
 
-Conjunto inicial proposto:
-- `view_summary`: ver identificação, âmbito e resumo da auditoria;
-- `view_results`: ver resultados por critério;
-- `view_report`: consultar relatório emitido;
-- `view_evidence`: consultar evidências autorizadas;
-- `view_findings`: consultar não conformidades partilhadas;
-- `respond_actions`: responder a acções que lhe foram atribuídas;
-- `submit_action_evidence`: submeter evidência de execução;
-- `comment_shared`: adicionar comentário visível ao cliente.
+Conjunto inicial vinculativo do MVP, alinhado com a matriz de permissões:
+- `view_published_summary`: ver identificação, âmbito e resumo publicados;
+- `view_published_results`: ver resultados publicados por critério;
+- `view_final_report`: consultar relatório emitido e publicado;
+- `view_published_evidence`: consultar evidências explicitamente publicadas;
+- `view_assigned_actions`: consultar acções atribuídas e partilhadas;
+- `respond_assigned_actions`: submeter resposta a uma acção atribuída;
+- `upload_assigned_action_evidence`: submeter evidência de execução para essa acção.
+
+Não incluir comentários genéricos no MVP.
 
 Não conceder por defeito:
 - leitura de notas internas do auditor;
