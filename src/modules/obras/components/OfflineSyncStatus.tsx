@@ -24,7 +24,7 @@ function display(value: unknown) {
 export function OfflineSyncStatus() {
   const queryClient = useQueryClient();
   const workspaceId = useObrasWorkspace();
-  const { operations, pendingCount, syncing, sync, refresh } = useWorksOfflineQueue(workspaceId);
+  const { operations, pendingCount, syncing, queueLoaded, storageError, sync, refresh } = useWorksOfflineQueue(workspaceId);
   const [online, setOnline] = useState(navigator.onLine);
   const [selected, setSelected] = useState<WorksOfflineOperation | null>(null);
   const [resolving, setResolving] = useState(false);
@@ -42,7 +42,11 @@ export function OfflineSyncStatus() {
   const conflicts = useMemo(() => operations.filter((operation) => operation.conflictRemote), [operations]);
   const statusLabel = !workspaceId
     ? 'A verificar espaço de trabalho'
-    : syncing
+    : !queueLoaded
+      ? 'A verificar sincronização'
+      : storageError
+        ? 'Armazenamento offline indisponível'
+        : syncing
       ? 'A sincronizar alterações'
       : !online
         ? 'Sem ligação à Internet'
@@ -76,9 +80,9 @@ export function OfflineSyncStatus() {
   return (
     <div className="space-y-2">
       <div role="status" aria-live="polite" className="flex min-h-9 items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
-        {syncing
+        {syncing || !queueLoaded
           ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          : !online
+          : storageError || !online
             ? <WifiOff className="h-4 w-4 text-destructive" />
             : pendingCount > 0
               ? <CloudUpload className="h-4 w-4 text-amber-600" />
@@ -86,12 +90,14 @@ export function OfflineSyncStatus() {
         <span className="font-medium">{statusLabel}</span>
         {online && !syncing && <Wifi className="ml-auto h-4 w-4 text-muted-foreground" aria-label="Ligação disponível" />}
       </div>
-      {(!online || pendingCount > 0) && <Alert className={conflicts.length ? 'border-destructive/40' : failed ? 'border-destructive/40' : 'border-amber-500/40'}>
+      {(!online || pendingCount > 0 || !!storageError) && <Alert className={conflicts.length ? 'border-destructive/40' : failed ? 'border-destructive/40' : 'border-amber-500/40'}>
         {conflicts.length || failed ? <AlertCircle className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-        <AlertTitle>{!online ? 'Sem ligação à Internet' : conflicts.length ? 'Existem conflitos por resolver' : pendingLabel}</AlertTitle>
+        <AlertTitle>{storageError ? 'Não foi possível consultar os dados pendentes' : !online ? 'Sem ligação à Internet' : conflicts.length ? 'Existem conflitos por resolver' : pendingLabel}</AlertTitle>
         <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
           <span>
-            {conflicts.length
+            {storageError
+              ? storageError + ' Não considere os dados sincronizados até recuperar o armazenamento local.'
+              : conflicts.length
               ? 'Alguns registos foram alterados no servidor. Compare as versões antes de continuar a sincronização.'
               : failed?.lastError
                 ? 'Sincronização interrompida: ' + failed.lastError
@@ -105,7 +111,7 @@ export function OfflineSyncStatus() {
                 <GitCompareArrows className="mr-2 h-4 w-4" />Resolver conflito
               </Button>
             ))}
-            {pendingCount > 0 && <Button type="button" size="sm" variant="outline" disabled={!online || syncing || conflicts.length > 0} onClick={() => void sync()}>
+            {pendingCount > 0 && !storageError && <Button type="button" size="sm" variant="outline" disabled={!online || syncing || conflicts.length > 0} onClick={() => void sync()}>
               <CloudUpload className="mr-2 h-4 w-4" />{syncing ? 'A sincronizar…' : 'Sincronizar agora'}
             </Button>}
           </div>
