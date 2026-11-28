@@ -32,6 +32,7 @@ export const modulos: Modulo[] = [
       { q: 'Tenho de preencher tudo em obra?', a: 'Não. No terreno basta a fotografia e uma nota; a análise pode ser completada mais tarde.' },
       { q: 'A localização é certificada?', a: 'Não. É um registo de localização e hora, guardado apenas com a tua autorização.' },
       { q: 'Já posso usar?', a: 'O módulo está em fase de piloto com um grupo restrito de utilizadores.' },
+      { q: 'O FKT Works já permite criar e importar orçamentos?', a: 'A orçamentação está planeada para uma evolução futura do módulo. O âmbito em definição prevê criar orçamentos de raiz, importar ficheiros Excel e PDF com validação antes de gravar, gerir versões e acompanhar medições. Estas funcionalidades ainda não estão disponíveis.' },
     ],
   },
   {
