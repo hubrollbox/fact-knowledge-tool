@@ -139,11 +139,11 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Inspect — migração de fundação](supabase/migrations/20261128170000_fkt_inspect_foundation.sql) — organização Inspect por workspace, carteira de clientes, estabelecimentos e associação temporal; aguarda validação CI local.
 - [FKT Inspect — teste de fundação](supabase/tests/fkt_inspect_foundation.test.sql) — verifica RLS, GRANT, integridade multi-tenant e trigger temporal.
 - [FKT Inspect — matriz RLS e Storage](docs/architecture/fkt-inspect-rls-policy-matrix.md) — regras propostas por grupo de tabelas, operações, convites e ficheiros.
-- [FKT Inspect — decisão de arquitectura multi-cliente](docs/architecture/fkt-inspect-multi-client-architecture-decision.md) — separação entre workspace, clientes e auditorias partilhadas.
+- [FKT Inspect — decisão de arquitectura multi-cliente](docs/architecture/fkt-inspect-multi-client-architecture-decision.md) — decisão adoptada sobre workspace, carteira, parties locais e concessões externas.
 - [FKT Food Safety — modelo inicial de auditoria](docs/architecture/fkt-food-safety-audit-model.md) — estrutura inicial para segurança alimentar e higiene na restauração; sujeita a validação técnica.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
 - [Arquitectura operacional HACCP do FKT Inspect](docs/architecture/fkt-inspect-haccp-operational-architecture.md) — âmbito funcional, fluxos operacionais e limites do produto.
-- [Dicionário físico de dados do FKT Inspect](docs/architecture/fkt-inspect-physical-data-dictionary.md) — entidades, campos, chaves, relações, integridade e decisões pendentes.
+- [Dicionário físico de dados do FKT Inspect](docs/architecture/fkt-inspect-physical-data-dictionary.md) — entidades, campos, chaves, relações, integridade e decisões técnicas fechadas; dependências de validação externa identificadas.
 - [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.
 - [Manutenção das FAQ](docs/FAQ-MAINTENANCE.md) — processo obrigatório de revisão e publicação da ajuda.
 - [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
