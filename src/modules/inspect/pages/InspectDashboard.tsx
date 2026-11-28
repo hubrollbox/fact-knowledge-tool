@@ -64,7 +64,7 @@ function InspectPortfolio() {
     queryKey: ['inspect-client-establishments', organisation?.id],
     enabled: !!organisation,
     queryFn: async () => {
-      const { data, error } = await inspectDb.from('inspect_client_establishments').select('*').eq('inspect_organisation_id', organisation!.id).is('valid_until', null).order('valid_from', { ascending: false });
+      const { data, error } = await inspectDb.from('inspect_client_establishments').select('*').eq('inspect_organisation_id', organisation!.id).order('valid_from', { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -202,7 +202,7 @@ function InspectPortfolio() {
             <div className="divide-y">{relations.map(relation => {
               const client = clients.find(x => x.id === relation.client_id);
               const establishment = establishments.find(x => x.id === relation.establishment_id);
-              return <div key={relation.id} className="flex items-center justify-between gap-3 py-3"><div><p className="font-medium">{client?.display_name ?? 'Cliente indisponível'} → {establishment?.display_name ?? 'Estabelecimento indisponível'}</p><p className="text-xs text-muted-foreground">Desde {new Date(relation.valid_from).toLocaleDateString('pt-PT')}</p></div><Button type="button" variant="ghost" size="sm" onClick={() => endRelation(relation.id)} disabled={busy} aria-label="Terminar associação"><XCircle className="mr-1 h-4 w-4" />Terminar</Button></div>;
+              return <div key={relation.id} className="flex items-center justify-between gap-3 py-3"><div><p className="font-medium">{client?.display_name ?? 'Cliente indisponível'} → {establishment?.display_name ?? 'Estabelecimento indisponível'}</p><p className="text-xs text-muted-foreground">Desde {new Date(relation.valid_from).toLocaleDateString('pt-PT')}{relation.valid_until ? ` · Terminada em ${new Date(relation.valid_until).toLocaleDateString('pt-PT')}` : ' · Activa'}</p></div>{!relation.valid_until && <Button type="button" variant="ghost" size="sm" onClick={() => endRelation(relation.id)} disabled={busy} aria-label="Terminar associação"><XCircle className="mr-1 h-4 w-4" />Terminar</Button>}</div>;
             })}{relations.length === 0 && <p className="py-4 text-sm text-muted-foreground">Ainda não existem associações activas.</p>}</div>
           </CardContent></Card>
         </>
