@@ -99,7 +99,7 @@ BEGIN
     OR has_table_privilege('anon','public.obras_recepcoes','UPDATE') THEN
    RAISE EXCEPTION 'anon has direct privileges on reception records';
  END IF;
-END $ $test$, 'documents cannot cross workspaces; reception is unique and protected by RLS');
+END $$ $test$, 'documents cannot cross workspaces; reception is unique and protected by RLS');
 
 RESET ROLE;
 SET LOCAL ROLE authenticated;
