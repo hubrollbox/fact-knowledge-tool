@@ -127,7 +127,9 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Works — Orçamentação e controlo financeiro](docs/architecture/fkt-works-budgeting.md) — âmbito aprovado e sequência planeada para orçamentos, importação, aprovação, medições e desvios.
 - [Modelo funcional e de dados do FKT Lex](docs/architecture/fkt-lex-data-model.md) — proposta e auditoria do domínio jurídico.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
-- [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.\n- [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
+- [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.
+- [Manutenção das FAQ](docs/FAQ-MAINTENANCE.md) — processo obrigatório de revisão e publicação da ajuda.
+- [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
 - [Configuração Supabase](supabase/config.toml) — configuração local do projeto e das Edge Functions.
 
 A documentação específica de cada módulo deve ser lida em conjunto com o código e as migrações correspondentes. Uma matriz ou modelo funcional não substitui testes de permissões e validação funcional.
