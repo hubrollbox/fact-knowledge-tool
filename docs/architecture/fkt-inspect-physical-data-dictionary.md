@@ -73,7 +73,7 @@ Um plano estável por estabelecimento e âmbito.
 - `id uuid PK`, `inspect_organisation_id uuid NOT NULL`, `establishment_id uuid NOT NULL`
 - `plan_code text NOT NULL`, `title text NOT NULL`, `scope_description text NULL`
 - `status text CHECK ('draft','active','suspended','archived')`
-- `current_published_version_id uuid NULL`
+- A versão corrente é obtida pela versão com estado `published`; não guardar ponteiro redundante em `current_published_version_id`.
 - `created_at/created_by/updated_at/updated_by`
 - UNIQUE `(id, inspect_organisation_id, establishment_id)`; UNIQUE `(establishment_id, plan_code)`.
 - FK composta para estabelecimento.
@@ -87,7 +87,8 @@ Um plano estável por estabelecimento e âmbito.
 - `external_validator_name text NULL`, `external_validator_qualification text NULL`, `validation_evidence_document_id uuid NULL`
 - `snapshot jsonb NOT NULL DEFAULT '{}'` apenas para reprodução exacta/exportação; os dados técnicos permanecem normalizados.
 - `content_hash text NULL`, `created_at/created_by`.
-- UNIQUE `(plan_id,version_number)`, UNIQUE `(id,inspect_organisation_id,establishment_id)`.
+- UNIQUE `(plan_id,version_number)`, UNIQUE `(id,inspect_organisation_id,establishment_id,plan_id)`.
+- Índice único parcial em `(plan_id) WHERE status = 'published'`; a RPC de publicação muda a versão anterior para `superseded` e publica a nova na mesma transacção.
 - Publicada/aprovada não pode ser editada; nova alteração cria versão nova. A publicação deve ocorrer por RPC transaccional e validar que só há uma versão corrente.
 
 ### 3.3 Conteúdo da versão
@@ -294,3 +295,40 @@ Estes elementos são parametrizados por estabelecimento e versão do plano, e va
 - [ ] Esquema Core e migrações reais foram comparados antes de SQL.
 - [ ] Testes pgTAP cobrem isolamento e transições.
 - [ ] Profissional HACCP e restaurante piloto validam o conteúdo operacional.
+
+
+## 15. Precisões físicas adicionais
+
+### 15.1 Cursores de geração sem FKs polimórficas
+
+Não usar uma tabela genérica `schedule_type + schedule_id` sem FK real. Criar:
+- `inspect_monitoring_schedule_cursors`: `monitoring_control_id uuid PRIMARY KEY`, tenant/local, `generated_through timestamptz NOT NULL`, `updated_at`; FK composta para `inspect_monitoring_controls`.
+- `inspect_cleaning_schedule_cursors`: `cleaning_plan_id uuid PRIMARY KEY`, tenant/local, `generated_through timestamptz NOT NULL`, `updated_at`; FK composta para `inspect_cleaning_plans`.
+
+A RPC bloqueia a linha do cursor, gera apenas a janela em falta e avança o cursor na mesma transacção. A unicidade da tarefa continua a ser a última defesa contra duplicados.
+
+### 15.2 Versionamento e publicação do plano
+
+A versão corrente não é guardada como ponteiro editável no plano. É a única versão com estado `published`, garantida por índice único parcial por plano. A RPC de publicação:
+1. valida a versão e os campos obrigatórios;
+2. confirma aprovação/validação técnica exigida para aquele estabelecimento;
+3. marca a versão publicada anterior como `superseded`;
+4. publica a nova versão e define a vigência;
+5. gera snapshot/hash e regista actor/instante;
+6. faz tudo numa transacção.
+
+Os filhos do plano usam FK composta para a versão e não podem ser alterados depois de publicada.
+
+### 15.3. Regras de paridade e cardinalidade
+
+- Em recepção, lote e input de transformação: `quantity IS NULL = (unit_code IS NULL)`.
+- Uma recepção tem uma ou mais linhas; uma linha pode originar vários lotes; cada ligação lote/linha tem quantidade opcional.
+- Uma transformação tem um lote de saída e uma ou mais linhas de entrada; impedir que o lote de saída seja também um input da mesma transformação.
+- Uma NC tem uma ou mais origens tipadas; cada origem pode estar associada a uma única NC. A FK da origem é UNIQUE na tabela de ligação.
+- Não usar `reference_type/reference_id` como relação de integridade; apenas FKs reais.
+
+### 15.4. Dependência Core e estado de produção
+
+A migração `20261128170000_fkt_inspect_foundation.sql` inclui a extensão da constraint `workspaces_modulo_check` para aceitar `inspect`, as quatro tabelas da carteira e policies/grants. Porém, o cabeçalho da migração limita-a a validação local/CI e proíbe aplicação remota sem aprovação. A migração `20261128173000_fkt_inspect_support_faq.sql` é igualmente código versionado, não prova de publicação.
+
+O código `src/types/modulos.ts` mantém `inspect` fora de `ModuloSlug` e declara que o módulo é apenas público/planeado. Não activar no selector nem assumir disponibilidade de produção até migrações, testes e activação serem aprovados.
