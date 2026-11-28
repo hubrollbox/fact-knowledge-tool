@@ -202,3 +202,32 @@ Resumo:
 - pode responder a acções que lhe sejam atribuídas, apenas com permissão específica;
 - acesso a ficheiros é privado e autorizado por pedido;
 - concessão e estado da auditoria são ciclos de vida independentes.
+
+
+## 17. Evolução de âmbito — gestão operacional HACCP (28/11/2026)
+
+A arquitectura operacional vinculativa para a evolução do módulo está em [FKT Inspect — arquitectura operacional HACCP](fkt-inspect-haccp-operational-architecture.md).
+
+A decisão de produto altera o âmbito anterior: o Inspect deixa de ser apenas uma ferramenta de auditorias e passa a suportar a gestão digital diária do sistema HACCP de restaurantes. As auditorias continuam integradas, mas não substituem os registos operacionais.
+
+Domínios funcionais:
+- plano HACCP, processos, perigos, medidas de controlo, parâmetros e procedimentos versionados;
+- áreas, equipamentos e verificações;
+- controlos operacionais e registos diários, incluindo temperaturas;
+- planos, tarefas e registos de higienização;
+- fornecedores, recepção, produtos, lotes e rastreabilidade;
+- abertura/preparação, validades e identificação interna;
+- controlo operacional de óleos alimentares, após validação do âmbito;
+- não conformidades e acções correctivas transversais;
+- auditorias, evidências, histórico e relatórios.
+
+A primeira entrega deve cobrir o fluxo operacional essencial, não apenas auditorias. Não inclui ERP, POS, facturação, compras, inventário comercial completo ou gestão financeira.
+
+Limites obrigatórios:
+- parâmetros, limites e frequências são definidos no plano validado de cada estabelecimento; não são universais;
+- o software não determina autonomamente PCC, perigos, conformidade legal ou eficácia;
+- cada registo preserva o parâmetro/regra e versão aplicados no momento;
+- consultores só acedem aos dados operacionais por concessão explícita e delimitada;
+- validação por profissional competente e piloto real são portas de saída.
+
+As secções anteriores que excluem «gestão integral de HACCP» ou posicionam o MVP exclusivamente como fluxo de consultoria/auditoria ficam substituídas por esta decisão de 28/11/2026. A definição detalhada do âmbito comercial inicial consta do novo documento operacional.
