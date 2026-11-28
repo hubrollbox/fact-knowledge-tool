@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline, combinarEdicaoOffline, selecionarFotosParaEviccao } from './offlineStore';
+import { criarOperacaoOffline, isFalhaDeLigacao, compararCamposOffline, combinarEdicaoOffline, selecionarFotosParaEviccao, prepararOperacaoParaManterLocal } from './offlineStore';
 
 describe('offlineStore', () => {
   it('cria operações pendentes com tentativas a zero e sem erro', () => {
@@ -109,5 +109,29 @@ describe('limites da cache offline de fotografias', () => {
     })) as any;
 
     expect(selecionarFotosParaEviccao(photos, 100, 2)).toEqual(['one']);
+  });
+});
+
+describe('resolução de conflitos de criação offline', () => {
+  it('converte a escolha de manter a versão local numa actualização baseada na versão remota', () => {
+    const current = {
+      id: 'record-1',
+      userId: 'user-1',
+      workspaceId: 'workspace-1',
+      entity: 'visita' as const,
+      operationType: 'create' as const,
+      payload: { id: 'record-1', workspace_id: 'workspace-1', titulo: 'Título local', notas: 'Igual' },
+      conflictRemote: { id: 'record-1', workspace_id: 'workspace-1', titulo: 'Título remoto', notas: 'Igual' },
+      createdAt: '2026-11-28T00:00:00.000Z',
+      attempts: 3,
+      lastError: 'Conflito de sincronização',
+    };
+    const resolved = prepararOperacaoParaManterLocal(current);
+    expect(resolved.operationType).toBe('update');
+    expect(resolved.basePayload).toEqual(current.conflictRemote);
+    expect(resolved.changedFields).toEqual(['titulo']);
+    expect(resolved.conflictRemote).toBeNull();
+    expect(resolved.attempts).toBe(0);
+    expect(resolved.lastError).toBeNull();
   });
 });
