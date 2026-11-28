@@ -11,7 +11,8 @@ type Props = { ocorrencias: Row[]; acoes: Row[]; onNavigate: (tab: 'ocorrencias'
 export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
   const [desde, setDesde] = useState('');
   const [ate, setAte] = useState('');
-  const [estado, setEstado] = useState('todos');
+  const [estadoOcorrencia, setEstadoOcorrencia] = useState('todos');
+  const [estadoAcao, setEstadoAcao] = useState('todos');
   const [responsavel, setResponsavel] = useState('todos');
   const [categoria, setCategoria] = useState('todos');
 
@@ -21,16 +22,16 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
   const ocorrenciasFiltradas = useMemo(() => ocorrencias.filter((o) => {
     const data = String(o.created_at ?? '').slice(0, 10);
     return (!desde || data >= desde) && (!ate || data <= ate) &&
-      (estado === 'todos' || o.estado === estado) &&
+      (estadoOcorrencia === 'todos' || o.estado === estadoOcorrencia) &&
       (categoria === 'todos' || (o.especialidade || o.tipo) === categoria);
-  }), [ocorrencias, desde, ate, estado, categoria]);
+  }), [ocorrencias, desde, ate, estadoOcorrencia, categoria]);
 
   const acoesFiltradas = useMemo(() => acoes.filter((a) => {
     const data = String(a.created_at ?? '').slice(0, 10);
     return (!desde || data >= desde) && (!ate || data <= ate) &&
-      (estado === 'todos' || a.estado === estado) &&
+      (estadoAcao === 'todos' || a.estado === estadoAcao) &&
       (responsavel === 'todos' || a.responsavel === responsavel);
-  }), [acoes, desde, ate, estado, responsavel]);
+  }), [acoes, desde, ate, estadoAcao, responsavel]);
 
   const abertas = ocorrenciasFiltradas.filter((o) => o.estado !== 'resolvida').length;
   const criticas = ocorrenciasFiltradas.filter((o) => ['alta', 'critica'].includes(o.gravidade)).length;
@@ -46,7 +47,8 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <div><label className="text-xs text-muted-foreground">Desde</label><Input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} /></div>
         <div><label className="text-xs text-muted-foreground">Até</label><Input type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></div>
-        <div><label className="text-xs text-muted-foreground">Estado</label><Select value={estado} onValueChange={setEstado}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos os estados</SelectItem>{['aberta','em_resolucao','resolvida','pendente','em_curso','bloqueada','concluida','cancelada'].map((v) => <SelectItem key={v} value={v}>{v.replace('_',' ')}</SelectItem>)}</SelectContent></Select></div>
+        <div><label className="text-xs text-muted-foreground">Estado das ocorrências</label><Select value={estadoOcorrencia} onValueChange={setEstadoOcorrencia}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem>{['aberta','em_resolucao','resolvida'].map((v) => <SelectItem key={v} value={v}>{v.replace('_',' ')}</SelectItem>)}</SelectContent></Select></div>
+        <div><label className="text-xs text-muted-foreground">Estado das acções</label><Select value={estadoAcao} onValueChange={setEstadoAcao}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem>{['pendente','em_curso','bloqueada','concluida','cancelada'].map((v) => <SelectItem key={v} value={v}>{v.replace('_',' ')}</SelectItem>)}</SelectContent></Select></div>
         <div><label className="text-xs text-muted-foreground">Responsável (acções)</label><Select value={responsavel} onValueChange={setResponsavel}><SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger><SelectContent><SelectItem value="todos">Todos</SelectItem>{responsaveis.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
         <div><label className="text-xs text-muted-foreground">Categoria (ocorrências)</label><Select value={categoria} onValueChange={setCategoria}><SelectTrigger><SelectValue placeholder="Todas" /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{categorias.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
       </div>
