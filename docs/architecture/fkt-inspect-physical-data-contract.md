@@ -199,3 +199,33 @@ Regras Inspect:
 5. Para funções privilegiadas Inspect, seguir o padrão Core apenas quando tecnicamente necessário: schema não exposto, `search_path` fixo, actor de `auth.uid()`, sem actor/tenant recebido do browser, grants mínimos e testes negativos.
 
 Esta secção foi confirmada com consulta read-only à BD remota em 28/11/2026; não foram alterados helpers, grants ou policies.
+
+
+## 10. Extensão do inventário físico — gestão operacional HACCP (28/11/2026)
+
+Esta extensão é **inventário candidato para revisão em #175**, não DDL aprovado. Deve ser integrada no inventário das secções 2.1–2.5 antes da primeira migração operacional.
+
+| Domínio | Tabelas candidatas | Requisitos físicos essenciais |
+|---|---|---|
+| Plano HACCP | inspect_food_safety_plans, inspect_food_safety_plan_versions | FK organização/estabelecimento; versão única; snapshot e aprovação; versão publicada imutável |
+| Processos e perigos | inspect_processes, inspect_process_steps, inspect_hazards, inspect_control_measures, inspect_control_parameters | FKs compostas; etapa e medida ligadas à versão do plano; parâmetro com unidade, fonte, tipo e aplicabilidade |
+| Procedimentos | inspect_haccp_documents | Storage privado; ligação à versão do plano; hash, autor, instante e retenção |
+| Áreas/equipamentos | inspect_areas, inspect_equipment | Organização/estabelecimento em todas as chaves; estado e histórico; sem limites/frequências globais |
+| Monitorização | inspect_monitoring_plans, inspect_monitoring_assignments, inspect_monitoring_records, inspect_monitoring_record_events | Plano/versão/controlo de origem; autor e instante; valor/unidade; snapshot da regra; eventos append-only |
+| Higienização | inspect_cleaning_plans, inspect_cleaning_tasks, inspect_cleaning_records | Tarefa atribuída; frequência definida no plano; execução, resultado, produto e histórico |
+| Fornecedores/recepção | inspect_suppliers, inspect_food_products, inspect_receipts, inspect_receipt_items | Fornecedor, produto, lote, validade e parâmetros de recepção aplicáveis; aceitação/rejeição e evidência |
+| Rastreabilidade | inspect_lots, inspect_lot_events | Lotes de origem/destino e transformação ligados por FKs; eventos com actor/instante; pesquisa de origem/destino |
+| Validades | inspect_product_life_records | Abertura/preparação, origem, data definida pelo procedimento, responsável e estado |
+| Óleos | inspect_oil_control_records | Apenas após validação do âmbito e requisitos do piloto |
+| Desvios | Extensão de inspect_findings e inspect_corrective_actions | Origem tipada; preservação do registo operacional; contenção, acção e verificação |
+
+### Regras adicionais
+- Todas as tabelas operacionais devem ter inspect_organisation_id; as que são específicas de local devem também ter establishment_id.
+- As FKs compostas devem impedir que um registo associe plano, equipamento, produto, lote ou tarefa de outra organização/estabelecimento.
+- Os snapshots dos parâmetros aplicados devem preservar valor, unidade, fonte, versão, tipo de limite e instante de validade.
+- Não utilizar JSONB como substituto de relações entre produtos, lotes, eventos, planos e controlos.
+- Acesso externo do consultor requer autorização explícita. Acesso à auditoria partilhada não equivale a acesso aos registos operacionais.
+- RLS, GRANT e Storage têm de ser especificados por tabela/operação na matriz própria; não inferir que uma policy de auditoria cobre automaticamente o domínio operacional.
+- Não criar inventário comercial, compras, encomendas, POS ou facturação.
+
+A revisão #175 deve transformar este inventário numa especificação física completa e resolver cardinalidades, constraints, índices, RLS e testes antes de qualquer migração.
