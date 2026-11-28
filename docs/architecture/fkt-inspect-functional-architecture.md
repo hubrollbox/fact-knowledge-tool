@@ -119,7 +119,7 @@ Esta lista é uma estrutura funcional inicial, não uma checklist legal exaustiv
 
 - Primeiro telemóvel: utilização prática durante a visita.
 - Registo rápido, com campos obrigatórios mínimos e detalhe progressivo.
-- Guardar rascunhos e permitir recuperação perante conectividade limitada, sem prometer sincronização offline antes de testes.
+- Gravar rascunhos automaticamente no servidor e mostrar claramente o estado guardado/por guardar/erro; a versão inicial não promete edição offline nem guarda localmente evidências sensíveis.
 - Evidências associadas directamente ao critério, auditoria ou não conformidade.
 - Separar a experiência do auditor da experiência do cliente.
 - Não bloquear a recolha de uma observação por falta de dados administrativos que possam ser completados posteriormente.
