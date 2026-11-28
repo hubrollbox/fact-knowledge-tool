@@ -111,6 +111,19 @@ A evolução funcional planeada inclui orçamentação para empreiteiros e fisca
 
 O FKT Works não deve ser apresentado como substituto de todas as ferramentas de gestão de obra. O seu foco é a organização da informação, a evidência, a rastreabilidade e o acompanhamento.
 
+### 4.2. FKT Inspect
+
+O FKT Inspect está planeado como módulo de auditoria, recolha de evidências, registo de não conformidades e acompanhamento de acções correctivas. O primeiro domínio previsto é segurança alimentar e higiene na restauração.
+
+O produto destina-se tanto a consultores/auditores que trabalham com vários clientes como a empresas que executam verificações internas. O modelo deverá permitir acesso externo estritamente limitado aos dados do cliente correspondente, sem criar um workspace por cliente nem expor a carteira de uma consultora.
+
+O Inspect encontra-se documentado, mas **não está implementado**. O FKT Works mantém prioridade de conclusão do MVP. O âmbito, modelo de dados, segurança e catálogo inicial estão descritos em:
+- [Arquitectura funcional do FKT Inspect](architecture/fkt-inspect-functional-architecture.md);
+- [Modelo de dados e segurança do FKT Inspect](architecture/fkt-inspect-data-model-security.md);
+- [Modelo inicial de auditoria FKT Food Safety](architecture/fkt-food-safety-audit-model.md).
+
+O FKT Inspect não deve ser apresentado como autoridade inspectiva, entidade certificadora ou garantia automática de conformidade legal. Os critérios e referências devem ser validados por profissionais competentes e associados às fontes e versões aplicáveis.
+
 ## 5. Princípios fundamentais
 
 - **Estrutura antes da interface** — a informação deve ter organização e contexto.
