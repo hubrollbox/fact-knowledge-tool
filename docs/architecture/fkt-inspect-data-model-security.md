@@ -27,6 +27,15 @@ Representa a entidade que utiliza o módulo e é ancorada no workspace FKT:
 
 Deve existir uma relação inequívoca entre organização Inspect e workspace. Não criar um workspace para cada cliente externo.
 
+### Parte (`inspect_parties`)
+Entidade legal ou organizacional registada uma única vez dentro da organização Inspect:
+- id e inspect_organisation_id;
+- designação e tipo de entidade;
+- identificadores externos apenas quando necessários à operação;
+- estado e timestamps.
+
+A mesma parte pode desempenhar o papel de cliente contratual e/ou operador alimentar. Evitar duplicar a entidade só porque assume papéis diferentes.
+
 ### Cliente
 Entidade auditada/contratante gerida pela organização Inspect:
 - id;
@@ -138,6 +147,15 @@ A classificação de gravidade/risco deve ser configurável e documentada; não 
 - verificador, resultado e justificação.
 
 Separar «acção declarada como concluída» de «acção verificada como eficaz».
+
+### Submissão e publicação
+- submissão imutável com número, autor, instante, versão do modelo, snapshot e hash;
+- snapshot limitado aos campos destinados ao relatório/partilha, sem notas internas;
+- publicação externa ligada por FK à submissão concreta;
+- evidências partilhadas através de associação tipada à publicação;
+- revogação da publicação sem apagar submissão nem relatório.
+
+O PDF é gerado exclusivamente a partir do snapshot. Correcções posteriores criam nova submissão/adenda, sem substituir a versão anterior.
 
 ### Relatório
 Registo da emissão:
