@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 
 BEGIN;
-SELECT plan(36);
+SELECT plan(42);
 
 SELECT ok(
   EXISTS (
@@ -76,6 +76,92 @@ SELECT ok(
 SELECT ok(
   EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.inspect_establishments'::regclass AND conname='inspect_establishments_operator_party_org_fk'),
   'Operador só pode pertencer à mesma organização'
+);
+
+
+-- Behavioural checks using a local fixture. No remote project is linked.
+INSERT INTO auth.users (id,aud,role,email,raw_user_meta_data,created_at,updated_at)
+VALUES ('a6100000-0000-4000-8000-000000000001','authenticated','authenticated','inspect-phase1-actor@example.test','{}'::jsonb,now(),now());
+
+SELECT set_config('request.jwt.claim.sub','a6100000-0000-4000-8000-000000000001',true);
+
+INSERT INTO public.workspaces (id,user_id,modulo)
+VALUES
+  ('b6100000-0000-4000-8000-000000000001','a6100000-0000-4000-8000-000000000001','inspect'),
+  ('b6100000-0000-4000-8000-000000000002','a6100000-0000-4000-8000-000000000001','inspect');
+
+INSERT INTO public.inspect_organisations
+  (id,workspace_id,organisation_type,display_name,created_by,updated_by)
+VALUES
+  ('c6100000-0000-4000-8000-000000000001','b6100000-0000-4000-8000-000000000001','consultant','Organização teste','a6100000-0000-4000-8000-000000000099','a6100000-0000-4000-8000-000000000099'),
+  ('c6100000-0000-4000-8000-000000000002','b6100000-0000-4000-8000-000000000002','operator','Organização teste 2','a6100000-0000-4000-8000-000000000099','a6100000-0000-4000-8000-000000000099');
+
+INSERT INTO public.inspect_parties
+  (id,inspect_organisation_id,party_type,display_name,created_by,updated_by)
+VALUES
+  ('d6100000-0000-4000-8000-000000000001','c6100000-0000-4000-8000-000000000001','legal_entity','Operador teste','a6100000-0000-4000-8000-000000000099','a6100000-0000-4000-8000-000000000099');
+
+INSERT INTO public.inspect_clients
+  (id,inspect_organisation_id,display_name,party_id,created_by,updated_by)
+VALUES
+  ('e6100000-0000-4000-8000-000000000001','c6100000-0000-4000-8000-000000000001','Cliente teste','d6100000-0000-4000-8000-000000000001','a6100000-0000-4000-8000-000000000099','a6100000-0000-4000-8000-000000000099');
+
+INSERT INTO public.inspect_establishments
+  (id,inspect_organisation_id,display_name,operator_party_id,operator_identification_status,created_by,updated_by)
+VALUES
+  ('f6100000-0000-4000-8000-000000000001','c6100000-0000-4000-8000-000000000001','Estabelecimento teste','d6100000-0000-4000-8000-000000000001','identified','a6100000-0000-4000-8000-000000000099','a6100000-0000-4000-8000-000000000099');
+
+SELECT ok(
+  (SELECT bool_and(created_by='a6100000-0000-4000-8000-000000000001'::uuid AND updated_by='a6100000-0000-4000-8000-000000000001'::uuid)
+   FROM (
+     SELECT created_by,updated_by FROM public.inspect_organisations WHERE id='c6100000-0000-4000-8000-000000000001'
+     UNION ALL SELECT created_by,updated_by FROM public.inspect_parties WHERE id='d6100000-0000-4000-8000-000000000001'
+     UNION ALL SELECT created_by,updated_by FROM public.inspect_clients WHERE id='e6100000-0000-4000-8000-000000000001'
+     UNION ALL SELECT created_by,updated_by FROM public.inspect_establishments WHERE id='f6100000-0000-4000-8000-000000000001'
+   ) actors),
+  'Os quatro triggers derivam created_by e updated_by do actor autenticado'
+);
+
+UPDATE public.inspect_parties
+SET display_name='Operador actualizado', updated_by='a6100000-0000-4000-8000-000000000099'
+WHERE id='d6100000-0000-4000-8000-000000000001';
+
+SELECT ok(
+  (SELECT created_by='a6100000-0000-4000-8000-000000000001'::uuid
+          AND updated_by='a6100000-0000-4000-8000-000000000001'::uuid
+   FROM public.inspect_parties WHERE id='d6100000-0000-4000-8000-000000000001'),
+  'O trigger preserva created_by e volta a derivar updated_by em UPDATE'
+);
+
+SELECT throws_ok(
+  $UPDATE public.inspect_organisations
+    SET workspace_id='b6100000-0000-4000-8000-000000000002'
+    WHERE id='c6100000-0000-4000-8000-000000000001'$,
+  '23514',
+  'A organização não pode mudar de workspace'
+);
+
+SELECT throws_ok(
+  $UPDATE public.inspect_parties
+    SET inspect_organisation_id='c6100000-0000-4000-8000-000000000002'
+    WHERE id='d6100000-0000-4000-8000-000000000001'$,
+  '23514',
+  'Uma party não pode mudar de organização'
+);
+
+SELECT throws_ok(
+  $INSERT INTO public.inspect_clients (inspect_organisation_id,display_name,party_id)
+    VALUES ('c6100000-0000-4000-8000-000000000002','Cliente cruzado','d6100000-0000-4000-8000-000000000001')$,
+  '23503',
+  'A FK composta impede ligar cliente a party de outra organização'
+);
+
+SELECT throws_ok(
+  $INSERT INTO public.inspect_establishments
+      (inspect_organisation_id,display_name,operator_identification_status)
+    VALUES ('c6100000-0000-4000-8000-000000000001','Estabelecimento sem operador','identified')$,
+  '23514',
+  'Estado identified exige operator_party_id'
 );
 
 SELECT * FROM finish();
