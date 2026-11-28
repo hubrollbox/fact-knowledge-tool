@@ -17,7 +17,9 @@ export interface ModuloFAQ {
 }
 
 export interface Modulo {
-  slug: ModuloSlug;
+  // Inspect is a public/planned module only. It is intentionally excluded from ModuloSlug
+  // because the current workspaces_modulo_check constraint does not permit activation.
+  slug: ModuloSlug | 'inspect';
   nome: string;
   descricao: string;
   icone: string;
@@ -27,7 +29,7 @@ export interface Modulo {
   fluxo?: ModuloFluxoPasso[];
   faq?: ModuloFAQ[];
   rotaPrincipal?: string;
-  /** Destaque comercial (ex.: 'MVP'). */
+  /** Destaque comercial ou estado público (ex.: 'Piloto fechado', 'Planeado'). */
   destaque?: string;
   /** Ainda não pode ser activado num workspace. */
   emPreparacao?: boolean;
