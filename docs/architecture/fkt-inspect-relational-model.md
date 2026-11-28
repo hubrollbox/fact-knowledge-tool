@@ -504,8 +504,8 @@ Manter três conceitos distintos:
 2. **Client:** relação de cliente contratual gerida pela organização Inspect; não é, por si, prova de que essa entidade opera o estabelecimento.
 3. **Establishment operator:** entidade responsável pela exploração do estabelecimento, identificada no registo do estabelecimento e copiada como snapshot na auditoria quando necessário.
 
-Decisão candidata:
-- introduzir `inspect_parties` com chave composta por organização;
+Decisão adoptada para o MVP:
+- introduzir `inspect_parties` com chave composta por organização, sem identidade global nem partilha transversal entre organizações;
 - associar `inspect_clients.party_id` a uma party da mesma organização;
 - acrescentar `inspect_establishments.operator_party_id` nullable, com FK composta à party;
 - permitir que a party operadora seja a entidade da própria empresa utilizadora, sem criar um cliente contratual fictício;
