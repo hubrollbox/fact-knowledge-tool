@@ -229,3 +229,29 @@ Esta extensão é **inventário candidato para revisão em #175**, não DDL apro
 - Não criar inventário comercial, compras, encomendas, POS ou facturação.
 
 A revisão #175 deve transformar este inventário numa especificação física completa e resolver cardinalidades, constraints, índices, RLS e testes antes de qualquer migração.
+
+
+## 11. Resultados da revisão da fundação — 28/11/2026
+
+A migração de fundação cria quatro tabelas: `inspect_organisations`, `inspect_clients`, `inspect_establishments` e `inspect_client_establishments`. Não cria `inspect_parties` nem regista a entidade operadora do estabelecimento. O contrato físico deve, por isso, ser actualizado antes da migração de produção.
+
+A migração usa os valores `consultant`, `operator` e `hybrid` em `inspect_organisations.organisation_type`. Estes são os valores válidos do SQL actual. Uniformizar a documentação e não alterar os valores sem migração/testes e revisão do código consumidor.
+
+### Alterações físicas candidatas a especificar
+1. Criar `inspect_parties`, com `id`, `inspect_organisation_id`, tipo, designação, estado e campos identificadores estritamente necessários; UNIQUE `(id, inspect_organisation_id)`.
+2. Adicionar `party_id` a `inspect_clients`, FK composta para party, com estratégia de migração compatível e sem inferir identidades legais a partir de nomes livres.
+3. Adicionar `operator_party_id` nullable a `inspect_establishments`, FK composta para party da mesma organização.
+4. Definir migração/reconciliação de registos existentes como pendente até confirmação; não inventar entidade operadora.
+5. Manter `inspect_client_establishments` como relação comercial/gestão de carteira, sem a tratar como prova de operador legal.
+
+A fundação ainda não inclui o domínio HACCP operacional. As tabelas candidatas das secções anteriores devem ser convertidas em DDL apenas depois de resolvidas as decisões da secção 20 do modelo relacional e da matriz RLS.
+
+### Regras de dados a fechar
+- plano HACCP versionado com filhos ligados à versão publicada;
+- separação de configuração, tarefa prevista, execução e evento;
+- recepção com várias linhas/lotes;
+- rastreabilidade por eventos e relações de transformação tipadas;
+- validade como registo de abertura/preparação ligado a produto/lote e procedimento;
+- não conformidade central com origem tipada;
+- funções Inspect separadas dos papéis Core;
+- instante da recolha separado do instante de registo no servidor, quando forem admitidos registos retroactivos.
