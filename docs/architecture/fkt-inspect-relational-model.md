@@ -100,8 +100,8 @@ As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas 
 ### 2.8. Evidências
 
 - `inspect_evidence`: metadados do objecto privado, organização, auditoria, autor, hash, MIME, tamanho, estado e retenção. Não usar `resource_type + resource_id` como única ligação relacional.
-- `inspect_evidence_publications`: publicação explícita de uma evidência para uma auditoria/versão, com actor e instante.
-- `inspect_evidence_links`: associação tipada a resultado, finding, resposta ou relatório, através de FKs reais e constraints compostas; alternativa: tabelas de ligação separadas por tipo. Não aceitar IDs polimórficos sem FK.
+- `inspect_evidence_links`: associação interna tipada a resultado, finding, resposta ou relatório, através de FKs reais e constraints compostas; alternativa: tabelas de ligação separadas por tipo. Não aceitar IDs polimórficos sem FK.
+- A publicação externa da evidência é feita por `inspect_publication_evidence`, ligada a uma publicação concreta; não criar uma segunda tabela de publicação de evidências com ciclo de vida concorrente.
 
 O caminho Storage não contém PII nem nomes de clientes. Constraint composta liga evidência e recurso à mesma auditoria/organização. A autorização de download é verificada por pedido.
 
@@ -119,7 +119,8 @@ O utilizador externo não altera o finding nem a acção original; cria uma resp
 
 - `inspect_audit_submissions`: snapshot imutável da submissão, número/versão, actor, instante, hash do payload.
 - `inspect_reports`: ficheiro emitido, versão do template, hash, emissor, instante e estado.
-- `inspect_publications`: publicação externa explícita de resumo/resultados/relatório/evidências, com versão, actor, instante e eventual revogação.
+- `inspect_publications`: publicação externa de uma submissão concreta, com `audit_id`, `submission_id`, número, actor, instante e eventual revogação. Não usar `resource_type/resource_id`.
+- `inspect_publication_evidence`: associação entre publicação e evidência que pode ser descarregada nessa publicação; FKs compostas garantem a mesma organização e auditoria.
 
 O relatório final é um artefacto imutável. Correcções geram adenda ou nova emissão ligada à anterior.
 
@@ -330,3 +331,20 @@ Preferência:
 Aplicar o mesmo princípio a publicações: evitar `resource_type/resource_id` sem FK. Resultados publicados devem estar ligados a uma submissão/snapshot concreta; relatórios a uma submissão; evidências a uma publicação de evidência; respostas a uma acção concreta.
 
 Constraints compostas devem preservar simultaneamente `inspect_organisation_id`, `audit_id` e, quando aplicável, `template_version_id`. O modelo físico não pode depender apenas da validação na aplicação.
+
+
+## 15. Ciclo de submissão e publicação externa — decisão de desenho
+
+Para evitar duas fontes de verdade e impedir que uma alteração posterior no rascunho mude o que o cliente já viu:
+
+1. A submissão cria um snapshot imutável, identificado por auditoria, número, instante, actor e hash.
+2. O snapshot contém apenas campos destinados ao relatório/partilha. Notas internas, comentários privados e dados de gestão não entram no payload.
+3. O relatório PDF é sempre gerado a partir desse snapshot e guarda FK para a submissão concreta; nunca é reconstruído a partir do estado vivo da auditoria.
+4. A publicação externa referencia uma submissão concreta. A publicação pode ser revogada sem apagar a submissão nem o relatório.
+5. Evidências externas são explicitamente associadas à publicação através de `inspect_publication_evidence`. A existência de um objecto no bucket ou de uma ligação interna não o torna público.
+6. Respostas externas são novos registos associados a acções atribuídas; não alteram o snapshot original nem a constatação do auditor.
+7. Uma correcção cria nova submissão/adenda e, se necessário, nova publicação. A versão anterior mantém-se auditável.
+
+A tabela `inspect_publications` não deve conter um par polimórfico `resource_type/resource_id`. O modelo físico deve usar FKs reais para `inspect_audits` e `inspect_audit_submissions`; a associação de ficheiros usa a tabela tipada `inspect_publication_evidence`.
+
+Esta decisão substitui qualquer interpretação anterior de publicação genérica por recurso. Não criar simultaneamente `inspect_evidence_publications` e `inspect_publication_evidence`.
