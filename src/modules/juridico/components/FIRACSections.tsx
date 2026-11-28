@@ -23,7 +23,7 @@ import {
   useFontes, useCreateFonte,
   useAplicacoes, useCreateAplicacao, useAplicacaoFactos, useAplicacaoFontes,
   useLinkAplicacaoFacto, useLinkAplicacaoFonte,
-  useConclusoes, useConclusaoEventos, useCreateConclusao, useTransicaoConclusao,
+  useConclusoes, useConclusaoEventos, useConclusaoSnapshots, useCreateConclusao, useTransicaoConclusao,
 } from '../hooks/useFIRAC';
 
 function EmptyState({ children }: { children: string }) {
@@ -332,6 +332,7 @@ export function AplicacoesTab({ processoId, onNavigate }: { processoId: string; 
 export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; onNavigate?: (tab: string, anchor: string) => void }) {
   const { data: conclusoes = [], isLoading } = useConclusoes(processoId);
   const { data: eventos = [], isLoading: eventosLoading, isError: eventosError } = useConclusaoEventos(processoId);
+  const { data: snapshots = [] } = useConclusaoSnapshots(processoId);
   const { data: questoes = [] } = useQuestoes(processoId);
   const { data: aplicacoes = [] } = useAplicacoes(processoId);
   const { data: factos = [] } = useFactos(processoId);
@@ -344,6 +345,7 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
   const [questaoId,setQuestaoId] = useState('');
   const [aplicacaoId,setAplicacaoId] = useState('');
   const [texto,setTexto] = useState('');
+  const [expandedComparison,setExpandedComparison] = useState<string | null>(null);
   const availableApplications=aplicacoes.filter(a=>!questaoId || a.questao_id===questaoId);
 
   const eventLabels: Record<string,string> = {
@@ -398,6 +400,13 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
             const latest=history.length ? history[history.length-1] : null;
             const currentState=latest?.estado_novo ?? (c.estado==='revista'?'em_revisao':c.estado);
             const canTransition=!!latest && !eventosError;
+            const previousVersion = conclusoes
+              .filter(item => item.questao_id === c.questao_id && item.versao < c.versao)
+              .sort((a,b) => b.versao - a.versao)[0];
+            const currentSnapshot: any = snapshots.find(item => item.conclusao_id === c.id);
+            const previousSnapshot: any = previousVersion ? snapshots.find(item => item.conclusao_id === previousVersion.id) : null;
+            const expanded = expandedComparison === c.id;
+            const jsonList = (value: unknown) => Array.isArray(value) ? value as any[] : [];
             return <div key={c.id} className="space-y-3 rounded-md border p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">v{c.versao}</Badge>
@@ -406,6 +415,26 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
               </div>
               <AuthorMeta id={c.autor_id} />
               <p className="whitespace-pre-wrap text-sm">{c.texto}</p>
+              {previousVersion && <div className="space-y-2">
+                <Button type="button" size="sm" variant="outline" onClick={()=>setExpandedComparison(expanded ? null : c.id)}>
+                  {expanded ? 'Fechar comparação' : `Comparar com v${previousVersion.versao}`}
+                </Button>
+                {expanded && <div className="grid gap-3 rounded-md border bg-muted/20 p-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold">Versão anterior · v{previousVersion.versao}</p>
+                    <p className="whitespace-pre-wrap text-sm">{previousVersion.texto}</p>
+                    <p className="text-xs text-muted-foreground">Factos: {jsonList(previousSnapshot?.factos_aplicacao).length} · Fontes: {jsonList(previousSnapshot?.fontes_aplicacao).length}</p>
+                    {!previousSnapshot && <p className="text-xs text-amber-700">Snapshot histórico indisponível.</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold">Versão actual · v{c.versao}</p>
+                    <p className="whitespace-pre-wrap text-sm">{c.texto}</p>
+                    <p className="text-xs text-muted-foreground">Factos: {jsonList(currentSnapshot?.factos_aplicacao).length} · Fontes: {jsonList(currentSnapshot?.fontes_aplicacao).length}</p>
+                    {!currentSnapshot && <p className="text-xs text-amber-700">Snapshot histórico indisponível.</p>}
+                  </div>
+                  <p className="text-xs text-muted-foreground md:col-span-2">Comparação lado a lado do texto e do número de factos/fontes associados à aplicação em cada versão. Não substitui uma comparação semântica detalhada.</p>
+                </div>}
+              </div>}
               {c.aplicacao_id && <div className="space-y-1 text-xs">
                 <a className="text-primary underline" href={`#aplicacao-${c.aplicacao_id}`} onClick={e=>{if(onNavigate){e.preventDefault();onNavigate("analise",`aplicacao-${c.aplicacao_id}`);}}}>Abrir aplicação que fundamenta</a>
                 <div className="flex flex-wrap gap-x-3 gap-y-1">
