@@ -17,6 +17,7 @@ import { DocumentosObra } from '../components/DocumentosObra';
 import { AcaoComentarios } from '../components/AcaoComentarios';
 import { PlaneamentoObra } from '../components/PlaneamentoObra';
 import { IndicadoresObra } from '../components/IndicadoresObra';
+import { RecepcaoObra } from '../components/RecepcaoObra';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -78,6 +79,7 @@ export function ObraDetail() {
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="planeamento">Planeamento</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="documentos">Documentos</TabsTrigger>
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="recepcao">Recepção</TabsTrigger>
         </TabsList>
 
         <TabsContent value="indicadores" className="space-y-3">
