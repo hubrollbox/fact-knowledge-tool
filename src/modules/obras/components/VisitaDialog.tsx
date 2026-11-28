@@ -72,7 +72,7 @@ export function VisitaDialog({ obraId }: { obraId: string }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="diario-trabalhos">O que aconteceu hoje?</Label>
-              <Textarea id="diario-trabalhos" autoFocus required value={f.trabalhos_executados} onChange={(e) => set('trabalhos_executados', e.target.value)} placeholder="Descreva os trabalhos realizados, o progresso e os factos relevantes." className="min-h-32 text-base" />
+              <Textarea id="diario-trabalhos" required value={f.trabalhos_executados} onChange={(e) => set('trabalhos_executados', e.target.value)} placeholder="Descreva os trabalhos realizados, o progresso e os factos relevantes." className="min-h-32 text-base" />
               <p className="text-xs text-muted-foreground">Registe factos observados. Pode acrescentar informação técnica abaixo.</p>
             </div>
 
