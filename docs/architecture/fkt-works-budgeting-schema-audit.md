@@ -84,7 +84,7 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. Antes da migração, ainda falta fechar o fluxo de reaprovação após edição de orçamento aprovado.
+A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. O fluxo de reaprovação fica definido na secção 8. Antes da migração, resta validar o desenho técnico e os detalhes de permissões e notificações.
 
 ## 7. Regras de cálculo — decisão funcional de 28-11-2026
 
@@ -144,3 +144,35 @@ Estas regras definem o comportamento do produto. Não constituem aconselhamento 
 - Sem retenções/cauções/penalizações.
 - Sem motor de aconselhamento fiscal ou determinação automática de taxas.
 - Sem cálculo de pagamentos, facturação ou certificação de medições.
+
+
+## 8. Edição e reaprovação — decisão funcional de 28-11-2026
+
+### Regra
+- Um orçamento aprovado continua editável por utilizadores autorizados.
+- A aprovação anterior nunca é apagada nem reescrita.
+- Alterações materiais criam uma nova versão lógica/estado de aprovação e exigem nova aprovação.
+- Alterações não materiais (por exemplo, correcções de gralhas ou notas internas que não alterem o compromisso comercial) ficam no histórico, mas não obrigam a nova aprovação.
+- Alterações materiais incluem, pelo menos: trabalhos/descrições que alterem o âmbito, quantidades, unidades, preços, descontos, IVA/taxas, totais, prazos e condições comerciais.
+- Cada alteração regista actor, data/hora, campos afectados e valores anterior/novo.
+
+### Fluxo rápido
+1. O utilizador edita o orçamento normalmente.
+2. Ao guardar, o FKT identifica se houve alteração material.
+3. Se não for material, guarda e regista no histórico sem interromper o trabalho.
+4. Se for material, guarda a alteração, assinala **Alterado — aguarda aprovação** e prepara automaticamente um resumo das diferenças.
+5. O responsável recebe uma notificação com ligação directa ao orçamento e pode **Aprovar alterações** ou **Rejeitar alterações**.
+6. A decisão é registada com actor, data/hora e observação opcional. A versão anteriormente aprovada permanece consultável.
+
+### Princípios de UX
+- Uma acção principal para submeter/confirmar alterações; evitar formulários extensos.
+- Resumo de diferenças legível, com valores anteriores e novos e impacto no total.
+- Aprovação/rejeição a partir do próprio resumo, sem obrigar a navegar por várias páginas.
+- Observação/comentário opcional, excepto quando a rejeição necessitar de justificação por política definida.
+- Não bloquear a consulta da versão anteriormente aprovada enquanto a alteração aguarda decisão.
+- Não chamar assinatura electrónica ou certificação à aprovação registada no FKT.
+
+### Questões técnicas a validar
+- Como tratar várias edições enquanto existe uma aprovação pendente: actualizar o pedido pendente com histórico de cada alteração ou criar pedidos sucessivos.
+- Quem é o responsável aprovador em cada obra e como é configurado.
+- Notificações disponíveis no produto (in-app/email) e comportamento quando não existe aprovador configurado.
