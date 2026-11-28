@@ -32,13 +32,14 @@ SELECT is(
 );
 
 SELECT ok(
-  NOT EXISTS (
+  EXISTS (
     SELECT 1 FROM public.fkt_support_faq
     WHERE module='inspect'
-      AND (answer ILIKE '%já disponível%' OR answer ILIKE '%garante conformidade%')
+      AND question='O FKT Inspect já está disponível?'
+      AND answer ILIKE 'Ainda não.%'
       AND is_published
   ),
-  'published Inspect FAQs do not claim availability or automatic compliance'
+  'published Inspect availability FAQ clearly states that the module is not yet available'
 );
 
 SELECT * FROM finish();
