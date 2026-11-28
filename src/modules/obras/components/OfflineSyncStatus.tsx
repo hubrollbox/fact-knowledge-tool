@@ -110,7 +110,7 @@ export function OfflineSyncStatus() {
             </Button>}
           </div>
         </AlertDescription>
-      </Alert>
+      </Alert>}
 
       <Dialog open={!!selected} onOpenChange={(open) => !resolving && !open && setSelected(null)}>
         <DialogContent className="max-h-[90dvh] max-w-3xl overflow-y-auto">
@@ -134,7 +134,7 @@ export function OfflineSyncStatus() {
             <Button type="button" disabled={resolving || !online} onClick={() => void resolve('keep_local')}>{resolving ? 'A aplicar…' : 'Manter versão local'}</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>}
+      </Dialog>
     </div>
   );
 }
