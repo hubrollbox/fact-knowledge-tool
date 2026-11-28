@@ -18,6 +18,7 @@ export function RecepcaoObra({ obraId, workspaceId, canWrite }: Props) {
   const [notas, setNotas] = useState('');
   const [pendencias, setPendencias] = useState<Pendencia[]>([]);
   const [estado, setEstado] = useState('em_preparacao');
+  const [documentosIds, setDocumentosIds] = useState<string[]>([]);
   const { data, isLoading, isError } = useQuery({
     queryKey: ['obras-recepcao', obraId],
     queryFn: async () => {
@@ -42,12 +43,13 @@ export function RecepcaoObra({ obraId, workspaceId, canWrite }: Props) {
     setReservas(data.reception?.reservas ?? '');
     setNotas(data.reception?.notas ?? '');
     setEstado(data.reception?.estado ?? 'em_preparacao');
+    setDocumentosIds(data.reception?.documentos_ids ?? []);
   }, [data]);
   const save = useMutation({
     mutationFn: async (nextState: string) => {
       if (!canWrite) throw new Error('Sem permissões para alterar a recepção.');
       const { error } = await (supabase as any).from('obras_recepcoes').upsert({
-        workspace_id: workspaceId, obra_id: obraId, estado: nextState, pendencias,
+        workspace_id: workspaceId, obra_id: obraId, estado: nextState, pendencias, documentos_ids: documentosIds,
         reservas: reservas.trim() || null, notas: notas.trim() || null,
       }, { onConflict: 'obra_id' });
       if (error) throw error;
@@ -68,7 +70,7 @@ export function RecepcaoObra({ obraId, workspaceId, canWrite }: Props) {
     </div>
     <div className="space-y-2"><Label htmlFor="recepcao-reservas">Reservas gerais</Label><Textarea id="recepcao-reservas" value={reservas} onChange={(e) => setReservas(e.target.value)} disabled={!canWrite} /></div>
     <div className="space-y-2"><Label htmlFor="recepcao-notas">Notas da recepção</Label><Textarea id="recepcao-notas" value={notas} onChange={(e) => setNotas(e.target.value)} disabled={!canWrite} /></div>
-    <div className="space-y-2"><h3 className="text-sm font-medium">Documentação arquivada ({data?.documents.length ?? 0})</h3>{data?.documents.length ? <ul className="list-disc space-y-1 pl-5 text-sm">{data.documents.map((d: any) => <li key={d.id}>{d.titulo} <span className="text-muted-foreground">· {d.categoria}</span></li>)}</ul> : <p className="text-sm text-muted-foreground">Sem documentos arquivados. Pode adicioná-los no separador Documentos.</p>}</div>
+    <div className="space-y-2"><h3 className="text-sm font-medium">Documentos a integrar na recepção ({documentosIds.length})</h3>{data?.documents.length ? <div className="space-y-2">{data.documents.map((d: any) => <label key={d.id} className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" disabled={!canWrite} checked={documentosIds.includes(d.id)} onChange={(e) => setDocumentosIds((old) => e.target.checked ? [...old, d.id] : old.filter((id) => id !== d.id))} /><span>{d.titulo} <span className="text-muted-foreground">· {d.categoria}</span></span></label>)}</div> : <p className="text-sm text-muted-foreground">Sem documentos arquivados. Pode adicioná-los no separador Documentos.</p>}</div>
     <div className="flex flex-wrap justify-between gap-2 border-t pt-3"><Button type="button" variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Imprimir relatório</Button>{canWrite && <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={save.isPending} onClick={() => save.mutate('em_preparacao')}><Save className="mr-2 h-4 w-4" />Guardar preparação</Button><Button type="button" disabled={save.isPending || porTratar.length > 0} onClick={() => save.mutate(pendencias.some((p) => p.decisao === 'reserva_aceite') || !!reservas.trim() ? 'recebida_com_reservas' : 'concluida')}><CheckCircle2 className="mr-2 h-4 w-4" />{porTratar.length ? 'Resolver pendências' : 'Confirmar recepção'}</Button></div>}</div>
     {porTratar.length > 0 && <p className="text-xs text-muted-foreground">A recepção só pode ser concluída depois de decidir todas as pendências e justificar as reservas aceites.</p>}
   </section>;
