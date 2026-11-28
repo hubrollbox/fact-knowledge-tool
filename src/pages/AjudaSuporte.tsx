@@ -56,6 +56,7 @@ export default function AjudaSuporte() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [query, setQuery] = useState('');
   const [moduleFilter, setModuleFilter] = useState<ModuleKey | 'all'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [ticketEvents, setTicketEvents] = useState<TicketEvent[]>([]);
@@ -120,9 +121,13 @@ export default function AjudaSuporte() {
 
   const filteredFaqs = useMemo(() => faqs.filter(faq => {
     const matchesModule = moduleFilter === 'all' || faq.module === moduleFilter;
+    const matchesCategory = categoryFilter === 'all' || faq.category === categoryFilter;
     const text = `${faq.question} ${faq.answer} ${faq.category}`.toLocaleLowerCase('pt-PT');
-    return matchesModule && text.includes(query.toLocaleLowerCase('pt-PT'));
-  }), [faqs, moduleFilter, query]);
+    return matchesModule && matchesCategory && text.includes(query.toLocaleLowerCase('pt-PT'));
+  }), [faqs, moduleFilter, categoryFilter, query]);
+
+  const moduleCounts = useMemo(() => modules.map(item => ({ ...item, count: faqs.filter(faq => faq.module === item.value && faq.is_published).length })), [faqs]);
+  const categories = useMemo(() => Array.from(new Set(faqs.filter(faq => moduleFilter === 'all' || faq.module === moduleFilter).map(faq => faq.category))).sort((a,b) => a.localeCompare(b, 'pt-PT')), [faqs, moduleFilter]);
 
   const openTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
@@ -260,22 +265,57 @@ export default function AjudaSuporte() {
       </nav>
 
       {tab === 'faq' && (
-        <section className="space-y-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_220px]">
-            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input className={inputClass + ' pl-9'} placeholder="Pesquisar perguntas e respostas…" value={query} onChange={event => setQuery(event.target.value)} /></div>
-            <select className={inputClass} value={moduleFilter} onChange={event => setModuleFilter(event.target.value as ModuleKey | 'all')}><option value="all">Todos os módulos</option>{modules.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+        <section className="space-y-6">
+          <div className="mx-auto max-w-3xl space-y-3 text-center">
+            <h2 className="text-xl font-semibold">Em que podemos ajudar?</h2>
+            <p className="text-sm text-muted-foreground">Pesquise uma dúvida ou escolha a área da plataforma.</p>
+            <div className="relative text-left"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input className={inputClass + ' pl-9 py-3'} placeholder="Ex.: criar obra, relatório PDF, permissões…" value={query} onChange={event => { setQuery(event.target.value); setCategoryFilter('all'); }} /></div>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            {filteredFaqs.map(faq => (
-              <article key={faq.id} className="rounded-lg border border-border bg-card p-5">
-                <div className="mb-3 flex flex-wrap items-center gap-2"><span className="rounded-full bg-muted px-2.5 py-1 text-xs">{moduleName(faq.module)}</span><span className="text-xs text-muted-foreground">{faq.category}</span></div>
-                <h2 className="font-medium">{faq.question}</h2>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{faq.answer}</p>
-                <p className="mt-4 text-xs text-muted-foreground">Revisto: {faq.reviewed_at ? formatDate(faq.reviewed_at) : 'Data não indicada'}</p>
-              </article>
-            ))}
+
+          {query.trim() === '' && moduleFilter === 'all' ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {moduleCounts.filter(item => item.count > 0).map(item => (
+                <button key={item.value} onClick={() => { setModuleFilter(item.value); setCategoryFilter('all'); }} className="group rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/50 hover:bg-accent/40">
+                  <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{item.label}</h3><span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">{item.count} {item.count === 1 ? 'artigo' : 'artigos'}</span></div>
+                  <p className="mt-2 text-sm text-muted-foreground">{item.value === 'core' ? 'Conta, pesquisa, utilização e suporte da plataforma.' : item.value === 'works' ? 'Obras, diário, ocorrências, acções e relatórios.' : item.value === 'lex' ? 'Processos, análise jurídica, documentos e prazos.' : item.value === 'vet' ? 'Animais, fichas, historial clínico e ninhadas.' : 'Projectos, issues e decisões de arquitectura.'}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">Explorar ajuda <span aria-hidden="true">→</span></span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  {moduleFilter !== 'all' && <button className={secondaryButton} onClick={() => { setModuleFilter('all'); setCategoryFilter('all'); setQuery(''); }}>← Todas as áreas</button>}
+                  <h2 className="font-semibold">{moduleFilter === 'all' ? 'Resultados da pesquisa' : moduleName(moduleFilter)}</h2>
+                </div>
+                <span className="text-xs text-muted-foreground">{filteredFaqs.length} {filteredFaqs.length === 1 ? 'resposta' : 'respostas'}</span>
+              </div>
+              {moduleFilter !== 'all' && (
+                <div className="flex flex-wrap gap-2">
+                  <button className={categoryFilter === 'all' ? buttonClass : secondaryButton} onClick={() => setCategoryFilter('all')}>Todas as categorias</button>
+                  {categories.map(category => <button key={category} className={categoryFilter === category ? buttonClass : secondaryButton} onClick={() => setCategoryFilter(category)}>{category}</button>)}
+                </div>
+              )}
+              <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                {filteredFaqs.map(faq => (
+                  <details key={faq.id} className="group p-4 sm:p-5">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-medium marker:hidden">
+                      <span>{faq.question}<span className="mt-1 block text-xs font-normal text-muted-foreground">{moduleName(faq.module)} · {faq.category}</span></span>
+                      <span className="mt-0.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div className="mt-4 whitespace-pre-wrap border-t border-border pt-4 text-sm leading-7 text-muted-foreground">{faq.answer}</div>
+                    <p className="mt-3 text-xs text-muted-foreground">Revisto: {faq.reviewed_at ? formatDate(faq.reviewed_at) : 'Data não indicada'}</p>
+                  </details>
+                ))}
+              </div>
+              {filteredFaqs.length === 0 && <div className="rounded-lg border border-dashed border-border p-10 text-center"><BookOpen className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">Não encontrámos resultados.</p><p className="mt-1 text-sm text-muted-foreground">Experimente outros termos ou altere os filtros.</p></div>}
+            </div>
+          )}
+          <div className="rounded-xl border border-border bg-muted/30 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+            <div><h3 className="font-medium">Não encontrou o que procurava?</h3><p className="mt-1 text-sm text-muted-foreground">Consulte os seus pedidos ou contacte o suporte da plataforma.</p></div>
+            {user ? <button className={secondaryButton + ' mt-3 sm:mt-0'} onClick={() => { setTab('tickets'); setNewTicketOpen(true); }}>Criar pedido de suporte</button> : <Link className={secondaryButton + ' mt-3 sm:mt-0'} to="/login">Entrar para pedir suporte</Link>}
           </div>
-          {filteredFaqs.length === 0 && <div className="rounded-lg border border-dashed border-border p-10 text-center"><BookOpen className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">Não encontrámos resultados.</p><p className="mt-1 text-sm text-muted-foreground">Experimente outros termos ou seleccione todos os módulos.</p></div>}
         </section>
       )}
 
