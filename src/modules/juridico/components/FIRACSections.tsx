@@ -467,6 +467,20 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
           })}
         </div>
       )}
+      {eventos.length > 0 && <div className="mt-6 space-y-3 border-t pt-4">
+        <h3 className="text-sm font-semibold">Histórico transversal do processo</h3>
+        <ol className="space-y-2">
+          {[...eventos].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map(event => {
+            const conclusion = conclusoes.find(item => item.id === event.conclusao_id);
+            const issue = conclusion?.questao_id ? questoes.find(item => item.id === conclusion.questao_id) : null;
+            return <li key={event.id} className="flex flex-col gap-1 border-l-2 pl-3">
+              <p className="text-xs font-medium">{eventLabels[event.evento] ?? event.evento} · {issue?.titulo ?? 'Conclusão do processo'}{conclusion ? ` · v${conclusion.versao}` : ''}</p>
+              <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleString('pt-PT')} · <AuthorMeta id={event.actor_id} /></p>
+              {event.notas && <p className="text-xs">{event.notas}</p>}
+            </li>;
+          })}
+        </ol>
+      </div>}
       {eventosError && <p className="mt-3 text-sm text-destructive">Não foi possível consultar o histórico de auditoria. As operações de revisão ficam bloqueadas.</p>}
     </CardContent>
     <Dialog open={open} onOpenChange={setOpen}>
