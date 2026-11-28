@@ -21,8 +21,8 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
 
   if (modulo.emPreparacao) {
     return (
-      <Button size={size} variant="outline" onClick={() => navigate(user ? '/dashboard' : '/login')}>
-        Em piloto — disponível em breve
+      <Button size={size} variant="outline" disabled>
+        Em preparação — ainda não disponível
       </Button>
     );
   }
