@@ -126,7 +126,6 @@ export const modulos: Modulo[] = [
       { q: 'Suporta Markdown?', a: 'Sim, na maioria dos campos longos.' },
     ],
   },
-  ,
   {
     slug: 'inspect',
     nome: 'FKT Inspect',
