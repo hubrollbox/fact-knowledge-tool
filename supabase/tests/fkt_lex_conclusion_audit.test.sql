@@ -17,7 +17,7 @@ BEGIN
     'juridico_factos','juridico_questoes','juridico_fontes',
     'juridico_factos_documentos','juridico_questoes_factos','juridico_questoes_fontes',
     'juridico_aplicacoes','juridico_aplicacoes_factos','juridico_aplicacoes_fontes',
-    'juridico_conclusoes','juridico_conclusoes_eventos'
+    'juridico_conclusoes','juridico_conclusoes_eventos','juridico_conclusoes_snapshots'
   ] LOOP
     IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = format('public.%I', _table)::regclass) THEN
       RAISE EXCEPTION 'RLS is not enabled on public.%', _table;
@@ -42,12 +42,14 @@ BEGIN
   END LOOP;
 
   IF NOT has_table_privilege('authenticated', 'public.juridico_conclusoes', 'SELECT')
-    OR NOT has_table_privilege('authenticated', 'public.juridico_conclusoes_eventos', 'SELECT') THEN
+    OR NOT has_table_privilege('authenticated', 'public.juridico_conclusoes_eventos', 'SELECT')
+    OR NOT has_table_privilege('authenticated', 'public.juridico_conclusoes_snapshots', 'SELECT') THEN
     RAISE EXCEPTION 'authenticated must be able to read conclusions and their audit events';
   END IF;
 
-  IF has_table_privilege('authenticated', 'public.juridico_conclusoes_eventos', 'INSERT') THEN
-    RAISE EXCEPTION 'authenticated must not insert audit events directly';
+  IF has_table_privilege('authenticated', 'public.juridico_conclusoes_eventos', 'INSERT')
+    OR has_table_privilege('authenticated', 'public.juridico_conclusoes_snapshots', 'INSERT') THEN
+    RAISE EXCEPTION 'authenticated must not insert audit events or snapshots directly';
   END IF;
 
   -- History must be protected from cascading deletion of its parent records.
@@ -75,6 +77,20 @@ BEGIN
       AND tgenabled = 'A'
   ) THEN
     RAISE EXCEPTION 'Append-only mutation protection triggers must be ENABLE ALWAYS';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.juridico_conclusoes_snapshots'::regclass
+      AND tgname = 'juridico_conclusoes_snapshots_immutable'
+      AND tgenabled = 'A'
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.juridico_conclusoes'::regclass
+      AND tgname = 'juridico_conclusoes_capture_context'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'Conclusion context snapshot trigger or immutability trigger is missing';
   END IF;
 
   IF NOT has_function_privilege(
