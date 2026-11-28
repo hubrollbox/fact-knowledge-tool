@@ -1,4 +1,4 @@
-import { FileText, Dog, Code, HardHat, ClipboardCheck, LucideIcon } from 'lucide-react';
+import { FileText, Dog, Code, HardHat, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { modulos } from '@/data/modulos';
@@ -9,7 +9,6 @@ const iconMap: Record<string, LucideIcon> = {
   Dog,
   Code,
   HardHat,
-  ClipboardCheck,
 };
 
 interface ModuleSelectorProps {
@@ -26,14 +25,14 @@ export default function ModuleSelector({ onSelect, activeSlug }: ModuleSelectorP
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
-        {modulos.map((mod) => {
+        {modulos.filter((mod) => mod.slug !== 'inspect').map((mod) => {
           const Icon = iconMap[mod.icone];
           const isActive = activeSlug === mod.slug;
 
           return (
             <Card
               key={mod.slug}
-              onClick={() => { if (!mod.emPreparacao && mod.slug !== 'inspect') onSelect(mod.slug); }}
+              onClick={() => !mod.emPreparacao && onSelect(mod.slug)}
               aria-disabled={mod.emPreparacao}
               className={`transition-all ${mod.emPreparacao ? 'opacity-70 cursor-default' : 'cursor-pointer hover:shadow-md hover:border-primary/50'} ${
                 isActive ? 'border-primary ring-2 ring-primary/20' : ''
