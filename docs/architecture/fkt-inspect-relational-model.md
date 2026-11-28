@@ -594,3 +594,24 @@ Ficam adoptadas as decisões do dicionário físico:
 - controlo manual de óleos incluído no MVP, sem sensores ou limites universais codificados.
 
 Permanecem dependentes de validação profissional os parâmetros, frequências, limites, procedimentos e prazos específicos de cada estabelecimento. O FKT não os pré-preenche como obrigações universais.
+
+
+## 22. Contrato relacional adoptado para o MVP HACCP — 28/11/2026
+
+Esta secção consolida as decisões fechadas no dicionário físico. Em caso de divergência, prevalece o dicionário físico mais recente.
+
+- **Parties:** scoped por organização Inspect; sem tabela global ou pesquisa transversal entre consultoras. Cliente contratual e operador alimentar são papéis distintos e podem referir a mesma party local.
+- **Operador:** `inspect_establishments.operator_party_id` é nullable até identificação confirmada; a carteira cliente-estabelecimento não determina o operador.
+- **Plano:** agregado estável por estabelecimento; conteúdo técnico em versões imutáveis. Não manter ponteiro mutável `current_published_version_id`; a versão publicada é garantida por índice único parcial e publicação transaccional.
+- **Monitorização:** separar controlo configurado, atribuição, tarefa persistida, medição submetida e eventos de revisão/correcção. Tarefas geradas on-demand por RPC idempotente, cursor específico com FK real e lock transaccional; sem Cron obrigatório no MVP.
+- **Higienização:** separar plano, tarefa e execução; cada tarefa preserva versão e snapshot da instrução apresentada.
+- **Recepção/rastreabilidade:** cabeçalho, linhas, lotes, ligação de linha a lote e transformações N:M; quantidades/unidades opcionais mas em par, obrigatórias apenas quando o procedimento de transformação assim o exigir.
+- **Validades:** abertura/preparação não cria automaticamente lote novo; prazo deriva do procedimento aplicável e é preservado com a versão.
+- **Não conformidades:** uma NC agrega várias origens tipadas por FKs reais; cada origem liga-se a uma única NC ao longo do ciclo de vida.
+- **Óleos:** registo manual básico integra o MVP, sem sensores nem limites universais codificados.
+- **Perfis:** gerente, responsável HACCP e colaborador; consultor/auditor através de grants/atribuições explícitos.
+- **Registos retroactivos:** permitidos com motivo obrigatório, tempos de ocorrência/registo separados, identificação explícita e evento auditável; janela configurável por estabelecimento.
+
+As decisões não autorizam a criação de parâmetros legais universais. Perigos, limites, frequências, métodos e prazos são configurados por estabelecimento/versão e carecem de validação profissional competente.
+
+O dicionário físico especifica campos e constraints. Este modelo relacional não substitui a comparação final com o Core nem a validação do DDL, RLS e testes locais.
