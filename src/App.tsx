@@ -60,6 +60,7 @@ import { RelatorioVisita } from "./modules/obras/pages/RelatorioVisita";
 import { RelatorioDiario } from "./modules/obras/pages/RelatorioDiario";
 import { OcorrenciaDetail } from "./modules/obras/pages/OcorrenciaDetail";
 import { FilaAcoes } from "./modules/obras/pages/FilaAcoes";
+import InspectDashboard from "./modules/inspect/pages/InspectDashboard";
 import { FormTemplatesPage, FormTemplatesListPage } from "./modules/obras/pages/FormTemplates";
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
             <Route path="/dev/projecto/:id" element={<ProtectedRoute module="dev"><AppLayout><ProjectoDetail /></AppLayout></ProtectedRoute>} />
             <Route path="/dev/adr/novo" element={<ProtectedRoute module="dev"><AppLayout><NovoADR /></AppLayout></ProtectedRoute>} />
             <Route path="/obras" element={<ProtectedRoute module="obras"><AppLayout><ObrasDashboard /></AppLayout></ProtectedRoute>} />
+            <Route path="/inspect" element={<InspectDashboard />} />
             <Route path="/obras/nova" element={<ProtectedRoute module="obras"><AppLayout><NovaObra /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/acoes" element={<ProtectedRoute module="obras"><AppLayout><FilaAcoes /></AppLayout></ProtectedRoute>} />
             <Route path="/obras/formularios" element={<ProtectedRoute module="obras"><AppLayout><FormTemplatesListPage /></AppLayout></ProtectedRoute>} />
