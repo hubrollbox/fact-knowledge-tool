@@ -250,7 +250,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   );
 
   return (
-    <div className={cn("flex h-screen overflow-hidden bg-background", location.pathname.startsWith("/juridico") && "fkt-lex-theme")}>
+    <div className={cn("flex h-screen overflow-hidden bg-background", location.pathname.startsWith("/juridico") && "fkt-lex-theme", location.pathname.startsWith("/inspect") && "fkt-inspect-theme")}>
       <aside className={cn(
         'hidden md:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 shrink-0',
         sidebarCollapsed ? 'w-16' : 'w-60'
