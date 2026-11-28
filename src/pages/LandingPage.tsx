@@ -1,6 +1,6 @@
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, FileText, Dog, Code, HardHat } from 'lucide-react';
+import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, FileText, Dog, Code, HardHat, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
 
@@ -52,6 +52,12 @@ const modules = [
     icon: Code,
     href: '/modulos/dev',
   },
+  {
+    name: 'FKT Inspect',
+    description: 'Auditorias, evidências e acompanhamento de não conformidades. Em preparação.',
+    icon: ClipboardCheck,
+    href: '/modulos/inspect',
+  },
 ];
 
 export default function LandingPage() {
@@ -96,7 +102,7 @@ export default function LandingPage() {
                 O Core é a base comum da plataforma. Dá estrutura ao workspace, à equipa, às permissões e à forma como cada módulo é utilizado, sem misturar os dados e os processos próprios de cada área.
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {principles.map(({ icon: Icon, title, description }) => (
                 <article key={title} className="rounded-lg border border-border bg-card p-6">
                   <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-primary text-primary-foreground mb-4">
