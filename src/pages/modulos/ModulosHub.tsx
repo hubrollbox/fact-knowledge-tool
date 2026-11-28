@@ -22,7 +22,7 @@ export default function ModulosHub() {
         <div className="text-center space-y-3 mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Módulos</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Adapta o FKT ao teu contexto. Escolhe o módulo que melhor reflecte o teu trabalho.
+            Adapte o FKT ao seu contexto. Escolha o módulo que melhor corresponde à sua actividade.
           </p>
         </div>
 
