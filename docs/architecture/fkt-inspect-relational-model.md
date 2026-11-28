@@ -588,3 +588,17 @@ A mesma pessoa pode acumular funções; a autorização é a união controlada d
 - validar o modelo com profissional competente e restaurante piloto.
 
 Até estas decisões estarem fechadas, as tabelas listadas na secção 19 permanecem candidatas, não devem ser convertidas directamente em migração.
+
+
+## 21. Decisões fechadas para o modelo físico do MVP — 28/11/2026
+
+Ficam adoptadas as decisões do dicionário físico:
+- parties locais à organização Inspect, sem identidade global nem partilha transversal entre consultoras; cliente e operador podem referir a mesma party na organização;
+- tarefas persistidas geradas on-demand por RPC idempotente, com cursor/watermark e lock transaccional; sem dependência de Cron no MVP;
+- quantidades/unidades opcionais em recepção/rastreabilidade, mas sempre em par; obrigatórias apenas em transformações quando o procedimento o exigir;
+- uma NC agrega várias origens tipadas; cada origem liga-se a uma só NC durante o seu ciclo de vida;
+- perfis internos: gerente, responsável HACCP e colaborador; consultor/auditor através de atribuições/grants específicos;
+- registos retroactivos permitidos com motivo, timestamps separados e evento auditável; janela configurável;
+- controlo manual de óleos incluído no MVP, sem sensores ou limites universais codificados.
+
+Permanecem dependentes de validação profissional os parâmetros, frequências, limites, procedimentos e prazos específicos de cada estabelecimento. O FKT não os pré-preenche como obrigações universais.
