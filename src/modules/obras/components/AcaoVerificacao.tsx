@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
+import { useFotos } from '../hooks/useFotosObra';
 
 type Resultado = 'eficaz' | 'parcial' | 'ineficaz';
 type Verificacao = {
@@ -38,6 +39,9 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
   const [resultado, setResultado] = useState<Resultado>('eficaz');
   const [descricao, setDescricao] = useState('');
   const [evidencia, setEvidencia] = useState('');
+  const [evidenciaFotoId, setEvidenciaFotoId] = useState('none');
+  const { data: fotografias = [] } = useFotos({ ocorrenciaId });
+  const fotografiasDisponiveis = fotografias.filter((foto) => !foto.pending);
 
   const { data: verificacoes = [], isLoading, isError } = useQuery<Verificacao[]>({
     queryKey,
@@ -66,12 +70,14 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
         resultado,
         descricao: descricao.trim(),
         evidencia: evidencia.trim() || null,
+        evidencia_foto_id: evidenciaFotoId === 'none' ? null : evidenciaFotoId,
       });
       if (error) throw error;
     },
     onSuccess: async () => {
       setDescricao('');
       setEvidencia('');
+      setEvidenciaFotoId('none');
       await qc.invalidateQueries({ queryKey });
       toast({ title: 'Verificação registada' });
     },
@@ -116,7 +122,15 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
             <Textarea value={descricao} onChange={(event) => setDescricao(event.target.value)} rows={2} maxLength={5000} placeholder="Descreva a inspecção e o resultado observado." />
           </div>
           <div className="space-y-1">
-            <Label>Evidência (opcional)</Label>
+            <Label>Fotografia da ocorrência (opcional)</Label>
+            <Select value={evidenciaFotoId} onValueChange={setEvidenciaFotoId}>
+              <SelectTrigger className="min-h-11"><SelectValue placeholder="Sem fotografia associada" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sem fotografia</SelectItem>
+                {fotografiasDisponiveis.map((foto) => <SelectItem key={foto.id} value={foto.id}>{foto.legenda || 'Fotografia'} · {foto.capturada_em ? new Date(foto.capturada_em).toLocaleDateString('pt-PT') : 'Sem data'}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Label>Evidência escrita (opcional)</Label>
             <Textarea value={evidencia} onChange={(event) => setEvidencia(event.target.value)} rows={2} maxLength={5000} placeholder="Identifique medições, documentos ou fotografias que sustentam a verificação." />
           </div>
           <Button type="submit" className="min-h-11 w-full sm:w-auto" disabled={guardar.isPending || !descricao.trim()}>
