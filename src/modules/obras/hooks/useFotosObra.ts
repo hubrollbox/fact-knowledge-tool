@@ -59,28 +59,26 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
         if (!data.length) return pendingPhotos;
         const paths = data.map((photo) => photo.storage_path);
         const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 300);
-        const downloads = new Map<string, Blob>();
         const cacheCandidates = data.slice(0, MAX_OFFLINE_PHOTO_CACHE_COUNT);
-        // Limit concurrent downloads to avoid loading an entire gallery into memory.
+        // Download in small batches and persist each blob immediately. Do not
+        // retain the downloaded blobs in a second in-memory gallery-sized map.
         for (let offset = 0; offset < cacheCandidates.length; offset += 5) {
           const batch = cacheCandidates.slice(offset, offset + 5);
-          const results = await Promise.all(batch.map(async (photo) => {
+          await Promise.all(batch.map(async (photo) => {
             const { data: blob, error: downloadError } = await supabase.storage.from('obras-fotos').download(photo.storage_path);
-            if (downloadError || !blob || blob.size > MAX) return null;
+            if (downloadError || !blob || blob.size <= 0 || blob.size > MAX) return;
             await guardarFotoCacheOffline({
               id: photo.id, userId: user.id, workspaceId: ws,
               visita_id: photo.visita_id, ocorrencia_id: photo.ocorrencia_id,
               legenda: photo.legenda, capturada_em: photo.capturada_em,
               latitude: photo.latitude, longitude: photo.longitude, blob,
             }).catch(() => undefined);
-            return { id: photo.id, blob };
           }));
-          for (const result of results) if (result) downloads.set(result.id, result.blob);
         }
         const remotePhotos = data.map((photo, i) => ({
           ...photo,
           url: signed?.[i]?.signedUrl ?? null,
-          cachedBlob: downloads.get(photo.id) ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
+          cachedBlob: cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
           pending: false,
         }));
         const remoteIds = new Set(remotePhotos.map((photo) => photo.id));
