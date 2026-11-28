@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, Camera, ImagePlus, Loader2, X } from 'lucide-react';
 import { useCriarOcorrencia } from '../hooks/useObras';
 import { useUploadFoto } from '../hooks/useFotosObra';
@@ -104,11 +103,23 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             <div className="space-y-1.5"><Label htmlFor="ocorrencia-descricao">Descrição / observações</Label><Textarea id="ocorrencia-descricao" className="min-h-28 text-base" placeholder="Descreva o que viu, sem conclusões." value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} /></div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5"><Label htmlFor="ocorrencia-localizacao">Onde aconteceu?</Label><Input id="ocorrencia-localizacao" className="min-h-11" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} /></div>
-              <div className="space-y-1.5"><Label>Gravidade</Label>
-                <Select value={f.gravidade} onValueChange={(v) => setF({ ...f, gravidade: v })}><SelectTrigger className="min-h-11"><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(GRAVIDADES).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+              <fieldset className="space-y-1.5">
+                <legend className="text-sm font-medium">Gravidade</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(GRAVIDADES).map(([key, label]) => (
+                    <Button
+                      key={key}
+                      type="button"
+                      variant={f.gravidade === key ? 'default' : 'outline'}
+                      aria-pressed={f.gravidade === key}
+                      className="min-h-11"
+                      onClick={() => setF({ ...f, gravidade: key })}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </fieldset>
             </div>
             <details className="rounded-md border px-3 py-2">
               <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium">Classificação técnica (opcional)</summary>
