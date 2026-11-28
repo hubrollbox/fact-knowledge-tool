@@ -146,7 +146,7 @@ export default function ModuloDetalhe() {
           {modulo.emPreparacao || modulo.slug === 'inspect' ? (
             <>
               <h2 className="text-3xl font-bold tracking-tight">{modulo.slug === 'inspect' ? 'Próximo MVP — ainda não disponível' : 'Em preparação'}</h2>
-              <p className="text-muted-foreground">{modulo.slug === 'inspect' ? 'O FKT Inspect está em definição e revisão técnica. Não é possível activar ou utilizar o módulo nesta fase.' : 'Este módulo ainda não está disponível para novas activações. Se já o tem activo, pode continuar a aceder à sua área de trabalho.'}</p>
+              <p className="text-muted-foreground">{modulo.slug === 'inspect' ? 'O FKT Inspect é o próximo MVP do FKT e está em preparação. Ainda não é possível activar ou utilizar o módulo.' : 'Este módulo ainda não está disponível para novas activações. Se já o tem activo, pode continuar a aceder à sua área de trabalho.'}</p>
               <div className="flex justify-center"><ModuloCTA modulo={modulo} /></div>
             </>
           ) : (
