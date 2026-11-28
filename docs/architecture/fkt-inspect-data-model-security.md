@@ -262,3 +262,21 @@ Estas decisões devem ser fechadas nas issues de implementação antes das migra
 ## 11. Limites
 
 Este documento é um modelo lógico e de segurança proposto. Não afirma que as tabelas, políticas ou fluxos estejam implementados. A implementação deve ser revista contra o esquema real da única base de dados FKT e testada em ambiente local/CI antes de qualquer migração remota.
+
+
+## 12. Decisão de arquitectura multi-cliente
+
+A decisão detalhada encontra-se em [FKT Inspect — decisão de arquitectura multi-cliente e acesso externo](fkt-inspect-multi-client-architecture-decision.md).
+
+Princípios agora explicitados:
+- a Organização Inspect é ancorada ao workspace proprietário;
+- clientes e estabelecimentos são entidades do domínio Inspect, não workspaces;
+- utilizadores externos não entram em `workspace_members` da consultora;
+- a partilha inicial é por auditoria concreta, com permissões por recurso/operação;
+- o contexto «Partilhado comigo» é distinto do workspace interno e não altera o workspace activo do Core;
+- contas sem workspace próprio podem consultar auditorias Inspect partilhadas, sem obter acesso à organização consultora;
+- convites pendentes não conferem acesso; é necessária aceitação autenticada;
+- notas internas não são visíveis externamente por defeito;
+- RLS, Storage e constraints compostas têm de validar o mesmo âmbito.
+
+Esta decisão é proposta para revisão. Não representa implementação nem validação em runtime.
