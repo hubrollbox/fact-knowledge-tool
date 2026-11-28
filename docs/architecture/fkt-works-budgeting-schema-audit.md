@@ -7,7 +7,7 @@ Projecto Supabase confirmado: `gllrqrqonwuacjxbtgnp` (região eu-west-1; Postgre
 
 ## Decisões funcionais fechadas em 28-11-2026
 
-1. **IVA:** suportar preços com IVA incluído e sem IVA. O modelo deve guardar a base tributável, taxa e valor de imposto de forma explícita, permitindo apresentar os dois modos. A regra de incidência e arredondamento por linha/documento será fechada na especificação de cálculo antes da migração.
+1. **IVA:** suportar preços com IVA incluído e sem IVA. A taxa pode ser definida por orçamento como predefinição e substituída em cada linha quando necessário. O modelo guarda de forma explícita a base tributável, taxa, valor de IVA e total com IVA. Não fixar taxas legais no código; as taxas disponíveis e a sua vigência têm de ser configuráveis/validadas. A regra de arredondamento por linha/documento será especificada e testada antes da migração.
 2. **Verbas globais:** permitir linhas de valor global sem quantidade nem preço unitário. O tipo de linha deve distinguir verba global de quantidade × preço unitário.
 3. **Custos internos:** decomposição de custos internos (materiais, mão-de-obra, equipamentos e outros) é opcional. Deve poder coexistir com um preço proposto ao cliente, sem obrigar a expor custos internos ao destinatário/fiscal.
 4. **Edição após aprovação:** orçamento aprovado continua editável por utilizadores autorizados, mas cada edição deve gerar um registo de auditoria detalhado e recuperável, com actor, data, campos alterados e valores anterior/novo. Não pode haver alteração silenciosa. O histórico de aprovação mantém-se identificável; alterações posteriores devem assinalar que o conteúdo aprovado foi modificado e exigir nova confirmação/aprovação quando aplicável. A regra exacta de reaprovação fica por definir no fluxo.
@@ -84,4 +84,4 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. Ainda é necessário especificar a incidência do IVA, arredondamentos, reaprovação após edição e âmbito dos perfis antes de escrever a migração.
+A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. Ainda é necessário especificar os arredondamentos, reaprovação após edição e âmbito dos perfis antes de escrever a migração.
