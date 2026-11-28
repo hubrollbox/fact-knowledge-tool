@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Layers, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, ListChecks, ClipboardList
+  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Layers, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, ListChecks, ClipboardList, ClipboardCheck
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
@@ -150,6 +150,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       : []),
     ...(moduloSlug === 'dev'
       ? [{ label: 'FKT Dev', href: '/dev', icon: Code } as NavItem]
+      : []),
+    ...((moduloSlug as string) === 'inspect'
+      ? [{ label: 'FKT Inspect', href: '/inspect', icon: ClipboardCheck } as NavItem]
       : []),
   ];
   const navigate = useNavigate();
