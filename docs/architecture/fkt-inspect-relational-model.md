@@ -479,3 +479,112 @@ A arquitectura operacional completa está descrita em fkt-inspect-haccp-operatio
 Auditorias continuam como processo distinto. Podem referenciar uma versão do plano e amostras/registos operacionais, mas não devem duplicar a fonte operacional nem substituir o registo diário.
 
 A lista é um ponto de partida. Cardinalidades, campos, chaves compostas, políticas RLS, GRANT e retenção têm de ser revistos em #175 e validados com o esquema Core antes do DDL.
+
+
+## 20. Revisão técnica da fundação e decisões para o modelo operacional — 28/11/2026
+
+### 20.1. Estado real da fundação
+
+A migração `20261128170000_fkt_inspect_foundation.sql` cria apenas:
+- `inspect_organisations`;
+- `inspect_clients`;
+- `inspect_establishments`;
+- `inspect_client_establishments`.
+
+Não cria `inspect_parties`, nem liga `inspect_clients` a uma entidade legal, nem guarda o operador alimentar em `inspect_establishments`. A fundação é, portanto, uma carteira mínima, não o modelo completo descrito nas secções 2.2–2.4.
+
+A migração usa `organisation_type = consultant | operator | hybrid`. A documentação funcional deve usar exactamente estes valores. Os termos `consultancy` e `both` não são valores SQL válidos nesta migração.
+
+A migração de fundação ainda não aplicada à BD remota pode ser revista antes de lançamento. Qualquer alteração deve preservar a interface de carteira já construída e os testes existentes.
+
+### 20.2. Parte legal, cliente contratual e operador alimentar
+
+Manter três conceitos distintos:
+1. **Party:** pessoa singular/colectiva ou entidade identificável que assume um papel legal/comercial.
+2. **Client:** relação de cliente contratual gerida pela organização Inspect; não é, por si, prova de que essa entidade opera o estabelecimento.
+3. **Establishment operator:** entidade responsável pela exploração do estabelecimento, identificada no registo do estabelecimento e copiada como snapshot na auditoria quando necessário.
+
+Decisão candidata:
+- introduzir `inspect_parties` com chave composta por organização;
+- associar `inspect_clients.party_id` a uma party da mesma organização;
+- acrescentar `inspect_establishments.operator_party_id` nullable, com FK composta à party;
+- permitir que a party operadora seja a entidade da própria empresa utilizadora, sem criar um cliente contratual fictício;
+- manter `inspect_client_establishments` como relação comercial/gestão de carteira, sem inferir dela a identidade do operador;
+- preservar na auditoria o operador identificado à data, incluindo motivo explícito quando desconhecido.
+
+A introdução deve ser compatível com registos existentes: migração de dados não pode inventar parties ou operadores. Registos existentes ficam por reconciliar até confirmação pelo utilizador, ou recebem estado de identificação pendente claramente explícito.
+
+### 20.3. Modelo de versionamento do plano
+
+O plano é agregado por estabelecimento. A versão publicada é o conjunto imutável que contém processos/etapas, perigos, medidas, parâmetros e procedimentos aplicáveis.
+
+Recomendação:
+- `inspect_food_safety_plans` identifica o plano estável e o estabelecimento;
+- `inspect_food_safety_plan_versions` guarda número, estado, autor, datas, aprovação e snapshot;
+- filhos que compõem o conteúdo técnico do plano referenciam a versão concreta, não apenas o plano estável;
+- publicação de nova versão não altera controlos nem registos históricos da versão anterior;
+- uma versão em rascunho pode ser editada; uma versão publicada só pode ser substituída por nova versão/adenda conforme o processo definido;
+- guardar autoria e identidade de quem validou tecnicamente, sem presumir que é utilizador FKT se a validação for externa (usar nome/qualificação e evidência documental quando não existir conta).
+
+Não usar um único JSONB como modelo relacional de perigos, etapas, parâmetros e controlos. O snapshot JSONB pode ser adicional para reprodução/exportação, nunca substituto das FKs.
+
+### 20.4. Controlos programados e registos executados
+
+Separar:
+- definição/configuração do controlo ligado à versão do plano;
+- atribuição do controlo a uma função/utilizador e vigência;
+- ocorrência/tarefa prevista (instância programada);
+- registo de execução/medição;
+- eventos de correcção, validação ou rejeição.
+
+O sistema deve conseguir distinguir «não foi executado», «foi executado e está dentro do parâmetro», «foi executado e gerou desvio», «foi corrigido» e «foi revisto». Não representar ausência de registo como valor normal.
+
+Cada execução preserva o plano/versão, controlo, parâmetro, unidade e regra em vigor. O instante do servidor e o instante declarado da medição devem ser campos distintos quando se admitir registo posterior; registos retroactivos devem ser identificados, justificados e auditados.
+
+### 20.5. Higienização: evitar duplicação de tarefa e registo
+
+A tarefa prevista e a execução não são o mesmo conceito. Uma tarefa programada tem estado próprio (pendente, executada, falhada, dispensada com motivo, vencida); a execução guarda actor, hora, resultado e evidência. Uma tarefa pode ter tentativas/eventos, mas não pode ser marcada como executada sem registo válido. A estrutura final pode reutilizar o motor de tarefas comum se este não introduzir dependência indevida de outros módulos.
+
+### 20.6. Recepção, lotes e rastreabilidade
+
+Separar documento/evento de recepção, linha de produto recebida e lote. Uma recepção pode conter várias linhas e lotes. Não assumir que um produto corresponde sempre a um único lote.
+
+Para transformações/preparações, usar relação explícita entre lotes de entrada e lote resultante, com quantidades/unidades apenas quando necessárias à rastreabilidade. Eventos devem preservar actor, instante e tipo; não modelar rastreabilidade como texto livre nem como stock contabilístico.
+
+A identificação do lote deve admitir a referência externa do fornecedor e identificador interno, sem assumir unicidade global do código do lote.
+
+### 20.7. Validades e produtos preparados
+
+Não duplicar lote para cada abertura se o processo não gerar novo lote. Modelar separadamente eventos de abertura/preparação e a identificação interna resultante. Uma preparação/transformação que crie lote novo deve ligar os lotes de origem ao lote resultante. Datas de utilização são definidas por procedimento aplicável e preservadas com a respectiva versão/fonte.
+
+### 20.8. Não conformidades transversais
+
+Manter distinção entre:
+- constatação de auditoria (`inspect_findings`);
+- desvio operacional detectado num registo diário;
+- não conformidade formal que exige tratamento e acção.
+
+Recomendação de desenho: entidade central de não conformidade com ciclo de vida e acções correctivas comuns, ligada à origem através de relações tipadas com FKs reais. Não duplicar um motor de acções por cada domínio. Definir se uma constatação de auditoria pode originar uma não conformidade formal sem duplicar evidência ou estado.
+
+### 20.9. Identidade e autorização dos perfis do restaurante
+
+Não equiparar automaticamente papel Core (owner/editor) a função HACCP. Definir papéis Inspect por organização/estabelecimento e permissões por operação:
+- gerente: configuração e gestão de utilizadores;
+- responsável HACCP: gestão/revisão de planos e controlos, validação de registos e acções;
+- colaborador: execução dos controlos/tarefas atribuídos e reporte de desvios;
+- consultor: apenas âmbito concedido e operações explicitamente autorizadas;
+- auditor: execução/revisão de auditorias conforme atribuição.
+
+A mesma pessoa pode acumular funções; a autorização é a união controlada das atribuições activas, nunca um bypass por ser owner/admin. Separar gestão de workspace de acesso a conteúdo operacional.
+
+### 20.10. Pendências que bloqueiam DDL
+
+- fechar modelo de party e reconciliação de dados da carteira;
+- escolher modelo de tarefas e ocorrências programadas;
+- fechar cardinalidades de lotes e transformações;
+- fechar origem tipada de não conformidades;
+- definir matriz RLS por tabela/operação/perfil e grants;
+- decidir retenção, correcção e registo retroactivo;
+- validar o modelo com profissional competente e restaurante piloto.
+
+Até estas decisões estarem fechadas, as tabelas listadas na secção 19 permanecem candidatas, não devem ser convertidas directamente em migração.
