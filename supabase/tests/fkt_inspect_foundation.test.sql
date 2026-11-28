@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 
 BEGIN;
-SELECT plan(35);
+SELECT plan(36);
 
 SELECT ok(
   EXISTS (
@@ -56,6 +56,10 @@ SELECT ok(
       AND NOT p.prosecdef AND p.proconfig @> ARRAY['search_path=pg_catalog, auth']
   ),
   'Função de autoria é SECURITY INVOKER e tem search_path controlado'
+);
+SELECT ok(
+  has_schema_privilege('authenticated', 'private', 'USAGE'),
+  'authenticated mantém USAGE no schema private para os helpers Core'
 );
 SELECT ok(NOT has_function_privilege('authenticated','private.inspect_set_actor_fields()','EXECUTE'), 'authenticated não invoca directamente a função de trigger');
 SELECT ok(NOT has_function_privilege('anon','private.inspect_set_actor_fields()','EXECUTE'), 'anon não invoca directamente a função de trigger');
