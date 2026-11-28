@@ -56,7 +56,7 @@ Local físico:
 - actividade/tipo de estabelecimento;
 - estado.
 
-O estabelecimento pertence à carteira da organização Inspect e não a um único cliente contratual. A ligação ao cliente contratual é registada na auditoria concreta, através de `contract_client_id`; cliente contratual e operador podem coincidir ou ser entidades diferentes. Para auditorias internas do operador não se cria um cliente fictício.
+O estabelecimento pertence à carteira da organização Inspect e não a um único cliente contratual. A carteira de cada cliente é gerida pela associação N:M `inspect_client_establishments`, que permite listar estabelecimentos antes de existir auditoria. A auditoria referencia a combinação cliente/estabelecimento concreta através de `contract_client_id`; cliente contratual e operador podem coincidir ou ser entidades diferentes. Para auditorias internas do operador não se cria um cliente fictício.
 
 ### Acesso externo
 Relação explícita entre utilizador autenticado e auditoria concreta:
@@ -84,6 +84,7 @@ Uma versão publicada não é editada no local. Alterações criam nova versão.
 - organização responsável;
 - estabelecimento;
 - cliente contratual opcional;
+- operador alimentar identificado à data (snapshot) ou motivo de identificação pendente;
 - modelo e versão;
 - auditor responsável;
 - âmbito, datas, estado;
@@ -340,6 +341,7 @@ O desenho relacional candidato, incluindo entidades, cardinalidades, constraints
 
 Este modelo:
 - distingue parte contratante, operador alimentar e estabelecimento;
+- mantém a carteira cliente–estabelecimento numa associação N:M e preserva o operador histórico por auditoria;
 - permite auditorias internas sem cliente contratual fictício;
 - mantém a auditoria como unidade de concessão externa;
 - separa convites pendentes de concessões activas;
