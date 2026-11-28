@@ -323,9 +323,16 @@ export async function resolverConflitoOffline(
     await removerOperacaoOffline(id);
     return;
   }
+  const remote = current.conflictRemote;
+  const changedFields = Object.keys(current.payload).filter((key) =>
+    !['id', 'workspace_id', 'created_at', 'updated_at'].includes(key) &&
+    JSON.stringify(current.payload[key] ?? null) !== JSON.stringify(remote[key] ?? null),
+  );
   await guardarOperacaoOffline({
     ...current,
-    basePayload: current.conflictRemote,
+    operationType: 'update',
+    basePayload: remote,
+    changedFields,
     conflictRemote: null,
     lastError: null,
     attempts: 0,
