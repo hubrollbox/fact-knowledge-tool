@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 
 BEGIN;
-SELECT plan(34);
+SELECT plan(35);
 
 SELECT ok(
   EXISTS (
