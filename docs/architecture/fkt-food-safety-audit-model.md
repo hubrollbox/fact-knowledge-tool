@@ -180,3 +180,33 @@ A equipa deve consultar os textos consolidados e fontes oficiais em vigor no mom
 - declaração automática de conformidade legal;
 - certificação;
 - substituição de consultoria HACCP ou de autoridade inspectiva.
+
+
+## 11. Revisão das fontes oficiais — 28/11/2026
+
+A verificação de fontes oficiais confirma que o catálogo inicial deve distinguir diplomas gerais, diplomas sectoriais e documentos de orientação. As versões consolidadas abaixo foram localizadas no EUR-Lex/DGAV nesta revisão; a versão aplicável deve voltar a ser confirmada na data de publicação de cada modelo.
+
+### Diplomas a considerar
+
+- **Regulamento (CE) n.º 852/2004** — higiene dos géneros alimentícios; inclui o dever dos operadores de criarem, aplicarem e manterem processos permanentes baseados nos princípios HACCP (artigo 5.º). Versão consolidada localizada: 24/03/2021. [EUR-Lex — versão consolidada](https://eur-lex.europa.eu/eli/reg/2004/852/2021-03-24/eng).
+- **Regulamento (CE) n.º 178/2002** — princípios gerais da legislação alimentar e rastreabilidade (artigo 18.º). Versão consolidada localizada: 01/01/2026. [EUR-Lex — versão consolidada](https://eur-lex.europa.eu/eli/reg/2002/178/2026-01-01/eng).
+- **Regulamento (UE) n.º 1169/2011** — informação sobre géneros alimentícios, incluindo informação relativa a substâncias ou produtos que provocam alergias ou intolerâncias (artigo 9.º e anexo II). Versão consolidada localizada: 01/04/2025. [EUR-Lex — versão consolidada em português](https://eur-lex.europa.eu/legal-content/PT/TXT/PDF/?uri=CELEX:02011R1169-20250401).
+- **Regulamento (CE) n.º 853/2004** — regras específicas de higiene para géneros alimentícios de origem animal. Versão consolidada localizada: 07/05/2026. A aplicabilidade e as excepções têm de ser avaliadas por actividade, produto e tipo de estabelecimento; não aplicar automaticamente todos os requisitos a qualquer restaurante. [EUR-Lex — versão consolidada](https://eur-lex.europa.eu/eli/reg/2004/853/2026-05-07/eng).
+- **Regulamento (CE) n.º 2073/2005** — critérios microbiológicos aplicáveis aos géneros alimentícios. Versão consolidada localizada: 01/07/2026. Só transformar critérios em verificações quando o alimento, processo, categoria e fase da cadeia estejam abrangidos. [EUR-Lex — versão consolidada](https://eur-lex.europa.eu/eli/reg/2005/2073/2026-07-01/por).
+
+### Orientações DGAV
+
+- [Sistema de Gestão de Segurança Alimentar — HACCP](https://www.dgav.pt/alimentos/conteudo/generos-alimenticios/iniciar-uma-empresa-alimentar/sistema-de-gestao-de-seguranca-alimentar-haccp/): a DGAV relaciona o artigo 5.º do Regulamento 852/2004 com os processos permanentes baseados nos princípios HACCP e sublinha a responsabilidade do operador.
+- [Regras de higiene dos alimentos](https://www.dgav.pt/alimentos/conteudo/generos-alimenticios/garantir-a-seguranca-dos-alimentos/regras-de-higiene/): enquadramento geral das regras de higiene.
+- [Códigos, manuais e guias de boas práticas](https://www.dgav.pt/codigos-manuais-e-guias-de-boas-praticas-setor-alimentar/): a DGAV reúne documentos de orientação nacionais e da Comissão. A própria página distingue códigos nacionais aprovados de documentos de orientação da responsabilidade dos respectivos autores/editores. Não tratar todos os documentos listados como legislação nem como códigos aprovados.
+
+### Consequências para o modelo de dados
+
+1. Cada critério legal deve guardar diploma, artigo/anexo/ponto, versão consolidada/data de consulta, jurisdição e condição de aplicabilidade.
+2. Critérios de orientação devem ser identificados como orientação, com autor/editor, versão e estatuto (por exemplo, código aprovado ou documento informativo); não os apresentar como obrigação legal sem base.
+3. Requisitos do Regulamento 853/2004 e critérios microbiológicos do Regulamento 2073/2005 são condicionais ao produto, actividade e âmbito legal aplicável.
+4. Requisitos relativos a alergénios e informação ao consumidor devem ser ligados ao tipo de operação e à forma de disponibilização da informação; não presumir que todos os deveres se verificam da mesma maneira em todos os modelos de restauração.
+5. O sistema deve distinguir parâmetro legal, parâmetro definido pelo operador no seu HACCP, recomendação técnica e limite interno de auditoria.
+6. A publicação de um modelo exige revisão por profissional competente e registo das fontes consultadas. A aplicação não deve inferir automaticamente a aplicabilidade legal.
+
+Esta revisão confirma a pertinência das fontes de enquadramento, mas **não valida ainda uma checklist completa nem limites operacionais**. Não foram definidos valores universais de temperatura, frequências de controlo, pontuações ou classificações legais.
