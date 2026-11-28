@@ -10,6 +10,10 @@ import { useUploadFoto } from '../hooks/useFotosObra';
 import { comprimirFotografia } from '../utils/comprimirFotografia';
 import { GRAVIDADES } from '../types/obras';
 
+const SUGESTOES_LOCALIZACAO = ['Piso', 'Fachada', 'Cobertura', 'Interior', 'Exterior'];
+const SUGESTOES_TIPO = ['Infiltração', 'Fissura', 'Defeito'];
+const SUGESTOES_ESPECIALIDADE = ['Estruturas', 'Electricidade', 'AVAC'];
+
 export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaId?: string }) {
   const [open, setOpen] = useState(false);
   const criar = useCriarOcorrencia();
@@ -102,7 +106,17 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             <div className="space-y-1.5"><Label htmlFor="ocorrencia-titulo">O que encontrou?</Label><Input id="ocorrencia-titulo" className="min-h-12 text-base" required maxLength={200} value={f.titulo} onChange={(e) => setF({ ...f, titulo: e.target.value })} /></div>
             <div className="space-y-1.5"><Label htmlFor="ocorrencia-descricao">Descrição / observações</Label><Textarea id="ocorrencia-descricao" className="min-h-28 text-base" placeholder="Descreva o que viu, sem conclusões." value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} /></div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5"><Label htmlFor="ocorrencia-localizacao">Onde aconteceu?</Label><Input id="ocorrencia-localizacao" className="min-h-11" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} /></div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ocorrencia-localizacao">Onde aconteceu?</Label>
+                <Input id="ocorrencia-localizacao" className="min-h-11" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} />
+                <div className="flex flex-wrap gap-1.5" aria-label="Sugestões de localização">
+                  {SUGESTOES_LOCALIZACAO.map((sugestao) => (
+                    <Button key={sugestao} type="button" size="sm" variant="outline" className="min-h-9 px-2.5 text-xs" onClick={() => setF({ ...f, localizacao: f.localizacao ? `${f.localizacao}, ${sugestao.toLowerCase()}` : sugestao })}>
+                      {sugestao}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <fieldset className="space-y-1.5">
                 <legend className="text-sm font-medium">Gravidade</legend>
                 <div className="grid grid-cols-2 gap-2">
@@ -124,8 +138,28 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             <details className="rounded-md border px-3 py-2">
               <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium">Classificação técnica (opcional)</summary>
               <div className="space-y-3 pb-2 pt-3">
-                <div className="space-y-1.5"><Label htmlFor="ocorrencia-tipo">Tipo de ocorrência</Label><Input id="ocorrencia-tipo" className="min-h-11" maxLength={100} placeholder="Ex.: infiltração, fissura, defeito" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label htmlFor="ocorrencia-especialidade">Especialidade</Label><Input id="ocorrencia-especialidade" className="min-h-11" maxLength={100} placeholder="Ex.: estruturas, electricidade, AVAC" value={f.especialidade} onChange={(e) => setF({ ...f, especialidade: e.target.value })} /></div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ocorrencia-tipo">Tipo de ocorrência</Label>
+                  <Input id="ocorrencia-tipo" className="min-h-11" maxLength={100} placeholder="Ex.: infiltração, fissura, defeito" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })} />
+                  <div className="flex flex-wrap gap-1.5" aria-label="Sugestões de tipo">
+                    {SUGESTOES_TIPO.map((sugestao) => (
+                      <Button key={sugestao} type="button" size="sm" variant="outline" className="min-h-9 px-2.5 text-xs" onClick={() => setF({ ...f, tipo: sugestao })}>
+                        {sugestao}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ocorrencia-especialidade">Especialidade</Label>
+                  <Input id="ocorrencia-especialidade" className="min-h-11" maxLength={100} placeholder="Ex.: estruturas, electricidade, AVAC" value={f.especialidade} onChange={(e) => setF({ ...f, especialidade: e.target.value })} />
+                  <div className="flex flex-wrap gap-1.5" aria-label="Sugestões de especialidade">
+                    {SUGESTOES_ESPECIALIDADE.map((sugestao) => (
+                      <Button key={sugestao} type="button" size="sm" variant="outline" className="min-h-9 px-2.5 text-xs" onClick={() => setF({ ...f, especialidade: sugestao })}>
+                        {sugestao}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </details>
             <section className="space-y-3 rounded-md border border-dashed p-3">
