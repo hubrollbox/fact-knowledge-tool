@@ -87,7 +87,7 @@ O FKT desenvolve-se através de módulos verticais. O estado indicado na aplica�
 | **FKT Lex** | Organização de processos, factos, documentos, referências e análise jurídica estruturada. | Em preparação. O FIRAC é aplicável neste módulo quando adequado. |
 | **FKT Vet** | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. | Em preparação. |
 | **FKT Dev** | Projetos, issues, decisões técnicas e documentação. | Em preparação. |
-| **FKT Inspect** | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. | Planeado; documentado, não implementado. |
+| **FKT Inspect** | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. | Próximo MVP; documentação e desenho em revisão, ainda não implementado. |
 
 Esta lista representa o âmbito e os estados identificados no código do produto. Não constitui uma certificação de conclusão, validação funcional ou disponibilidade em produção.
 
