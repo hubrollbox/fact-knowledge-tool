@@ -64,16 +64,22 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
         // retain the downloaded blobs in a second in-memory gallery-sized map.
         for (let offset = 0; offset < cacheCandidates.length; offset += 5) {
           const batch = cacheCandidates.slice(offset, offset + 5);
-          await Promise.all(batch.map(async (photo) => {
+          const downloaded = await Promise.all(batch.map(async (photo) => {
             const { data: blob, error: downloadError } = await supabase.storage.from('obras-fotos').download(photo.storage_path);
-            if (downloadError || !blob || blob.size <= 0 || blob.size > MAX) return;
+            return !downloadError && blob && blob.size > 0 && blob.size <= MAX ? { photo, blob } : null;
+          }));
+          // Serialize IndexedDB writes so concurrent evictions cannot use stale
+          // cache totals and exceed the per-workspace byte/count limits.
+          for (const item of downloaded) {
+            if (!item) continue;
+            const { photo, blob } = item;
             await guardarFotoCacheOffline({
               id: photo.id, userId: user.id, workspaceId: ws,
               visita_id: photo.visita_id, ocorrencia_id: photo.ocorrencia_id,
               legenda: photo.legenda, capturada_em: photo.capturada_em,
               latitude: photo.latitude, longitude: photo.longitude, blob,
             }).catch(() => undefined);
-          }));
+          }
         }
         const remotePhotos = data.map((photo, i) => ({
           ...photo,
