@@ -126,6 +126,9 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [Visão do produto](docs/Visao.md) — propósito, arquitetura funcional, módulos e princípios.
 - [FKT Works — Orçamentação e controlo financeiro](docs/architecture/fkt-works-budgeting.md) — âmbito aprovado e sequência planeada para orçamentos, importação, aprovação, medições e desvios.
 - [Modelo funcional e de dados do FKT Lex](docs/architecture/fkt-lex-data-model.md) — proposta e auditoria do domínio jurídico.
+- [FKT Inspect — arquitectura funcional](docs/architecture/fkt-inspect-functional-architecture.md) — públicos, fluxo de auditoria, âmbito inicial e limites do produto.
+- [FKT Inspect — modelo de dados e segurança](docs/architecture/fkt-inspect-data-model-security.md) — modelo lógico, acesso externo, RLS, Storage e testes obrigatórios.
+- [FKT Food Safety — modelo inicial de auditoria](docs/architecture/fkt-food-safety-audit-model.md) — estrutura inicial para segurança alimentar e higiene na restauração; sujeita a validação técnica.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
 - [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.
 - [Manutenção das FAQ](docs/FAQ-MAINTENANCE.md) — processo obrigatório de revisão e publicação da ajuda.
