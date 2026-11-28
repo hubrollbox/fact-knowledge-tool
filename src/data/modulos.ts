@@ -137,7 +137,7 @@ export const modulos: Modulo[] = [
     nome: 'FKT Inspect',
     descricao: 'Auditorias, evidências e acompanhamento de não conformidades',
     icone: 'ClipboardCheck',
-    destaque: 'Planeado',
+    destaque: 'Próximo MVP',
     emPreparacao: true,
     tagline: 'Auditorias estruturadas, evidências rastreáveis e acompanhamento de ações correctivas.',
     descricaoLonga: [
