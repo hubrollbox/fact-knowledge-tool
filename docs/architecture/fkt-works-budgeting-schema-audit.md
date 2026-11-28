@@ -84,7 +84,7 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. O fluxo de reaprovação fica definido na secção 8. Antes da migração, resta validar o desenho técnico e os detalhes de permissões e notificações.
+A auditoria identificou os blocos reutilizáveis. As regras de cálculo estão na secção 7 e o fluxo de edição/reaprovação na secção 8. O modelo lógico completo, com entidades, relações, RLS e operações, está em `fkt-works-budgeting-data-model.md`. Antes da migração, é necessário fechar as decisões de colaboração entre workspaces, moeda, responsável pela aprovação e governação das taxas de IVA.
 
 ## 7. Regras de cálculo — decisão funcional de 28-11-2026
 
