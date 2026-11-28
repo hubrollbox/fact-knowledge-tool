@@ -22,7 +22,7 @@ Representa a entidade que utiliza o módulo e é ancorada no workspace FKT:
 - id;
 - workspace_id;
 - nome e dados de identificação estritamente necessários;
-- tipo de utilização (consultoria ou operador);
+- tipo de utilização (`consultancy`, `operator` ou `both`);
 - estado e datas.
 
 Deve existir uma relação inequívoca entre organização Inspect e workspace. Não criar um workspace para cada cliente externo.
@@ -31,32 +31,33 @@ Deve existir uma relação inequívoca entre organização Inspect e workspace. 
 Entidade auditada/contratante gerida pela organização Inspect:
 - id;
 - inspect_organisation_id;
-- designação e dados mínimos de contacto;
-- estado;
-- metadados de criação e alteração.
+- party_id (entidade legal/organizacional em `inspect_parties`);
+- referência/estado da relação comercial;
+- timestamps.
 
-Uma empresa que usa o Inspect apenas internamente pode representar-se como organização proprietária e os seus locais como estabelecimentos, sem duplicar artificialmente a própria empresa como cliente externo.
+A entidade legal subjacente é registada uma única vez em `inspect_parties` e pode assumir o papel de cliente contratual e/ou operador alimentar. O cliente contratual não é utilizador nem workspace e não concede acesso externo por si só.
 
 ### Estabelecimento
 Local físico:
 - id;
-- client_id (ou organização proprietária, segundo o modelo final);
+- inspect_organisation_id;
+- operator_party_id nullable (entidade que opera o estabelecimento, quando identificada);
 - nome/designação;
 - morada e dados operacionais necessários;
 - actividade/tipo de estabelecimento;
 - estado.
 
-A estrutura deve permitir vários estabelecimentos por cliente.
+O estabelecimento pertence à carteira da organização Inspect e não a um único cliente contratual. A ligação ao cliente contratual é registada na auditoria concreta, através de `contract_client_id`; cliente contratual e operador podem coincidir ou ser entidades diferentes. Para auditorias internas do operador não se cria um cliente fictício.
 
 ### Acesso externo
-Relação explícita entre utilizador autenticado, cliente e âmbito autorizado:
-- utilizador;
-- cliente;
-- organização Inspect que concede/gestiona o acesso;
-- permissões (consultar auditorias, consultar evidências, responder a acções, submeter evidências, entre outras a aprovar);
-- estado, validade opcional, autor e data da concessão/revogação.
+Relação explícita entre utilizador autenticado e auditoria concreta:
+- destinatário autenticado;
+- organização Inspect que concede;
+- auditoria específica;
+- permissões explícitas por operação;
+- estado, validade, autor e datas de aceitação/revogação.
 
-Não assumir que os papéis actuais do workspace são suficientes para representar clientes externos. Definir permissões específicas e mínimas.
+A concessão é por auditoria, nunca por cliente ou carteira. O utilizador externo não entra em `workspace_members`. O convite pendente é separado da concessão activa e só é aceite após validação no servidor do email confirmado no Supabase Auth. Não assumir que os papéis do workspace representam permissões externas.
 
 ### Modelo de auditoria
 - cabeçalho do modelo;
@@ -72,9 +73,10 @@ Uma versão publicada não é editada no local. Alterações criam nova versão.
 
 ### Auditoria
 - organização responsável;
-- cliente e estabelecimento;
+- estabelecimento;
+- cliente contratual opcional;
 - modelo e versão;
-- auditor(es);
+- auditor responsável;
 - âmbito, datas, estado;
 - versão/submissão;
 - observações gerais;
@@ -103,15 +105,14 @@ Não codificar limites universais de temperatura no esquema ou na interface. Os 
 
 ### Evidência
 Metadados de fotografia, documento, leitura ou outro suporte:
-- workspace/organização proprietária;
-- cliente, estabelecimento e entidade de domínio associada;
-- bucket e caminho privado;
-- nome, MIME, tamanho e hash, se tecnicamente viável;
+- organização e auditoria;
+- recurso associado através de relação tipada com FK real;
+- bucket e caminho opaco privado;
+- MIME, tamanho e hash;
 - autor e data de recolha;
-- legenda/contexto;
-- classificação de acesso e retenção.
+- legenda/contexto e retenção.
 
-Os ficheiros devem permanecer em Storage privado. Não usar URLs públicas permanentes. A leitura deve validar autorização e emitir URLs assinados de curta duração.
+Os ficheiros permanecem em bucket privado. Não usar URLs públicas nem persistir URLs assinadas. A leitura externa deve preferir download autenticado com RLS por objecto, revalidando concessão e publicação em cada pedido; URL bearer é apenas fallback, com janela de validade documentada.
 
 ### Não conformidade
 - auditoria e resultado de origem;
