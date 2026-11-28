@@ -131,7 +131,9 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Inspect — modelo de dados e segurança](docs/architecture/fkt-inspect-data-model-security.md) — modelo lógico, acesso externo, RLS, Storage e testes obrigatórios.
 - [FKT Inspect — matriz de permissões externas](docs/architecture/fkt-inspect-external-access-permissions-matrix.md) — permissões por auditoria, estados, convites e partilha de ficheiros.
 - [FKT Inspect — modelo relacional lógico](docs/architecture/fkt-inspect-relational-model.md) — entidades, relações, constraints, RLS, Storage e testes pgTAP propostos.
-- [FKT Inspect — contrato físico de dados](docs/architecture/fkt-inspect-physical-data-contract.md) — inventário candidato de tabelas/colunas, tipos, constraints, índices, GRANT, RLS e sequência de migrações; ainda não é DDL aprovado.
+- [FKT Inspect — contrato físico de dados](docs/architecture/fkt-inspect-physical-data-contract.md) — inventário de tabelas/colunas, tipos, constraints, índices, GRANT, RLS e sequência de migrações.
+- [FKT Inspect — migração de fundação](supabase/migrations/20261128170000_fkt_inspect_foundation.sql) — organização Inspect por workspace, carteira de clientes, estabelecimentos e associação temporal; aguarda validação CI local.
+- [FKT Inspect — teste de fundação](supabase/tests/fkt_inspect_foundation.test.sql) — verifica RLS, GRANT, integridade multi-tenant e trigger temporal.
 - [FKT Inspect — matriz RLS e Storage](docs/architecture/fkt-inspect-rls-policy-matrix.md) — regras propostas por grupo de tabelas, operações, convites e ficheiros.
 - [FKT Inspect — decisão de arquitectura multi-cliente](docs/architecture/fkt-inspect-multi-client-architecture-decision.md) — separação entre workspace, clientes e auditorias partilhadas.
 - [FKT Food Safety — modelo inicial de auditoria](docs/architecture/fkt-food-safety-audit-model.md) — estrutura inicial para segurança alimentar e higiene na restauração; sujeita a validação técnica.
