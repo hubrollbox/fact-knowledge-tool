@@ -5,7 +5,7 @@ import { modulos } from '@/data/modulos';
 import { ModuloSlug } from '@/types/modulos';
 
 const iconMap: Record<string, LucideIcon> = {
-  Scale,
+  Scale: FileText,
   Dog,
   Code,
   HardHat,
