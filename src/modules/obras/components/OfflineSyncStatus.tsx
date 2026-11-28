@@ -51,10 +51,15 @@ export function OfflineSyncStatus() {
       : !online
         ? 'Sem ligação à Internet'
         : pendingCount > 0
-          ? pendingCount + (pendingCount === 1 ? ' registo pendente' : ' registos pendentes')
+          ? pendingLabel
           : 'Tudo sincronizado';
   const failed = operations.find((operation) => operation.lastError);
-  const pendingLabel = pendingCount + (pendingCount === 1 ? ' registo pendente' : ' registos pendentes') + ' de sincronização';
+  const pendingPhotos = operations.filter((operation) => operation.entity === 'foto').length;
+  const pendingRecords = pendingCount - pendingPhotos;
+  const pendingLabel = [
+    pendingRecords ? pendingRecords + (pendingRecords === 1 ? ' registo' : ' registos') : '',
+    pendingPhotos ? pendingPhotos + (pendingPhotos === 1 ? ' fotografia' : ' fotografias') : '',
+  ].filter(Boolean).join(' e ') + ' pendentes de sincronização';
 
   const resolve = async (choice: 'keep_local' | 'keep_remote') => {
     if (!selected) return;
@@ -102,8 +107,12 @@ export function OfflineSyncStatus() {
               : failed?.lastError
                 ? 'Sincronização interrompida: ' + failed.lastError
                 : !online
-                  ? 'A aplicação está a utilizar os dados desta obra previamente guardados neste dispositivo. As alterações ficam pendentes.'
-                  : 'Existem dados guardados neste dispositivo por enviar.'}
+                  ? 'A aplicação está sem ligação. Só estão disponíveis os dados previamente guardados neste dispositivo; as alterações compatíveis ficam pendentes.'
+                  : pendingPhotos > 0 && pendingRecords > 0
+                    ? pendingRecords + ' registos e ' + pendingPhotos + ' fotografias aguardam envio.'
+                    : pendingPhotos > 0
+                      ? pendingPhotos + (pendingPhotos === 1 ? ' fotografia aguarda envio.' : ' fotografias aguardam envio.')
+                      : 'Existem registos guardados neste dispositivo por enviar.'}
           </span>
           <div className="flex flex-wrap gap-2">
             {conflicts.map((operation) => (
