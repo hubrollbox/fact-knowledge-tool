@@ -109,3 +109,35 @@ All colors MUST be HSL.
   body { background: white; }
   aside { display: none !important; }
 }
+
+
+/* Identidade visual exclusiva do FKT Lex */
+.fkt-lex-theme {
+  --primary: 340 49% 24%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 340 24% 94%;
+  --secondary-foreground: 340 49% 24%;
+  --accent: 340 24% 94%;
+  --accent-foreground: 340 49% 24%;
+  --ring: 340 49% 24%;
+  --sidebar-primary: 340 49% 24%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 340 24% 94%;
+  --sidebar-accent-foreground: 340 49% 24%;
+  --sidebar-ring: 340 49% 24%;
+}
+
+.dark .fkt-lex-theme {
+  --primary: 340 38% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 340 18% 19%;
+  --secondary-foreground: 340 30% 88%;
+  --accent: 340 18% 19%;
+  --accent-foreground: 340 30% 88%;
+  --ring: 340 38% 58%;
+  --sidebar-primary: 340 38% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 340 18% 19%;
+  --sidebar-accent-foreground: 340 30% 88%;
+  --sidebar-ring: 340 38% 58%;
+}
