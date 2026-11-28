@@ -283,3 +283,20 @@ Testar com roles reais (`anon`, `authenticated`) e claims reais de sessão nos t
 ## 10. Limites
 
 Este documento é um modelo lógico-relacional proposto, não migração SQL. A análise é estática e documental; não foram consultadas tabelas remotas, executados testes RLS nem verificados fluxos de UI. A implementação deve começar localmente, com pgTAP/CI, após revisão do esquema real. A BD remota única não deve ser alterada sem autorização específica.
+
+
+## 11. Compatibilidade com a cardinalidade actual de memberships do Core
+
+A revisão das migrações confirmou:
+- `workspaces_user_id_unique` limita a um workspace próprio por utilizador;
+- `workspace_members` tem unicidade por par `(workspace_id, user_id)`;
+- não foi encontrada unicidade global de `user_id` em `workspace_members`;
+- `useModuloActivo.ts` consulta a membership por utilizador com `.maybeSingle()`, assumindo no máximo uma.
+
+O esquema permite tecnicamente memberships em vários workspaces, mas o hook actual não resolve essa cardinalidade. A discrepância está registada na issue #173 e não deve ser resolvida implicitamente no âmbito do Inspect.
+
+Consequências para este modelo:
+- utilizadores externos Inspect nunca são adicionados a `workspace_members` da organização consultora;
+- o contexto «Partilhado comigo» não depende de `useModuloActivo` nem muda o workspace activo;
+- os membros internos da organização Inspect continuam sujeitos ao modelo Core; a política de memberships múltiplas tem de ser decidida na issue #173;
+- não criar constraints únicas globais nem alterar a resolução de workspace sem auditoria dos dados e decisão transversal ao Core.
