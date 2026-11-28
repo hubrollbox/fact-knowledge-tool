@@ -233,7 +233,7 @@ Não expor tabelas internas directamente a utilizadores externos se a projecçã
 - Metadados de evidência ligam objecto, auditoria, organização e visibilidade.
 - Upload externo apenas para resposta de acção atribuída.
 - Validar MIME real, tamanho, extensão, hash e quota.
-- Emissão de URLs assinadas após verificação de grant e publicação; TTL inicial 60 segundos.
+- Preferir download autenticado com RLS por objecto; se URL assinada for inevitável, usar TTL mínimo operacional e documentar a janela de validade.
 - Para cada download, validar novamente concessão e publicação.
 - Não prometer revogação instantânea de URL já emitida; avaliar proxy autenticado se o risco justificar.
 
