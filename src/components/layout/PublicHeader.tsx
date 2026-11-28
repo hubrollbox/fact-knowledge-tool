@@ -11,6 +11,7 @@ export function PublicHeader() {
         <nav className="flex flex-wrap items-center gap-1 text-sm" aria-label="Navegação principal">
           <Button asChild variant="ghost" size="sm"><Link to="/">Início</Link></Button>
           <Button asChild variant="ghost" size="sm"><Link to="/modulos">Módulos</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link to="/precos">Preços</Link></Button>
           <Button asChild variant="ghost" size="sm"><Link to="/ajuda-suporte">Ajuda e Suporte</Link></Button>
           <Button asChild size="sm">
             <Link to={user ? '/dashboard' : '/login'}>{user ? 'Ir para a aplicação' : 'Entrar'}</Link>
