@@ -465,7 +465,7 @@ A arquitectura operacional completa está descrita em fkt-inspect-haccp-operatio
 - inspect_receipts, inspect_receipt_items: recepção e itens recebidos.
 - inspect_lots, inspect_lot_events: lotes e eventos de rastreabilidade.
 - inspect_product_life_records: abertura/preparação, data de utilização definida pelo procedimento, responsável e estado.
-- inspect_oil_control_records: registos de óleo, apenas se confirmados no âmbito do piloto.
+- inspect_oil_control_records: registos manuais básicos de controlo de óleos incluídos no MVP; critérios e frequências são definidos pelo plano validado do estabelecimento.
 
 ### Integridade e histórico
 - Cada registo operacional pertence a uma organização e estabelecimento e, quando aplicável, referencia o plano/versão e controlo que o originou.
