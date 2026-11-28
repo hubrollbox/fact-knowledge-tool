@@ -211,3 +211,38 @@ Antes de fechar o DDL:
 O desenho deve ser validado contra a legislação e orientações oficiais aplicáveis, incluindo os Regulamentos (CE) n.º 852/2004 e 178/2002 e, conforme os produtos/actividades, outros diplomas aplicáveis. A DGAV é fonte relevante de orientação. A lista de referências existente em `fkt-food-safety-audit-model.md` é enquadramento inicial, não validação integral do modelo operacional.
 
 Nenhuma frequência, temperatura, prazo de validade, classificação de risco ou regra de aplicabilidade deve ser apresentada como universal sem fundamento e âmbito identificados.
+
+
+## 9. Decisões de âmbito e desenho fechadas para o MVP — 28/11/2026
+
+Esta secção substitui as pendências e exclusões de âmbito anteriores que contrariem a decisão de HACCP operacional completo.
+
+### Incluído no MVP
+- configuração do estabelecimento, áreas, equipamentos e operadores;
+- plano HACCP versionado, processos, perigos, medidas, parâmetros e procedimentos;
+- controlos diários, tarefas, temperaturas e respectivos registos;
+- higienização, tarefas e execuções;
+- fornecedores, recepção, produtos, lotes e rastreabilidade mínima;
+- abertura/preparação e controlo de validades;
+- registo manual básico de óleos alimentares;
+- desvios, não conformidades, acções correctivas e verificação;
+- auditorias, evidências, relatórios e histórico.
+
+### Fora do MVP
+- ERP, POS, compras, facturação, inventário comercial completo;
+- sensores, termómetros Bluetooth e integrações automáticas;
+- modo offline/sincronização complexa;
+- gestão avançada de produção ou balanço de massas;
+- multi-estabelecimento consolidado e analytics avançado.
+
+### Decisões técnicas
+- Parties locais à organização Inspect; sem identidade global partilhada entre consultoras.
+- Tarefas persistidas geradas on-demand por RPC idempotente e cursores com FKs reais; sem Cron obrigatório.
+- Quantidade/unidade opcionais em recepção/lotes, mas ambas ou nenhuma.
+- NC central com várias origens tipadas; cada origem liga-se a uma NC.
+- Perfis internos: gerente, responsável HACCP e colaborador. Consultor/auditor acedem por grants/atribuições explícitos.
+- Registos retroactivos permitidos com motivo obrigatório, tempos separados, identificação e evento auditável.
+- Óleos incluídos como registo manual simples, sem limites universais predefinidos.
+
+### Limite de responsabilidade técnica
+O FKT fornece estrutura, registo, rastreabilidade e evidência. Não certifica conformidade nem substitui o profissional competente. Perigos, limites, frequências, métodos e prazos são específicos do estabelecimento e da versão do plano; não são preenchidos como regras universais pelo software.
