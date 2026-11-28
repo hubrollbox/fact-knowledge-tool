@@ -35,7 +35,7 @@ export default function ModuloDetalhe() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className={`min-h-screen flex flex-col bg-background text-foreground ${modulo.slug === 'inspect' ? 'fkt-inspect-theme' : ''}`}>
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <PublicHeader />
 
@@ -75,7 +75,7 @@ export default function ModuloDetalhe() {
         {modulo.funcionalidades && (
           <section className="bg-secondary/30 border-t border-border">
             <div className="max-w-5xl mx-auto px-6 py-16">
-              <h2 className="text-2xl font-bold mb-8 text-center">Funcionalidades</h2>
+              <h2 className="text-2xl font-bold mb-8 text-center">{modulo.slug === 'inspect' ? 'Funcionalidades previstas' : 'Funcionalidades'}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {modulo.funcionalidades.map((f) => (
                   <Card key={f.titulo}>
@@ -94,7 +94,7 @@ export default function ModuloDetalhe() {
         {/* FLUXO */}
         {modulo.fluxo && (
           <section className="max-w-3xl mx-auto px-6 py-16 border-t border-border">
-            <h2 className="text-2xl font-bold mb-8 text-center">Fluxo típico</h2>
+            <h2 className="text-2xl font-bold mb-8 text-center">{modulo.slug === 'inspect' ? 'Fluxo previsto' : 'Fluxo típico'}</h2>
             <ol className="space-y-4">
               {modulo.fluxo.map((p, i) => (
                 <li key={p.titulo} className="flex gap-4">
