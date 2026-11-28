@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 
 BEGIN;
-SELECT plan(26);
+SELECT plan(31);
 
 SELECT ok(
   EXISTS (
@@ -18,10 +18,12 @@ SELECT ok(
 );
 
 SELECT ok(to_regclass('public.inspect_organisations') IS NOT NULL, 'Tabela inspect_organisations existe');
+SELECT ok(to_regclass('public.inspect_parties') IS NOT NULL, 'Tabela inspect_parties existe');
 SELECT ok(to_regclass('public.inspect_clients') IS NOT NULL, 'Tabela inspect_clients existe');
 SELECT ok(to_regclass('public.inspect_establishments') IS NOT NULL, 'Tabela inspect_establishments existe');
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.inspect_organisations'::regclass), 'RLS activa em inspect_organisations');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.inspect_parties'::regclass), 'RLS activa em inspect_parties');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.inspect_clients'::regclass), 'RLS activa em inspect_clients');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.inspect_establishments'::regclass), 'RLS activa em inspect_establishments');
 
@@ -31,6 +33,13 @@ SELECT ok(
     OR has_table_privilege('anon','public.inspect_organisations','UPDATE')
     OR has_table_privilege('anon','public.inspect_organisations','DELETE')),
   'anon sem privilégios em inspect_organisations'
+);
+SELECT ok(
+  NOT (has_table_privilege('anon','public.inspect_parties','SELECT')
+    OR has_table_privilege('anon','public.inspect_parties','INSERT')
+    OR has_table_privilege('anon','public.inspect_parties','UPDATE')
+    OR has_table_privilege('anon','public.inspect_parties','DELETE')),
+  'anon sem privilégios em inspect_parties'
 );
 SELECT ok(
   NOT (has_table_privilege('anon','public.inspect_clients','SELECT')
@@ -53,6 +62,13 @@ SELECT ok(
     OR has_table_privilege('authenticated','public.inspect_organisations','UPDATE')
     OR has_table_privilege('authenticated','public.inspect_organisations','DELETE')),
   'authenticated sem privilégios em inspect_organisations antes da fase 3'
+);
+SELECT ok(
+  NOT (has_table_privilege('authenticated','public.inspect_parties','SELECT')
+    OR has_table_privilege('authenticated','public.inspect_parties','INSERT')
+    OR has_table_privilege('authenticated','public.inspect_parties','UPDATE')
+    OR has_table_privilege('authenticated','public.inspect_parties','DELETE')),
+  'authenticated sem privilégios em inspect_parties antes da fase 3'
 );
 SELECT ok(
   NOT (has_table_privilege('authenticated','public.inspect_clients','SELECT')
