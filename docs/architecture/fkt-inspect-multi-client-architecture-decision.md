@@ -66,7 +66,7 @@ Os nomes são conceptuais, não nomes SQL finais.
 
 - `id`
 - `workspace_id` — único e obrigatório
-- `tipo` — `consultancy`, `operator` ou `both`
+- `tipo` — `consultant`, `operator` ou `hybrid`
 - `nome`, estado e timestamps
 
 Relação proposta: uma Organização Inspect por workspace. Não se propõe alterar a regra Core de um workspace principal por utilizador.
@@ -78,7 +78,7 @@ Relação proposta: uma Organização Inspect por workspace. Não se propõe alt
 - `party_id` — entidade contratante registada em `inspect_parties`
 - referência/estado da relação comercial e timestamps
 
-Representa a relação de cliente contratual gerida pela organização Inspect. Não é um utilizador nem um workspace e não concede acesso externo por si só. A entidade legal subjacente é registada uma única vez em `inspect_parties`, que pode assumir o papel de cliente contratual e/ou operador alimentar.
+Representa a relação de cliente contratual gerida pela organização Inspect. Não é um utilizador nem um workspace e não concede acesso externo por si só. A entidade legal subjacente é registada uma única vez por organização Inspect em `inspect_parties`, que pode assumir o papel de cliente contratual e/ou operador alimentar. Não existe deduplicação nem partilha entre organizações no MVP.
 
 ### 4.3. Estabelecimento
 
