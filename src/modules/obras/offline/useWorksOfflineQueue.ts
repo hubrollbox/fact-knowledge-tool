@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -110,6 +111,7 @@ async function sincronizarFoto(operation: WorksOfflineOperation) {
 
 export function useWorksOfflineQueue(workspaceId: string | null) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [operations, setOperations] = useState<WorksOfflineOperation[]>([]);
   const [syncing, setSyncing] = useState(false);
   const running = useRef(false);
@@ -124,6 +126,7 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
     if (!user?.id || !workspaceId || !navigator.onLine || running.current) return;
     running.current = true;
     setSyncing(true);
+    let synchronized = false;
     try {
       const pending = await listarOperacoesOffline(user.id, workspaceId);
       for (const operation of pending) {
@@ -140,6 +143,7 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
             await sincronizarFoto(operation);
           }
           await removerOperacaoOffline(operation.id);
+          synchronized = true;
         } catch (error) {
           let conflictRemote: Record<string, unknown> | null = null;
           const isRecordConflict = error instanceof Error && (
@@ -167,9 +171,19 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
     } finally {
       running.current = false;
       setSyncing(false);
+      if (synchronized) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['obras_visitas'] }),
+          queryClient.invalidateQueries({ queryKey: ['obras_ocorrencias'] }),
+          queryClient.invalidateQueries({ queryKey: ['obras_visita'] }),
+          queryClient.invalidateQueries({ queryKey: ['obras_ocorrencia'] }),
+          queryClient.invalidateQueries({ queryKey: ['obras_fotos'] }),
+          queryClient.invalidateQueries({ queryKey: ['obras_ocorrencias_abertas'] }),
+        ]);
+      }
       await refresh();
     }
-  }, [user?.id, workspaceId, refresh]);
+  }, [user?.id, workspaceId, refresh, queryClient]);
 
   useEffect(() => { void refresh(); if (navigator.onLine) void sync(); }, [refresh, sync]);
   useEffect(() => {
