@@ -34,7 +34,10 @@ export function RecepcaoObra({ obraId, workspaceId, canWrite }: Props) {
         ...(a.data ?? []).map((x: any) => ({ id: 'acao:' + x.id, origem: 'acao' as const, origem_id: x.id, titulo: x.descricao, estado_origem: x.estado, decisao: '' as const, justificacao: '' })),
       ];
       const saved = new Map<string, Pendencia>((r.data?.pendencias ?? []).map((x: Pendencia) => [x.id, x]));
-      return { reception: r.data, pendencias: current.map((x) => ({ ...x, ...(saved.get(x.id) ?? {}) })), documents: d.data ?? [] };
+      const activeIds = new Set(current.map((x) => x.id));
+      const merged = current.map((x) => ({ ...x, ...(saved.get(x.id) ?? {}) }));
+      const historical = [...saved.values()].filter((x) => !activeIds.has(x.id));
+      return { reception: r.data, pendencias: [...merged, ...historical], documents: d.data ?? [] };
     },
   });
   useEffect(() => {
