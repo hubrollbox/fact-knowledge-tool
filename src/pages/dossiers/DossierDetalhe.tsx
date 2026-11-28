@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Trash2, FileText, Clock, User, AlignLeft, Scale, BookOpen, ArrowRightLeft, CheckCircle2, ChevronDown, Plus, Check, Pencil, X } from 'lucide-react';
+import { ArrowLeft, Trash2, FileText, Clock, User, AlignLeft, FileText, BookOpen, ArrowRightLeft, CheckCircle2, ChevronDown, Plus, Check, Pencil, X } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,7 +125,7 @@ export default function DossierDetalhe() {
 
   const firacSections = [
     { key: 'factos', label: 'Factos', icon: AlignLeft, component: <FactosTab processoId={dossier.id} /> },
-    { key: 'issues', label: 'Issues', icon: Scale, component: <IssuesTab processoId={dossier.id} /> },
+    { key: 'issues', label: 'Issues', icon: FileText, component: <IssuesTab processoId={dossier.id} /> },
     { key: 'rules', label: 'Rules', icon: BookOpen, component: <RulesTab processoId={dossier.id} /> },
     { key: 'applications', label: 'Applications', icon: ArrowRightLeft, component: <ApplicationsTab processoId={dossier.id} /> },
     { key: 'conclusoes', label: 'Conclusões', icon: CheckCircle2, component: <ConclusoesTab processoId={dossier.id} /> },
