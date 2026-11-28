@@ -270,11 +270,16 @@ export async function guardarFotoCacheOffline(input: Omit<WorksOfflineCachedPhot
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(PHOTOS, 'readwrite');
       const store = tx.objectStore(PHOTOS);
-      store.put({ ...input, cachedAt: new Date().toISOString() });
+      const photo: WorksOfflineCachedPhoto = { ...input, cachedAt: new Date().toISOString() };
+      // Evict before writing: a put that exceeds the browser quota aborts the
+      // transaction, so cleaning up after put is too late to recover.
       const request = store.index('scope').getAll(IDBKeyRange.only([input.userId, input.workspaceId]));
       request.onsuccess = () => {
-        const rows = (request.result ?? []) as WorksOfflineCachedPhoto[];
-        for (const id of selecionarFotosParaEviccao(rows)) store.delete(id);
+        const existing = (request.result ?? []) as WorksOfflineCachedPhoto[];
+        const scoped = existing.filter((row) => row.id !== photo.id);
+        const idsToRemove = selecionarFotosParaEviccao([...scoped, photo]);
+        for (const id of idsToRemove) store.delete(id);
+        store.put(photo);
       };
       request.onerror = () => {
         try { tx.abort(); } catch { /* transaction already finished */ }
