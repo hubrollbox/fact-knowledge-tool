@@ -8,7 +8,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { Footer } from '@/components/layout/Footer';
 
-type ModuleKey = 'core' | 'works' | 'lex' | 'vet' | 'dev';
+type ModuleKey = 'core' | 'works' | 'lex' | 'vet' | 'dev' | 'inspect';
 type TicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved';
 type FAQ = {
   id: string; module: ModuleKey; category: string; question: string; answer: string;
@@ -29,6 +29,7 @@ const modules: { value: ModuleKey; label: string }[] = [
   { value: 'lex', label: 'FKT Lex' },
   { value: 'vet', label: 'FKT Vet' },
   { value: 'dev', label: 'FKT Dev' },
+  { value: 'inspect', label: 'FKT Inspect' },
 ];
 const statusLabels: Record<TicketStatus, string> = {
   open: 'Aberto', in_progress: 'Em análise', waiting_user: 'A aguardar resposta', resolved: 'Resolvido',
