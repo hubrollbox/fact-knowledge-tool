@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ClipboardPlus, ListPlus, Loader2 } from 'lucide-react';
 import { useWorkspaceRole } from '@/hooks/useWorkspaceRole';
 import { useObra, useVisitas, useOcorrencias, useAcoes, useActualizarEstado } from '../hooks/useObras';
 import { ESTADOS_ACAO, ESTADOS_OBRA } from '../types/obras';
@@ -54,13 +54,27 @@ export function ObraDetail() {
         ) : <Badge variant="outline">{ESTADOS_OBRA[obra.estado as keyof typeof ESTADOS_OBRA]}</Badge>}
       </div>
 
+      {canWrite && (
+        <section aria-label="Registos rápidos" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
+            <VisitaDialog obraId={obra.id} />
+          </div>
+          <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
+            <OcorrenciaDialog obraId={obra.id} />
+          </div>
+          <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
+            <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} visitas={visitas ?? []} />
+          </div>
+        </section>
+      )}
+
       <Tabs defaultValue="visitas">
-        <TabsList>
-          <TabsTrigger value="visitas">Diário ({visitas?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="planeamento">Planeamento</TabsTrigger>
-          <TabsTrigger value="documentos">Documentos</TabsTrigger>
+        <TabsList className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg p-1" aria-label="Secções da obra">
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="visitas">Diário ({visitas?.length ?? 0})</TabsTrigger>
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="planeamento">Planeamento</TabsTrigger>
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="documentos">Documentos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visitas" className="space-y-3">
@@ -81,7 +95,7 @@ export function ObraDetail() {
         </TabsContent>
 
         <TabsContent value="ocorrencias" className="space-y-3">
-          {canWrite && <OcorrenciaDialog obraId={obra.id} />}
+          <div className="text-sm font-medium">Ocorrências da obra</div>
           {!ocorrencias?.length ? <p className="text-sm text-muted-foreground">Ainda não há ocorrências.</p> : ocorrencias.map((o) => <OcorrenciaItem key={o.id} o={o} canWrite={canWrite} />)}
         </TabsContent>
 
@@ -94,7 +108,7 @@ export function ObraDetail() {
         </TabsContent>
 
         <TabsContent value="acoes" className="space-y-3">
-          {canWrite && <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} visitas={visitas ?? []} />}
+          <div className="text-sm font-medium">Acções da obra</div>
           {!acoes?.length ? <p className="text-sm text-muted-foreground">Ainda não há ações.</p> : acoes.map((a) => {
             const atrasada = a.prazo && !['concluida','cancelada'].includes(a.estado) && new Date(a.prazo) < new Date(new Date().toDateString());
             return (
