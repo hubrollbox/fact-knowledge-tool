@@ -1,12 +1,11 @@
--- FKT Inspect foundation: one Inspect organisation per existing Core workspace,
--- with a consultant/operator client portfolio and establishments.
--- This migration is committed for local/CI validation only. Do not apply remotely
--- until the migration and its pgTAP tests have passed and the release is approved.
+-- FKT Inspect — Phase 1: base entities and deny-by-default isolation.
+-- Replaces the former monolithic foundation draft.
+-- Local/CI validation only. Do not apply remotely without explicit approval.
 
 CREATE SCHEMA IF NOT EXISTS private;
 REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
 
--- Extend the existing module discriminator without changing any existing value.
+-- Preserve existing Core module values and add Inspect.
 ALTER TABLE public.workspaces
   DROP CONSTRAINT IF EXISTS workspaces_modulo_check;
 ALTER TABLE public.workspaces
@@ -30,53 +29,6 @@ CREATE TABLE public.inspect_organisations (
   updated_by uuid REFERENCES auth.users(id) ON DELETE RESTRICT,
   CONSTRAINT inspect_organisations_id_workspace_unique UNIQUE (id, workspace_id)
 );
-
--- Author fields are server-derived; clients cannot forge authorship/timestamps.
-CREATE OR REPLACE FUNCTION private.inspect_set_actor_fields()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = pg_catalog, auth
-AS $function$
-DECLARE
-  _row jsonb := to_jsonb(NEW);
-  _old jsonb;
-BEGIN
-  IF TG_OP = 'UPDATE' THEN
-    _old := to_jsonb(OLD);
-    IF _row ? 'created_at' THEN
-      _row := jsonb_set(_row, '{created_at}', _old->'created_at', true);
-    END IF;
-    IF _row ? 'created_by' THEN
-      _row := jsonb_set(_row, '{created_by}', _old->'created_by', true);
-    END IF;
-  ELSE
-    IF _row ? 'created_at' THEN
-      _row := jsonb_set(_row, '{created_at}', to_jsonb(now()), true);
-    END IF;
-    IF _row ? 'created_by' THEN
-      _row := jsonb_set(_row, '{created_by}', to_jsonb((SELECT auth.uid())), true);
-    END IF;
-  END IF;
-
-  -- Association history intentionally has no updated_at/updated_by columns.
-  IF _row ? 'updated_at' THEN
-    _row := jsonb_set(_row, '{updated_at}', to_jsonb(now()), true);
-  END IF;
-  IF _row ? 'updated_by' THEN
-    _row := jsonb_set(_row, '{updated_by}', to_jsonb((SELECT auth.uid())), true);
-  END IF;
-
-  NEW := jsonb_populate_record(NEW, _row);
-  RETURN NEW;
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION private.inspect_set_actor_fields() FROM PUBLIC, anon, authenticated;
-
-CREATE TRIGGER inspect_organisations_actor_fields
-  BEFORE INSERT OR UPDATE ON public.inspect_organisations
-  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
 
 CREATE TABLE public.inspect_clients (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -122,6 +74,65 @@ CREATE TABLE public.inspect_establishments (
   CONSTRAINT inspect_establishments_id_org_unique UNIQUE (id, inspect_organisation_id)
 );
 
+CREATE INDEX inspect_clients_org_status_idx
+  ON public.inspect_clients (inspect_organisation_id, status, display_name);
+CREATE INDEX inspect_establishments_org_status_idx
+  ON public.inspect_establishments (inspect_organisation_id, status, display_name);
+
+-- Protect tenant identity and derive audit fields from the authenticated actor.
+CREATE OR REPLACE FUNCTION private.inspect_set_actor_fields()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, auth
+AS $function$
+DECLARE
+  _row jsonb := to_jsonb(NEW);
+  _old jsonb;
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    _old := to_jsonb(OLD);
+
+    IF TG_TABLE_NAME = 'inspect_organisations'
+      AND NEW.workspace_id IS DISTINCT FROM OLD.workspace_id THEN
+      RAISE EXCEPTION 'workspace_id da organização Inspect é imutável'
+        USING ERRCODE = 'check_violation';
+    END IF;
+
+    IF _row ? 'created_at' THEN
+      _row := jsonb_set(_row, '{created_at}', _old->'created_at', true);
+    END IF;
+    IF _row ? 'created_by' THEN
+      _row := jsonb_set(_row, '{created_by}', _old->'created_by', true);
+    END IF;
+  ELSE
+    IF _row ? 'created_at' THEN
+      _row := jsonb_set(_row, '{created_at}', to_jsonb(now()), true);
+    END IF;
+    IF _row ? 'created_by' THEN
+      _row := jsonb_set(_row, '{created_by}', to_jsonb((SELECT auth.uid())), true);
+    END IF;
+  END IF;
+
+  IF _row ? 'updated_at' THEN
+    _row := jsonb_set(_row, '{updated_at}', to_jsonb(now()), true);
+  END IF;
+  IF _row ? 'updated_by' THEN
+    _row := jsonb_set(_row, '{updated_by}', to_jsonb((SELECT auth.uid())), true);
+  END IF;
+
+  NEW := jsonb_populate_record(NEW, _row);
+  RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION private.inspect_set_actor_fields()
+  FROM PUBLIC, anon, authenticated;
+
+CREATE TRIGGER inspect_organisations_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_organisations
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
+
 CREATE TRIGGER inspect_clients_actor_fields
   BEFORE INSERT OR UPDATE ON public.inspect_clients
   FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
@@ -130,260 +141,20 @@ CREATE TRIGGER inspect_establishments_actor_fields
   BEFORE INSERT OR UPDATE ON public.inspect_establishments
   FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
 
-CREATE INDEX inspect_clients_org_status_idx
-  ON public.inspect_clients (inspect_organisation_id, status, display_name);
-CREATE INDEX inspect_establishments_org_status_idx
-  ON public.inspect_establishments (inspect_organisation_id, status, display_name);
-
-CREATE TABLE public.inspect_client_establishments (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  inspect_organisation_id uuid NOT NULL,
-  client_id uuid NOT NULL,
-  establishment_id uuid NOT NULL,
-  valid_from timestamptz NOT NULL DEFAULT now(),
-  valid_until timestamptz,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  created_by uuid NOT NULL DEFAULT auth.uid()
-    REFERENCES auth.users(id) ON DELETE RESTRICT,
-  CONSTRAINT inspect_client_establishments_valid_range_check
-    CHECK (valid_until IS NULL OR valid_until > valid_from),
-  CONSTRAINT inspect_client_establishments_client_fk
-    FOREIGN KEY (client_id, inspect_organisation_id)
-    REFERENCES public.inspect_clients (id, inspect_organisation_id) ON DELETE RESTRICT,
-  CONSTRAINT inspect_client_establishments_establishment_fk
-    FOREIGN KEY (establishment_id, inspect_organisation_id)
-    REFERENCES public.inspect_establishments (id, inspect_organisation_id) ON DELETE RESTRICT,
-  CONSTRAINT inspect_client_establishments_id_org_unique
-    UNIQUE (id, inspect_organisation_id)
-);
-
-CREATE TRIGGER inspect_client_establishments_actor_fields
-  BEFORE INSERT OR UPDATE ON public.inspect_client_establishments
-  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
-
-CREATE INDEX inspect_client_establishments_client_period_idx
-  ON public.inspect_client_establishments
-    (inspect_organisation_id, client_id, valid_from DESC);
-CREATE INDEX inspect_client_establishments_establishment_period_idx
-  ON public.inspect_client_establishments
-    (inspect_organisation_id, establishment_id, valid_from DESC);
-
--- Serialize changes for a given organisation/client/establishment tuple so
--- concurrent transactions cannot create overlapping [from, until) periods.
-CREATE OR REPLACE FUNCTION private.inspect_guard_client_establishment_period()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = pg_catalog, public
-AS $function$
-DECLARE
-  _lock_key bigint;
-BEGIN
-  IF TG_OP = 'UPDATE' THEN
-    IF NEW.inspect_organisation_id IS DISTINCT FROM OLD.inspect_organisation_id
-      OR NEW.client_id IS DISTINCT FROM OLD.client_id
-      OR NEW.establishment_id IS DISTINCT FROM OLD.establishment_id
-      OR NEW.valid_from IS DISTINCT FROM OLD.valid_from
-      OR NEW.created_at IS DISTINCT FROM OLD.created_at
-      OR NEW.created_by IS DISTINCT FROM OLD.created_by THEN
-      RAISE EXCEPTION 'A relação histórica não pode ser reescrita; termine a vigência em valid_until'
-        USING ERRCODE = 'check_violation';
-    END IF;
-    IF OLD.valid_until IS NOT NULL AND NEW.valid_until IS DISTINCT FROM OLD.valid_until THEN
-      RAISE EXCEPTION 'Uma vigência terminada não pode ser alterada'
-        USING ERRCODE = 'check_violation';
-    END IF;
-  END IF;
-
-  _lock_key := hashtextextended(
-    NEW.inspect_organisation_id::text || ':' ||
-    NEW.client_id::text || ':' ||
-    NEW.establishment_id::text,
-    0
-  );
-  PERFORM pg_advisory_xact_lock(_lock_key);
-
-  IF EXISTS (
-    SELECT 1
-    FROM public.inspect_client_establishments existing
-    WHERE existing.inspect_organisation_id = NEW.inspect_organisation_id
-      AND existing.client_id = NEW.client_id
-      AND existing.establishment_id = NEW.establishment_id
-      AND existing.id IS DISTINCT FROM NEW.id
-      AND tstzrange(existing.valid_from, existing.valid_until, '[)')
-          && tstzrange(NEW.valid_from, NEW.valid_until, '[)')
-  ) THEN
-    RAISE EXCEPTION 'Já existe uma relação cliente/estabelecimento com vigência sobreposta'
-      USING ERRCODE = 'exclusion_violation';
-  END IF;
-
-  RETURN NEW;
-END;
-$function$;
-
-REVOKE ALL ON FUNCTION private.inspect_guard_client_establishment_period() FROM PUBLIC, anon, authenticated;
-
-CREATE TRIGGER inspect_client_establishments_period_guard
-  BEFORE INSERT OR UPDATE ON public.inspect_client_establishments
-  FOR EACH ROW
-  EXECUTE FUNCTION private.inspect_guard_client_establishment_period();
-
--- New Inspect tables are not exposed to anon. Authenticated receives only the
--- operations needed by the first portfolio workflow; RLS remains authoritative.
+-- Deny by default until Phase 3 installs the reviewed GRANT and RLS policies.
 REVOKE ALL ON TABLE
   public.inspect_organisations,
   public.inspect_clients,
-  public.inspect_establishments,
-  public.inspect_client_establishments
+  public.inspect_establishments
 FROM PUBLIC, anon, authenticated;
-
-GRANT SELECT, INSERT, UPDATE ON TABLE
-  public.inspect_organisations,
-  public.inspect_clients,
-  public.inspect_establishments,
-  public.inspect_client_establishments
-TO authenticated;
 
 ALTER TABLE public.inspect_organisations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inspect_clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inspect_establishments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.inspect_client_establishments ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY inspect_organisations_select
-  ON public.inspect_organisations FOR SELECT TO authenticated
-  USING (private.workspace_can_read(workspace_id));
-
-CREATE POLICY inspect_organisations_insert
-  ON public.inspect_organisations FOR INSERT TO authenticated
-  WITH CHECK (
-    private.workspace_is_owner(workspace_id)
-    AND EXISTS (
-      SELECT 1 FROM public.workspaces w
-      WHERE w.id = workspace_id AND w.modulo = 'inspect'
-    )
-  );
-
-CREATE POLICY inspect_organisations_update
-  ON public.inspect_organisations FOR UPDATE TO authenticated
-  USING (private.workspace_is_owner(workspace_id))
-  WITH CHECK (private.workspace_is_owner(workspace_id));
-
-CREATE POLICY inspect_clients_select
-  ON public.inspect_clients FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_read(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_clients_insert
-  ON public.inspect_clients FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_clients_update
-  ON public.inspect_clients FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_establishments_select
-  ON public.inspect_establishments FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_read(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_establishments_insert
-  ON public.inspect_establishments FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_establishments_update
-  ON public.inspect_establishments FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_client_establishments_select
-  ON public.inspect_client_establishments FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_read(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_client_establishments_insert
-  ON public.inspect_client_establishments FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
-
-CREATE POLICY inspect_client_establishments_update
-  ON public.inspect_client_establishments FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.inspect_organisations o
-      WHERE o.id = inspect_organisation_id
-        AND private.workspace_can_write(o.workspace_id)
-    )
-  );
 
 COMMENT ON TABLE public.inspect_organisations IS
-  'Organização Inspect associada a um workspace Core; não concede acesso externo.';
+  'Organização Inspect associada a um workspace Core; acesso fechado até à fase de permissões.';
 COMMENT ON TABLE public.inspect_clients IS
-  'Carteira de clientes da organização Inspect; acesso limitado ao workspace.';
+  'Carteira de clientes da organização Inspect; acesso fechado por defeito.';
 COMMENT ON TABLE public.inspect_establishments IS
-  'Estabelecimentos geridos pela organização Inspect.';
-COMMENT ON TABLE public.inspect_client_establishments IS
-  'Histórico temporal de associação cliente/estabelecimento; sem sobreposição de vigências.';
+  'Estabelecimentos geridos pela organização Inspect; acesso fechado por defeito.';
