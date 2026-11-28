@@ -306,7 +306,7 @@ Requisitos vinculativos para o desenho físico:
 - respostas externas e anexos associados a acções atribuídas, sem alterar o registo original;
 - convite com email confirmado no servidor, token hash, uso único e consumo atómico;
 - bucket privado; autorização antes de cada emissão de URL/download/upload;
-- TTL inicial de URL assinada de 60 segundos, reconhecendo que não permite revogação instantânea;
+- não emitir URL assinada bearer por defeito; se for inevitável, usar TTL mínimo operacional e reconhecer a janela de validade;
 - RLS e constraints compostas para todos os recursos e operações;
 - histórico append-only para concessões, publicações, downloads sensíveis e respostas.
 
