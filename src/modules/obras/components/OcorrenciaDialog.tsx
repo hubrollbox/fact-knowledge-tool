@@ -96,22 +96,27 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
   return (
     <Dialog open={open} onOpenChange={(value) => { if (!ocupado) { setOpen(value); if (!value) limpar(); } }}>
       <DialogTrigger asChild><Button size="sm" variant="outline"><AlertTriangle className="h-4 w-4 mr-1" />Nova ocorrência</Button></DialogTrigger>
-      <DialogContent className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 sm:max-h-[85vh]">
-        <DialogHeader className="shrink-0 border-b px-5 py-4 text-left"><DialogTitle>Registar ocorrência</DialogTitle></DialogHeader>
+      <DialogContent className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0 sm:max-h-[85vh]">
+        <DialogHeader className="shrink-0 border-b px-5 py-4 text-left"><DialogTitle>Registar ocorrência</DialogTitle><p className="text-sm text-muted-foreground">Registe o que observou e, se possível, junte uma fotografia.</p></DialogHeader>
         <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-4">
-            <div className="space-y-1.5"><Label htmlFor="ocorrencia-titulo">O que foi observado</Label><Input id="ocorrencia-titulo" required maxLength={200} value={f.titulo} onChange={(e) => setF({ ...f, titulo: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label htmlFor="ocorrencia-descricao">Descrição</Label><Textarea id="ocorrencia-descricao" placeholder="Descreva o que viu, sem conclusões." value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label htmlFor="ocorrencia-titulo">O que encontrou?</Label><Input id="ocorrencia-titulo" className="min-h-12 text-base" required maxLength={200} value={f.titulo} onChange={(e) => setF({ ...f, titulo: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label htmlFor="ocorrencia-descricao">Descrição / observações</Label><Textarea id="ocorrencia-descricao" className="min-h-28 text-base" placeholder="Descreva o que viu, sem conclusões." value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} /></div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5"><Label htmlFor="ocorrencia-localizacao">Localização na obra</Label><Input id="ocorrencia-localizacao" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} /></div>
-              <div className="space-y-1.5"><Label htmlFor="ocorrencia-tipo">Tipo de ocorrência</Label><Input id="ocorrencia-tipo" maxLength={100} placeholder="Ex.: infiltração, fissura, defeito" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })} /></div>
-              <div className="space-y-1.5"><Label htmlFor="ocorrencia-especialidade">Especialidade</Label><Input id="ocorrencia-especialidade" maxLength={100} placeholder="Ex.: estruturas, electricidade, AVAC" value={f.especialidade} onChange={(e) => setF({ ...f, especialidade: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label htmlFor="ocorrencia-localizacao">Onde aconteceu?</Label><Input id="ocorrencia-localizacao" className="min-h-11" placeholder="Ex.: piso 2, fachada norte" value={f.localizacao} onChange={(e) => setF({ ...f, localizacao: e.target.value })} /></div>
               <div className="space-y-1.5"><Label>Gravidade</Label>
-                <Select value={f.gravidade} onValueChange={(v) => setF({ ...f, gravidade: v })}><SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={f.gravidade} onValueChange={(v) => setF({ ...f, gravidade: v })}><SelectTrigger className="min-h-11"><SelectValue /></SelectTrigger>
                   <SelectContent>{Object.entries(GRAVIDADES).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
+            <details className="rounded-md border px-3 py-2">
+              <summary className="min-h-10 cursor-pointer py-2 text-sm font-medium">Classificação técnica (opcional)</summary>
+              <div className="space-y-3 pb-2 pt-3">
+                <div className="space-y-1.5"><Label htmlFor="ocorrencia-tipo">Tipo de ocorrência</Label><Input id="ocorrencia-tipo" className="min-h-11" maxLength={100} placeholder="Ex.: infiltração, fissura, defeito" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })} /></div>
+                <div className="space-y-1.5"><Label htmlFor="ocorrencia-especialidade">Especialidade</Label><Input id="ocorrencia-especialidade" className="min-h-11" maxLength={100} placeholder="Ex.: estruturas, electricidade, AVAC" value={f.especialidade} onChange={(e) => setF({ ...f, especialidade: e.target.value })} /></div>
+              </div>
+            </details>
             <section className="space-y-3 rounded-md border border-dashed p-3">
               <div><h3 className="text-sm font-medium">Fotografia da ocorrência</h3><p className="text-xs text-muted-foreground">Pode tirar uma fotografia ou escolher uma imagem do dispositivo.</p></div>
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { escolherFotografia(e.target.files?.[0] ?? null); e.currentTarget.value = ''; }} />
@@ -130,7 +135,7 @@ export function OcorrenciaDialog({ obraId, visitaId }: { obraId: string; visitaI
             </section>
           </div>
           <DialogFooter className="sticky bottom-0 shrink-0 border-t bg-background px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <Button type="submit" className="min-h-11 w-full sm:w-auto" disabled={ocupado || (!f.titulo.trim() && !ocorrenciaCriadaId)}>
+            <Button type="submit" className="min-h-12 w-full sm:w-auto" disabled={ocupado || (!f.titulo.trim() && !ocorrenciaCriadaId)}>
               {ocupado && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {aPreparar ? 'A preparar fotografia…' : upload.isPending ? 'A enviar fotografia…' : criar.isPending ? 'A guardar ocorrência…' : ocorrenciaCriadaId ? (fotografia ? 'Tentar enviar fotografia' : 'Concluir registo') : 'Guardar ocorrência'}
             </Button>
