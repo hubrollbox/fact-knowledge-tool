@@ -98,14 +98,32 @@ Unidade de auditoria:
 
 Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. Quando `contract_client_id` não é nulo, a combinação cliente/estabelecimento tem de existir em `inspect_client_establishments`. A FK da versão usa `(template_version_id, inspect_organisation_id)`. O operador é copiado para a auditoria como snapshot histórico, para que alterações posteriores no estabelecimento não reescrevam quem foi identificado como operador na data auditada. `contract_client_id` pode ser nulo em auditorias internas do operador.
 
-### 2.7. Resultados e medições
+### 2.7. Atribuições de auditoria
+
+`inspect_audit_assignments`:
+- `id`, `inspect_organisation_id`, `audit_id`, `user_id`;
+- `assignment_role` controlado: `auditor`, `reviewer` ou `observer`;
+- actor que atribuiu, início/fim de vigência, estado e timestamps;
+- unicidade por auditoria/utilizador, com histórico append-only para alterações/revogação.
+
+Regras:
+- owner/admin gere atribuições;
+- `auditor` executa a auditoria atribuída e regista resultados/evidências/findings;
+- `reviewer` revê a execução, pode devolver para correcção e autorizar submissão/publicação;
+- `observer` tem leitura interna da auditoria atribuída;
+- a separação auditor/reviewer é suportada, mas não obrigatória em todas as organizações no MVP;
+- o papel `editor` do workspace, por si só, não concede acesso a todas as auditorias.
+
+A autorização interna de trabalho deve validar simultaneamente membership Core activa, papel permitido e atribuição activa à auditoria. Não confiar apenas em `user_id` guardado no registo.
+
+### 2.8. Resultados e medições
 
 - `inspect_audit_results`: uma linha por critério da versão aplicada, estado, observação partilhável/factual, autor e timestamps. Cada resultado deve incluir `template_version_id` e usar FKs compostas para provar que a auditoria e o critério pertencem à mesma versão e organização.
 - `inspect_audit_measurements`: valor, unidade, parâmetro, equipamento/local, instante de recolha, autor, limite/regra aplicável e referência/versão da regra.
 
 As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas das tabelas de resultados partilháveis. Não confiar em RLS para esconder colunas.
 
-### 2.8. Evidências
+### 2.9. Evidências
 
 - `inspect_evidence`: metadados do objecto privado, organização, auditoria, autor, hash, MIME, tamanho, estado e retenção. Não usar `resource_type + resource_id` como única ligação relacional.
 - `inspect_evidence_links`: associação interna tipada a resultado, finding, resposta ou relatório, através de FKs reais e constraints compostas; alternativa: tabelas de ligação separadas por tipo. Não aceitar IDs polimórficos sem FK.
@@ -113,7 +131,7 @@ As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas 
 
 O caminho Storage não contém PII nem nomes de clientes. Constraint composta liga evidência e recurso à mesma auditoria/organização. A autorização de download é verificada por pedido.
 
-### 2.9. Não conformidades e acções
+### 2.10. Não conformidades e acções
 
 - `inspect_findings`: auditoria, resultado de origem, descrição factual, classificação/metodologia, estado, prazo e responsável.
 - `inspect_corrective_actions`: finding, descrição, responsável interno/externo, prazo e estado.
@@ -123,7 +141,7 @@ O caminho Storage não contém PII nem nomes de clientes. Constraint composta li
 
 O utilizador externo não altera o finding nem a acção original; cria uma resposta. Só auditor autorizado pode verificar eficácia ou fechar.
 
-### 2.10. Relatórios e publicações
+### 2.11. Relatórios e publicações
 
 - `inspect_audit_submissions`: snapshot imutável da submissão, número/versão, actor, instante, hash do payload.
 - `inspect_reports`: ficheiro emitido, versão do template, hash, emissor, instante e estado.
@@ -132,7 +150,7 @@ O utilizador externo não altera o finding nem a acção original; cria uma resp
 
 O relatório final é um artefacto imutável. Correcções geram adenda ou nova emissão ligada à anterior.
 
-### 2.11. Convites e concessões
+### 2.12. Convites e concessões
 
 Separar convite pendente de concessão activa:
 
@@ -167,6 +185,7 @@ erDiagram
   INSPECT_AUDIT_TEMPLATES ||--o{ INSPECT_AUDIT_TEMPLATE_VERSIONS : versions
   INSPECT_AUDIT_TEMPLATE_VERSIONS ||--o{ INSPECT_AUDIT_CRITERIA : defines
   INSPECT_ORGANISATIONS ||--o{ INSPECT_AUDITS : conducts
+  INSPECT_AUDITS ||--o{ INSPECT_AUDIT_ASSIGNMENTS : assigns
   INSPECT_ESTABLISHMENTS ||--o{ INSPECT_AUDITS : audited_at
   INSPECT_CLIENTS o|--o{ INSPECT_AUDITS : contracted_by
   INSPECT_AUDITS ||--o{ INSPECT_AUDIT_RESULTS : records
@@ -196,7 +215,7 @@ Usar unique constraints e foreign keys compostas, por exemplo:
 - `inspect_audits (establishment_id, inspect_organisation_id)` referencia estabelecimento no mesmo âmbito;
 - `inspect_audits (contract_client_id, establishment_id, inspect_organisation_id)` referencia a relação cliente/estabelecimento no mesmo âmbito quando o cliente contratual não é nulo;
 - `inspect_audits (operator_party_id, inspect_organisation_id)` referencia a party operadora snapshot no mesmo âmbito;
-- resultados, evidências, findings, acções, relatórios, grants e publicações carregam `inspect_organisation_id` e referenciam a auditoria no mesmo âmbito.
+- atribuições, resultados, evidências, findings, acções, relatórios, grants e publicações carregam `inspect_organisation_id` e referenciam a auditoria no mesmo âmbito.
 
 Usar `ON DELETE RESTRICT` para dados históricos e relações referenciadas; evitar cascatas destrutivas sobre auditorias submetidas, relatórios, evidências e eventos.
 
@@ -379,3 +398,12 @@ A associação é N:M e tem vigência/estado. Para o mesmo par cliente/estabelec
 O operador alimentar é uma entidade distinta do cliente contratual. O estabelecimento guarda o operador actualmente identificado, mas cada auditoria conserva um snapshot de `operator_party_id` (ou uma pendência justificada) no momento da sua criação/submissão. Uma alteração posterior do operador não modifica auditorias históricas.
 
 Não inferir o operador a partir do cliente contratual. Se for desconhecido, guardar a pendência e tornar explícita essa limitação no relatório.
+
+
+## 17. Atribuição e separação de funções
+
+A autorização interna de auditoria não pode depender apenas do papel geral do workspace. Cada auditoria tem atribuições explícitas (`auditor`, `reviewer`, `observer`) ligadas ao utilizador e à organização. A policy deve confirmar membership activa no workspace, papel Core compatível e atribuição activa.
+
+O modelo suporta revisão por pessoa diferente do auditor, mas não impõe essa separação como requisito universal do MVP. A organização pode configurar a revisão conforme a sua dimensão e procedimento. Owner/admin conserva poderes de gestão, sem contornar as transições nem o histórico.
+
+A tabela de atribuições deve ter eventos append-only para atribuição, alteração, suspensão e revogação. A revogação bloqueia imediatamente novas operações, sem apagar a autoria histórica.
