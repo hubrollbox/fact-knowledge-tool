@@ -219,3 +219,25 @@ O acesso ao conteúdo de uma auditoria exige atribuição activa:
 - a atribuição pode coexistir com qualquer papel Core compatível, mas nunca substitui a membership Core activa.
 
 A RLS deve testar explicitamente owner/admin sem atribuição, editor sem atribuição e atribuição revogada. Todos devem ser negados no conteúdo da auditoria. As operações de gestão administrativa ficam limitadas aos metadados estritamente necessários e devem gerar eventos de auditoria quando afectem permissões ou estado.
+
+
+## 13. Estado, revisão e publicação — autorização por transição
+
+A autorização deve validar o estado actual, a atribuição activa e a operação pedida. Não basta validar o papel Core.
+
+| Transição | Actor autorizado | Condições |
+|---|---|---|
+| `draft -> in_progress` | Auditor atribuído | Atribuição activa |
+| `in_progress -> in_review` | Auditor atribuído | Autosave concluído; sem gravações pendentes |
+| `in_review -> changes_requested` | Reviewer atribuído | Motivo obrigatório |
+| `changes_requested -> in_review` | Auditor atribuído | Alterações guardadas |
+| `in_review -> approved` | Reviewer atribuído | Revisão concluída |
+| `approved -> submitted` | RPC transaccional | Snapshot/hash/número sequencial criados atomicamente |
+| `submitted -> closed` | Actor interno autorizado | Acompanhamento concluído; evento de fecho |
+| `* -> cancelled` | Owner/admin ou reviewer autorizado | Motivo e evento obrigatório; não apagar dados |
+
+A publicação externa é independente da submissão: exige permissão específica e aponta para uma submissão imutável. Revogar publicação não reabre nem altera auditoria submetida.
+
+A auto-revisão é opção explícita da organização para equipas pequenas; deve ficar registada como excepção com actor e motivo. Nunca assumir auto-revisão silenciosa.
+
+Os endpoints/RPC devem impedir transições inválidas, concorrência de submissão e actualização directa de estado pelo cliente. As operações de transição escrevem evento append-only na mesma transacção.
