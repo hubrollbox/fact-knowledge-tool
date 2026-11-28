@@ -340,7 +340,7 @@ Decisões para o MVP:
 - após submissão, leitura apenas de conteúdos publicados e concedidos;
 - cliente não edita resultados, critérios, medições, classificações nem verifica eficácia/fecha acções;
 - resposta externa apenas a acções atribuídas e apenas quando a permissão específica foi concedida;
-- convite de 7 dias, uso único, email verificado e aceitação autenticada;
+- convite de 7 dias, uso único, email confirmado no servidor e aceitação autenticada;
 - bucket privado; downloads externos preferencialmente autenticados com RLS por objecto em cada pedido; proxy autenticado se for necessária URL bearer;
 - URL assinada já emitida pode funcionar até expirar; não prometer revogação instantânea;
 - notas internas separadas dos dados publicados ao nível da BD.
