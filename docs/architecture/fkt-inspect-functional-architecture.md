@@ -180,3 +180,12 @@ A experiência Inspect deve separar:
 O acesso externo é concedido por auditoria concreta e permissões explícitas. Não há partilha automática de toda a carteira do cliente nem de auditorias futuras. Um utilizador externo não passa a membro do workspace da consultora.
 
 O desenho técnico detalhado e as regras de autorização constam de [FKT Inspect — decisão de arquitectura multi-cliente e acesso externo](fkt-inspect-multi-client-architecture-decision.md).
+
+
+## 15. Clarificações da validação arquitectural
+
+- Distinguir o cliente contratual da entidade que explora legalmente o estabelecimento alimentar; podem coincidir, mas não se deve presumir que são sempre a mesma entidade.
+- O acesso externo inicial é concedido por auditoria concreta, não por cliente nem por carteira.
+- A área «Partilhado comigo» apresenta apenas conteúdos e operações autorizados para cada auditoria e para o seu estado actual.
+- O cliente externo não altera constatações, medições originais, classificações ou verificações do auditor. Pode, se aprovado no âmbito do MVP, responder a acções que lhe sejam atribuídas e submeter evidência.
+- A auditoria e a concessão de acesso têm estados independentes.
