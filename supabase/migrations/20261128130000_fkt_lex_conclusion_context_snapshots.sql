@@ -97,8 +97,7 @@ BEGIN
       'estado', f.estado,
       'data_facto', f.data_facto,
       'origem', f.origem,
-      'notas', f.notas,
-      'ligacao_notas', qf.notas
+      'notas', f.notas
     ) ORDER BY f.created_at, f.id
   ), '[]'::jsonb)
   INTO _factos_questao
@@ -174,7 +173,6 @@ BEGIN
         'data_fonte', f.data_fonte,
         'versao', f.versao,
         'notas', f.notas,
-        'segmento_aplicavel', af.segmento_aplicavel,
         'ligacao_notas', af.notas
       ) ORDER BY f.created_at, f.id
     ), '[]'::jsonb)
