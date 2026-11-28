@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
-import { inspectDb, InspectClient, InspectEstablishment, InspectOrganisation } from './types';
+import { inspectDb, InspectClient, InspectEstablishment, InspectOrganisation } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
