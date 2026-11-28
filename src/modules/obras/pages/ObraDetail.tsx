@@ -69,7 +69,7 @@ export function ObraDetail() {
       )}
 
       <Tabs defaultValue="visitas">
-        <TabsList className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg p-1" aria-label="Secções da obra">
+        <TabsList className="sticky top-0 z-20 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border bg-background/95 p-1 shadow-sm backdrop-blur md:static md:border-0 md:bg-transparent md:shadow-none md:backdrop-blur-0" aria-label="Secções da obra">
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="visitas">Diário ({visitas?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
