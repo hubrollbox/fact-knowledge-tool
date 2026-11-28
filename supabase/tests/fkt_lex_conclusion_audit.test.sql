@@ -32,7 +32,7 @@ BEGIN
   END LOOP;
 
   -- Conclusion versions and events are append-only for API roles.
-  FOREACH _table IN ARRAY ARRAY['juridico_conclusoes','juridico_conclusoes_eventos'] LOOP
+  FOREACH _table IN ARRAY ARRAY['juridico_conclusoes','juridico_conclusoes_eventos','juridico_conclusoes_snapshots'] LOOP
     IF has_table_privilege('authenticated', format('public.%I', _table), 'UPDATE')
       OR has_table_privilege('authenticated', format('public.%I', _table), 'DELETE')
       OR has_table_privilege('authenticated', format('public.%I', _table), 'TRUNCATE')
