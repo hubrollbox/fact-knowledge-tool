@@ -155,6 +155,12 @@ erDiagram
   INSPECT_PARTIES ||--o{ INSPECT_CLIENTS : contracts
   INSPECT_ORGANISATIONS ||--o{ INSPECT_ESTABLISHMENTS : manages
   INSPECT_PARTIES ||--o{ INSPECT_ESTABLISHMENTS : operates
+  INSPECT_CLIENT_ESTABLISHMENTS {
+    uuid id
+    uuid inspect_organisation_id
+    uuid client_id
+    uuid establishment_id
+  }
   INSPECT_CLIENTS ||--o{ INSPECT_CLIENT_ESTABLISHMENTS : contracts
   INSPECT_ESTABLISHMENTS ||--o{ INSPECT_CLIENT_ESTABLISHMENTS : included_in_client
   INSPECT_ORGANISATIONS ||--o{ INSPECT_AUDIT_TEMPLATES : owns
