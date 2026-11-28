@@ -142,6 +142,7 @@ SELECT throws_ok(
     SET workspace_id='b6100000-0000-4000-8000-000000000002'
     WHERE id='c6100000-0000-4000-8000-000000000001'$test$,
   '23514',
+  NULL,
   'A organização não pode mudar de workspace'
 );
 
@@ -150,6 +151,7 @@ SELECT throws_ok(
     SET inspect_organisation_id='c6100000-0000-4000-8000-000000000002'
     WHERE id='d6100000-0000-4000-8000-000000000001'$test$,
   '23514',
+  NULL,
   'Uma party não pode mudar de organização'
 );
 
@@ -157,6 +159,7 @@ SELECT throws_ok(
   $test$INSERT INTO public.inspect_clients (inspect_organisation_id,display_name,party_id)
     VALUES ('c6100000-0000-4000-8000-000000000002','Cliente cruzado','d6100000-0000-4000-8000-000000000001')$test$,
   '23503',
+  NULL,
   'A FK composta impede ligar cliente a party de outra organização'
 );
 
@@ -165,6 +168,7 @@ SELECT throws_ok(
       (inspect_organisation_id,display_name,operator_identification_status)
     VALUES ('c6100000-0000-4000-8000-000000000001','Estabelecimento sem operador','identified')$test$,
   '23514',
+  NULL,
   'Estado identified exige operator_party_id'
 );
 
