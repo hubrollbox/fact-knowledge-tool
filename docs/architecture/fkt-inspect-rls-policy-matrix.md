@@ -38,12 +38,12 @@ Não criar papéis globais novos no Core para o MVP. Usar os papéis actuais do 
 
 | Papel Core | Capacidades Inspect no MVP | Limites |
 |---|---|---|
-| Owner do workspace / `owner` | Administração da organização, clientes, estabelecimentos, equipa, modelos, convites, grants e auditorias; pode executar auditorias | Operações críticas continuam sujeitas a histórico e transições controladas |
-| `admin` | Gestão operacional equivalente ao owner, excepto transferência/eliminação do workspace e operações reservadas ao owner Core | Não contorna imutabilidade nem histórico |
-| `editor` | Executa e edita rascunhos apenas nas auditorias em que esteja explicitamente atribuído; regista resultados, evidências, findings e propostas de acção | Não gere membros, modelos publicados ou grants; submissão/publicação apenas se a atribuição concreta o permitir |
-| `viewer` | Leitura interna dos dados da organização permitidos pela política | Sem criação, edição, submissão, publicação ou gestão de acessos |
+| Owner do workspace / `owner` | Gere organização, carteira, equipa, modelos, convites e grants. Acede ao conteúdo de auditoria apenas se tiver atribuição activa ou se uma operação administrativa explicitamente auditada o exigir | Ser owner não equivale a ser auditor; não altera resultados submetidos nem contorna o histórico |
+| `admin` | Gestão operacional da organização e atribuições, dentro dos limites Core. Acede ao conteúdo de auditoria apenas com atribuição activa | Ser admin não equivale a ser auditor; não contorna imutabilidade nem histórico |
+| `editor` | Executa e edita rascunhos apenas nas auditorias em que esteja explicitamente atribuído como `auditor`; regista resultados, evidências, findings e propostas de acção | Não gere membros, modelos publicados ou grants; submissão/publicação exige permissão e transição explícitas |
+| `viewer` | Só consulta auditorias para as quais tenha atribuição activa `observer`; acesso a metadados organizacionais é limitado ao necessário | Sem criação, edição, submissão, publicação ou gestão de acessos |
 
-A atribuição de auditor deve ser uma relação própria com a auditoria, actor, função e datas de vigência. Ser `editor` no workspace não torna automaticamente o utilizador auditor de todas as auditorias. Um utilizador externo nunca recebe um destes papéis nem é inserido em `workspace_members`.
+A atribuição deve ser uma relação própria com a auditoria, actor, função e datas de vigência. Owner/admin podem gerir a organização e atribuições, mas não obtêm por isso acesso irrestrito ao conteúdo operacional de todas as auditorias. Para consultar ou executar uma auditoria, necessitam de atribuição activa adequada (`auditor`, `reviewer` ou `observer`). Ser `editor` no workspace não torna automaticamente o utilizador auditor de todas as auditorias. Um utilizador externo nunca recebe um destes papéis nem é inserido em `workspace_members`.
 
 A distinção owner/admin para operações de administração global deve respeitar as regras Core já existentes; esta matriz não autoriza alargar os poderes do papel `admin`.
 
@@ -54,14 +54,14 @@ A distinção owner/admin para operações de administração global deve respei
 | `inspect_organisations` | Membros da organização | Negado | Owner cria via activação controlada | Admin/owner, campos permitidos | Negado; desactivação lógica |
 | `inspect_parties`, `inspect_clients`, `inspect_establishments` | Membros autorizados | Negado | Editor/admin conforme papel | Editor/admin conforme papel | Negado; arquivo lógico |
 | Templates, versões, secções, critérios | Membros com permissão de modelo | Negado | Editor/admin | Draft apenas; versão publicada imutável | Negado em versões publicadas |
-| `inspect_audits` | Equipa atribuída/gestores | Negado em SELECT directo | Auditor autorizado | Equipa conforme estado; transições por RPC | Negado; cancelar/arquivar |
-| Resultados e medições | Equipa atribuída | Negado em tabelas base | Auditor atribuído | Auditor autorizado antes da submissão | Negado após criação; correcção auditada |
-| Notas internas | Equipa autorizada | Sempre negado | Equipa autorizada | Equipa autorizada com histórico | Negado; evento/arquivo |
-| Evidência não publicada | Equipa autorizada | Sempre negado | Equipa autorizada ou fluxo de upload validado | Metadados restritos | Sem delete directo; retenção |
+| `inspect_audits` | Gestores: metadados mínimos; conteúdo apenas para atribuição activa | Negado em SELECT directo | Auditor atribuído | Auditor/reviewer atribuído conforme estado; transições controladas | Negado; cancelar/arquivar |
+| Resultados e medições | Apenas auditor/reviewer/observer com atribuição activa e âmbito adequado | Negado em tabelas base | Auditor atribuído | Auditor atribuído antes da submissão; revisão por reviewer | Negado após submissão; correcção por nova versão/adenda |
+| Notas internas | Apenas auditor/reviewer explicitamente atribuídos | Sempre negado | Auditor/reviewer atribuído | Auditor/reviewer atribuído com histórico | Negado; evento/arquivo |
+| Evidência não publicada | Apenas equipa com atribuição activa à auditoria | Sempre negado | Auditor atribuído ou fluxo de upload validado | Metadados restritos por actor atribuído | Sem delete directo; retenção |
 | Publicações e resultados publicados | Equipa autorizada | Grant + permissão específica + auditoria submetida | RPC de publicação | Revogação via evento/RPC | Negado |
-| Findings e acções | Equipa autorizada | Só projecção publicada/atribuída | Auditor autorizado | Equipa; estado via RPC | Negado |
+| Findings e acções | Auditor/reviewer/observer atribuído conforme operação | Só projecção publicada/atribuída | Auditor atribuído | Auditor/reviewer atribuído; estado via RPC | Negado |
 | Respostas externas | Equipa autorizada | Autor e equipa da auditoria; externo apenas próprias respostas | Externo apenas acção atribuída + permissão + auditoria submetida | Sem update directo; nova resposta/submissão | Negado |
-| Verificações de eficácia | Auditor/equipa autorizada | Sempre negado | Auditor autorizado | Append-only; nova verificação | Negado |
+| Verificações de eficácia | Auditor/reviewer atribuído | Sempre negado | Auditor atribuído com competência para verificar | Append-only; nova verificação | Negado |
 | Submissões e relatórios | Equipa autorizada | Apenas versão publicada e permissão específica | RPC de submissão/emissão | Sem update; nova versão/adenda | Negado |
 | Convites | Admin/auditor que gere a partilha | Destinatário apenas por fluxo de aceitação, sem enumeração | RPC de convite | RPC de reenvio/revogação | Negado |
 | Grants e permissões | Admin/auditor autorizado | Sem SELECT directo; estado mínimo do próprio via RPC | RPC após aceitação | RPC para alteração/revogação | Negado |
@@ -196,7 +196,7 @@ Este documento é especificação de políticas, não migração. Antes de SQL:
 7. rever migrações e resultados em PR;
 8. só aplicar à instância remota com autorização explícita.
 
-A revisão até agora foi estática sobre migrações versionadas; não foi executada consulta ao catálogo remoto nem teste em runtime. Não declarar as políticas seguras até aos testes locais/CI passarem.
+A revisão combinou análise estática das migrações versionadas com consulta read-only ao catálogo da única BD remota em 28/11/2026. Confirmou-se que não existem tabelas Inspect nem bucket Inspect, e que a constraint `workspaces_modulo_check` ainda não permite `inspect`. Foram também verificadas as policies e constraints actuais de `workspaces` e `workspace_members`. Não foram executados testes RLS Inspect nem testes em runtime, porque o módulo ainda não tem tabelas/policies. Não declarar estas políticas seguras até aos testes locais/CI passarem.
 
 
 ## 11. Integridade de relações e publicações
@@ -206,3 +206,16 @@ Não implementar autorização baseada em identificadores polimórficos `resourc
 A publicação de resultados deve referir uma submissão/snapshot concreta; relatórios referem a submissão que os originou; evidências têm publicação própria. As funções de autorização recebem IDs de publicação/evidência tipados, não pares arbitrários de tipo e ID fornecidos pelo browser.
 
 As constraints compostas devem garantir que auditoria, versão de modelo, critério, resultado, finding, acção, resposta, evidência e publicação pertencem ao mesmo âmbito. A aplicação não substitui estas constraints.
+
+
+## 12. Regra de acesso interno — princípio de menor privilégio
+
+A gestão da organização e o acesso ao conteúdo operacional de auditorias são capacidades distintas. Owner/admin podem gerir a carteira, equipa, modelos e concessões, mas não recebem automaticamente acesso a notas internas, medições, evidências não publicadas ou resultados de todas as auditorias.
+
+O acesso ao conteúdo de uma auditoria exige atribuição activa:
+- `auditor`: execução e registo;
+- `reviewer`: revisão, devolução e aprovação dentro das transições permitidas;
+- `observer`: leitura;
+- a atribuição pode coexistir com qualquer papel Core compatível, mas nunca substitui a membership Core activa.
+
+A RLS deve testar explicitamente owner/admin sem atribuição, editor sem atribuição e atribuição revogada. Todos devem ser negados no conteúdo da auditoria. As operações de gestão administrativa ficam limitadas aos metadados estritamente necessários e devem gerar eventos de auditoria quando afectem permissões ou estado.
