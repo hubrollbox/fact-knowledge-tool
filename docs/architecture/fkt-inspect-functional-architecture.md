@@ -189,3 +189,16 @@ O desenho técnico detalhado e as regras de autorização constam de [FKT Inspec
 - A área «Partilhado comigo» apresenta apenas conteúdos e operações autorizados para cada auditoria e para o seu estado actual.
 - O cliente externo não altera constatações, medições originais, classificações ou verificações do auditor. Pode, se aprovado no âmbito do MVP, responder a acções que lhe sejam atribuídas e submeter evidência.
 - A auditoria e a concessão de acesso têm estados independentes.
+
+
+## 16. Acesso externo — âmbito funcional do MVP
+
+A matriz detalhada e vinculativa consta de [FKT Inspect — matriz de permissões de acesso externo](fkt-inspect-external-access-permissions-matrix.md).
+
+Resumo:
+- não há leitura externa durante rascunho ou execução;
+- após submissão, o cliente vê apenas conteúdos publicados e explicitamente partilhados;
+- o cliente não altera resultados, critérios, medições ou classificação nem verifica eficácia/fecha acções;
+- pode responder a acções que lhe sejam atribuídas, apenas com permissão específica;
+- acesso a ficheiros é privado e autorizado por pedido;
+- concessão e estado da auditoria são ciclos de vida independentes.
