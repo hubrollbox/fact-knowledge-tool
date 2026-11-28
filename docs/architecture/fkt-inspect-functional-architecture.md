@@ -167,3 +167,16 @@ Decisões de produto aprovadas para planeamento:
 - sem alterações ao código ou à base de dados até à aprovação técnica das issues.
 
 Este documento descreve o âmbito pretendido. A implementação e a validação devem ser acompanhadas nas issues associadas.
+
+
+## 14. Separação entre área da organização e auditorias partilhadas
+
+A utilização externa é contextual e não equivale a integrar o utilizador no workspace da consultora.
+
+A experiência Inspect deve separar:
+- **Área da organização:** clientes, estabelecimentos, modelos, auditorias próprias e notas internas.
+- **Partilhado comigo:** auditorias e acções que outras organizações concederam ao utilizador.
+
+O acesso externo é concedido por auditoria concreta e permissões explícitas. Não há partilha automática de toda a carteira do cliente nem de auditorias futuras. Um utilizador externo não passa a membro do workspace da consultora.
+
+O desenho técnico detalhado e as regras de autorização constam de [FKT Inspect — decisão de arquitectura multi-cliente e acesso externo](fkt-inspect-multi-client-architecture-decision.md).
