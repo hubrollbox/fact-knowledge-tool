@@ -265,28 +265,54 @@ export default function AjudaSuporte() {
       </nav>
 
       {tab === 'faq' && (
-        <section className="space-y-6">
-          <div className="mx-auto max-w-3xl space-y-3 text-center">
-            <h2 className="text-xl font-semibold">Em que podemos ajudar?</h2>
-            <p className="text-sm text-muted-foreground">Pesquise uma dúvida ou escolha a área da plataforma.</p>
-            <div className="relative text-left"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input className={inputClass + ' pl-9 py-3'} placeholder="Ex.: criar obra, relatório PDF, permissões…" value={query} onChange={event => { setQuery(event.target.value); setCategoryFilter('all'); }} /></div>
+        <section className="space-y-8">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-primary">Uma plataforma. Uma forma organizada de trabalhar.</p>
+              <h2 className="text-2xl font-semibold tracking-tight">Conheça o FKT</h2>
+              <p className="text-sm leading-6 text-muted-foreground">O FKT é uma plataforma única para organizar informação, registos, referências, decisões e acompanhamento de trabalho. O núcleo comum mantém o contexto e o histórico; as ferramentas especializadas adaptam-se às necessidades de cada organização.</p>
+            </div>
+            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input className={inputClass + ' pl-9 py-3'} placeholder="Pesquise uma dúvida, tarefa ou funcionalidade…" value={query} onChange={event => { setQuery(event.target.value); setCategoryFilter('all'); }} /></div>
           </div>
 
           {query.trim() === '' && moduleFilter === 'all' ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {moduleCounts.filter(item => item.count > 0).map(item => (
-                <button key={item.value} onClick={() => { setModuleFilter(item.value); setCategoryFilter('all'); }} className="group rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/50 hover:bg-accent/40">
-                  <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{item.label}</h3><span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">{item.count} {item.count === 1 ? 'artigo' : 'artigos'}</span></div>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.value === 'core' ? 'Conta, pesquisa, utilização e suporte da plataforma.' : item.value === 'works' ? 'Obras, diário, ocorrências, acções e relatórios.' : item.value === 'lex' ? 'Processos, análise jurídica, documentos e prazos.' : item.value === 'vet' ? 'Animais, fichas, historial clínico e ninhadas.' : 'Projectos, issues e decisões de arquitectura.'}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">Explorar ajuda <span aria-hidden="true">→</span></span>
-                </button>
-              ))}
+            <div className="mx-auto max-w-3xl space-y-8">
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold">Primeiros passos</h3>
+                <div className="divide-y divide-border rounded-lg border border-border bg-card">
+                  {faqs.filter(faq => faq.is_published && faq.module === 'core' && ['Conhecer o FKT','Acesso','Conta','Pesquisa','Ajuda e Suporte'].includes(faq.category)).slice(0,6).map(faq => (
+                    <details key={faq.id} className="group p-4">
+                      <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-medium marker:hidden"><span>{faq.question}</span><span className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></summary>
+                      <div className="mt-3 whitespace-pre-wrap border-t border-border pt-3 text-sm leading-7 text-muted-foreground">{faq.answer}</div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="text-base font-semibold">Ajuda sobre as ferramentas do FKT</h3>
+                <p className="text-sm text-muted-foreground">Quando já souber o que pretende fazer, consulte as orientações da ferramenta correspondente.</p>
+                <div className="divide-y divide-border border-y border-border">
+                  {modules.filter(item => item.value !== 'core').map(item => (
+                    <button key={item.value} onClick={() => { setModuleFilter(item.value); setCategoryFilter('all'); }} className="flex w-full items-center justify-between gap-4 py-4 text-left hover:text-primary">
+                      <span><span className="block font-medium">{item.label}</span><span className="mt-1 block text-sm text-muted-foreground">{item.value === 'works' ? 'Acompanhamento de obras, diário, ocorrências e documentos.' : item.value === 'lex' ? 'Organização de processos, análise, fontes e prazos.' : item.value === 'vet' ? 'Fichas de animais, historial clínico e ninhadas.' : 'Projectos, issues e decisões de arquitectura.'}</span></span>
+                      <span className="shrink-0 text-muted-foreground" aria-hidden="true">→</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-base font-semibold">Não encontrou o que procurava?</h3>
+                <p className="text-sm text-muted-foreground">Pode pesquisar em toda a plataforma ou criar um pedido de suporte.</p>
+                {user ? <button className={secondaryButton} onClick={() => { setTab('tickets'); setNewTicketOpen(true); }}>Criar pedido de suporte</button> : <Link className={secondaryButton} to="/login">Entrar para pedir suporte</Link>}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  {moduleFilter !== 'all' && <button className={secondaryButton} onClick={() => { setModuleFilter('all'); setCategoryFilter('all'); setQuery(''); }}>← Todas as áreas</button>}
+                  {(moduleFilter !== 'all' || query.trim() !== '') && <button className={secondaryButton} onClick={() => { setModuleFilter('all'); setCategoryFilter('all'); setQuery(''); }}>← Ajuda geral</button>}
                   <h2 className="font-semibold">{moduleFilter === 'all' ? 'Resultados da pesquisa' : moduleName(moduleFilter)}</h2>
                 </div>
                 <span className="text-xs text-muted-foreground">{filteredFaqs.length} {filteredFaqs.length === 1 ? 'resposta' : 'respostas'}</span>
@@ -297,8 +323,8 @@ export default function AjudaSuporte() {
                   {categories.map(category => <button key={category} className={categoryFilter === category ? buttonClass : secondaryButton} onClick={() => setCategoryFilter(category)}>{category}</button>)}
                 </div>
               )}
-              <div className="divide-y divide-border rounded-xl border border-border bg-card">
-                {filteredFaqs.map(faq => (
+              <div className="divide-y divide-border rounded-lg border border-border bg-card">
+                {filteredFaqs.filter(faq => faq.is_published).map(faq => (
                   <details key={faq.id} className="group p-4 sm:p-5">
                     <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-medium marker:hidden">
                       <span>{faq.question}<span className="mt-1 block text-xs font-normal text-muted-foreground">{moduleName(faq.module)} · {faq.category}</span></span>
@@ -309,13 +335,9 @@ export default function AjudaSuporte() {
                   </details>
                 ))}
               </div>
-              {filteredFaqs.length === 0 && <div className="rounded-lg border border-dashed border-border p-10 text-center"><BookOpen className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">Não encontrámos resultados.</p><p className="mt-1 text-sm text-muted-foreground">Experimente outros termos ou altere os filtros.</p></div>}
+              {filteredFaqs.filter(faq => faq.is_published).length === 0 && <div className="rounded-lg border border-dashed border-border p-10 text-center"><BookOpen className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">Não encontrámos resultados.</p><p className="mt-1 text-sm text-muted-foreground">Experimente outros termos ou altere os filtros.</p></div>}
             </div>
           )}
-          <div className="rounded-xl border border-border bg-muted/30 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
-            <div><h3 className="font-medium">Não encontrou o que procurava?</h3><p className="mt-1 text-sm text-muted-foreground">Consulte os seus pedidos ou contacte o suporte da plataforma.</p></div>
-            {user ? <button className={secondaryButton + ' mt-3 sm:mt-0'} onClick={() => { setTab('tickets'); setNewTicketOpen(true); }}>Criar pedido de suporte</button> : <Link className={secondaryButton + ' mt-3 sm:mt-0'} to="/login">Entrar para pedir suporte</Link>}
-          </div>
         </section>
       )}
 
