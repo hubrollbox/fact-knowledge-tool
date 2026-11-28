@@ -40,19 +40,6 @@ export function OfflineSyncStatus() {
   }, []);
 
   const conflicts = useMemo(() => operations.filter((operation) => operation.conflictRemote), [operations]);
-  const statusLabel = !workspaceId
-    ? 'A verificar espaço de trabalho'
-    : !queueLoaded
-      ? 'A verificar sincronização'
-      : storageError
-        ? 'Armazenamento offline indisponível'
-        : syncing
-      ? 'A sincronizar alterações'
-      : !online
-        ? 'Sem ligação à Internet'
-        : pendingCount > 0
-          ? pendingLabel
-          : 'Tudo sincronizado';
   const failed = operations.find((operation) => operation.lastError);
   const pendingPhotos = operations.filter((operation) => operation.entity === 'foto').length;
   const pendingRecords = pendingCount - pendingPhotos;
@@ -60,6 +47,19 @@ export function OfflineSyncStatus() {
     pendingRecords ? pendingRecords + (pendingRecords === 1 ? ' registo' : ' registos') : '',
     pendingPhotos ? pendingPhotos + (pendingPhotos === 1 ? ' fotografia' : ' fotografias') : '',
   ].filter(Boolean).join(' e ') + ' pendentes de sincronização';
+  const statusLabel = !workspaceId
+    ? 'A verificar espaço de trabalho'
+    : !queueLoaded
+      ? 'A verificar sincronização'
+      : storageError
+        ? 'Armazenamento offline indisponível'
+        : syncing
+          ? 'A sincronizar alterações'
+          : !online
+            ? 'Sem ligação à Internet'
+            : pendingCount > 0
+              ? pendingLabel
+              : 'Tudo sincronizado';
 
   const resolve = async (choice: 'keep_local' | 'keep_remote') => {
     if (!selected) return;
