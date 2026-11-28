@@ -44,6 +44,15 @@ BEGIN
  IF NOT _caught THEN RAISE EXCEPTION 'Activity started before its predecessor was completed'; END IF;
  UPDATE public.obras_actividades SET estado='concluida',data_inicio_real=current_date,data_fim_real=current_date WHERE id='d4400000-0000-4000-8000-000000000001';
  UPDATE public.obras_actividades SET estado='em_curso',data_inicio_real=current_date WHERE id='d4400000-0000-4000-8000-000000000002';
+ INSERT INTO public.obras_actividades(id,workspace_id,obra_id,titulo,estado,created_by)
+ VALUES ('d4400000-0000-4000-8000-000000000003','b4400000-0000-4000-8000-000000000001','c4400000-0000-4000-8000-000000000001','Actividade já iniciada','em_curso',auth.uid());
+ _caught:=false;
+ BEGIN
+  PERFORM public.definir_dependencias_obras_actividade(
+   'd4400000-0000-4000-8000-000000000003',ARRAY['d4400000-0000-4000-8000-000000000002']::uuid[]);
+ EXCEPTION WHEN check_violation THEN _caught:=true;
+ END;
+ IF NOT _caught THEN RAISE EXCEPTION 'A pending dependency was added to an activity already in progress'; END IF;
  _caught:=false;
  BEGIN
   PERFORM public.definir_dependencias_obras_actividade(
@@ -58,7 +67,7 @@ BEGIN
  END;
  IF NOT _caught THEN RAISE EXCEPTION 'Predecessor was reopened while dependent activity was in progress'; END IF;
  SELECT count(*) INTO _count FROM public.obras_actividades WHERE obra_id='c4400000-0000-4000-8000-000000000001';
- IF _count<>2 THEN RAISE EXCEPTION 'Expected two activities'; END IF;
+ IF _count<>3 THEN RAISE EXCEPTION 'Expected three activities'; END IF;
 END;
 $$ $test$, 'editor can plan activities; dependency order, cycle and predecessor regression are enforced');
 RESET ROLE;
@@ -70,7 +79,7 @@ SELECT extensions.lives_ok($test$ DO $$
 DECLARE _caught boolean:=false; _count integer;
 BEGIN
  SELECT count(*) INTO _count FROM public.obras_actividades WHERE obra_id='c4400000-0000-4000-8000-000000000001';
- IF _count<>2 THEN RAISE EXCEPTION 'Viewer cannot read its workspace activities'; END IF;
+ IF _count<>3 THEN RAISE EXCEPTION 'Viewer cannot read its workspace activities'; END IF;
  BEGIN
   INSERT INTO public.obras_actividades(workspace_id,obra_id,titulo,created_by)
   VALUES('b4400000-0000-4000-8000-000000000001','c4400000-0000-4000-8000-000000000001','Viewer activity',auth.uid());
