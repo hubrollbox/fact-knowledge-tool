@@ -269,3 +269,23 @@ A fundação ainda não inclui o domínio HACCP operacional. As tabelas candidat
 
 ### Dependências de validação profissional
 Limites, frequências, perigos, prazos após abertura/preparação, critérios de aceitação e retenção aplicável são parametrizados por estabelecimento/versão e exigem validação competente. Não são defaults legais codificados.
+
+
+## 13. Decisões físicas adoptadas para o MVP HACCP — 28/11/2026
+
+O dicionário `fkt-inspect-physical-data-dictionary.md` passa a ser a referência detalhada para campos e constraints. Este contrato fica alinhado com as decisões seguintes:
+
+- parties scoped por organização Inspect, sem identidade global;
+- `operator_party_id` separado da relação comercial cliente-estabelecimento;
+- plano HACCP versionado e imutável após publicação; índice único parcial para versão publicada, sem ponteiro mutável no plano;
+- tarefas de monitorização/higienização persistidas, geradas on-demand por RPC idempotente, cursores específicos com FK real e lock transaccional;
+- tarefa e execução separadas; snapshot da versão/instrução apresentada preservado;
+- recepção com linhas e lotes separados; ligação linha-lote N:M; quantidades/unidades ambas preenchidas ou ambas nulas;
+- transformações com um lote de saída e múltiplos lotes de entrada;
+- NC central com várias origens tipadas por FKs reais;
+- registo manual básico de óleos no MVP;
+- registos retroactivos permitidos com motivo obrigatório e trilho de auditoria;
+- funções internas gerente, responsável HACCP e colaborador; consultor/auditor por grant explícito.
+
+### Pendências que não bloqueiam o modelo relacional
+A validação dos perigos, limites, frequências, métodos, prazos e campos de registo específicos de cada estabelecimento é profissional e operacional. O FKT não define defaults universais. A comparação final com o Core, DDL, RLS e pgTAP continua por executar antes de qualquer migração remota.
