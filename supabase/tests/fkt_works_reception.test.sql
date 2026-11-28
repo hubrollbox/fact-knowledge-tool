@@ -50,8 +50,7 @@ BEGIN
  END;
  IF NOT caught THEN RAISE EXCEPTION 'Reception with undecided item was confirmed'; END IF;
  UPDATE public.obras_recepcoes
- SET pendencias='[{"id":"ocorrencia:1","origem":"ocorrencia","origem_id":"00000000-0000-0000-0000-000000000001","titulo":"Pendência","decisao":"reserva_aceite","justificacao":""}]'::jsonb,
-     estado='recebida_com_reservas';
+ SET pendencias='[{"id":"ocorrencia:1","origem":"ocorrencia","origem_id":"00000000-0000-0000-0000-000000000001","titulo":"Pendência","decisao":"reserva_aceite","justificacao":""}]'::jsonb;
  caught:=false;
  BEGIN
   UPDATE public.obras_recepcoes SET estado='recebida_com_reservas' WHERE id='e4500000-0000-4000-8000-000000000001';
