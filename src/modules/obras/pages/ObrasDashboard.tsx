@@ -64,7 +64,7 @@ export function ObrasDashboard() {
         {!abertas?.length ? <p className="text-sm text-muted-foreground">Nenhuma ocorrência por resolver.</p> : (
           <div className="space-y-2">
             {abertas.map((oc) => (
-              <Link key={oc.id} to={`/obras/${oc.obra_id}`} className="flex items-center justify-between gap-2 border border-border rounded-md p-3 hover:bg-muted/50">
+              <Link key={oc.id} to={`/obras/${oc.obra_id}/ocorrencia/${oc.id}`} className="flex items-center justify-between gap-2 border border-border rounded-md p-3 hover:bg-muted/50">
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{oc.titulo}</div>
                   <div className="text-xs text-muted-foreground">{(oc.obras as { nome: string } | null)?.nome}</div>
