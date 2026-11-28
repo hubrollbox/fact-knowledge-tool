@@ -33,9 +33,12 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
       (responsavel === 'todos' || a.responsavel === responsavel);
   }), [acoes, desde, ate, estadoAcao, responsavel]);
 
-  const abertas = ocorrenciasFiltradas.filter((o) => o.estado !== 'resolvida').length;
+  const abertas = ocorrenciasFiltradas.filter((o) => o.estado === 'aberta').length;
+  const emResolucao = ocorrenciasFiltradas.filter((o) => o.estado === 'em_resolucao').length;
+  const resolvidas = ocorrenciasFiltradas.filter((o) => o.estado === 'resolvida').length;
   const criticas = ocorrenciasFiltradas.filter((o) => ['alta', 'critica'].includes(o.gravidade)).length;
   const pendentes = acoesFiltradas.filter((a) => !['concluida', 'cancelada'].includes(a.estado)).length;
+  const concluidas = acoesFiltradas.filter((a) => a.estado === 'concluida').length;
   const atrasadas = acoesFiltradas.filter((a) => a.prazo && !['concluida', 'cancelada'].includes(a.estado) && new Date(a.prazo).getTime() < new Date(new Date().toDateString()).getTime()).length;
   const evolucao = useMemo(() => {
     const now = new Date();
@@ -66,9 +69,12 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
         <div><label className="text-xs text-muted-foreground">Categoria (ocorrências)</label><Select value={categoria} onValueChange={setCategoria}><SelectTrigger><SelectValue placeholder="Todas" /></SelectTrigger><SelectContent><SelectItem value="todos">Todas</SelectItem>{categorias.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select></div>
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4" />Ocorrências por resolver</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{abertas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('ocorrencias')}>Ver ocorrências</Button></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4" />Ocorrências abertas</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{abertas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('ocorrencias')}>Ver ocorrências</Button></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Clock3 className="h-4 w-4" />Em resolução</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{emResolucao}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('ocorrencias')}>Ver ocorrências</Button></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4" />Ocorrências resolvidas</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{resolvidas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('ocorrencias')}>Ver ocorrências</Button></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><AlertTriangle className="h-4 w-4" />Alta/crítica</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{criticas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('ocorrencias')}>Ver ocorrências</Button></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><ListTodo className="h-4 w-4" />Acções pendentes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{pendentes}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('acoes')}>Ver acções</Button></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4" />Acções concluídas</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{concluidas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('acoes')}>Ver acções</Button></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Clock3 className="h-4 w-4" />Acções em atraso</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{atrasadas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('acoes')}>Ver acções</Button></CardContent></Card>
       </div>
       <Card>
