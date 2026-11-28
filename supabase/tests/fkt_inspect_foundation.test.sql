@@ -81,7 +81,9 @@ SELECT ok(
 
 -- Behavioural checks using a local fixture. No remote project is linked.
 INSERT INTO auth.users (id,aud,role,email,raw_user_meta_data,created_at,updated_at)
-VALUES ('a6100000-0000-4000-8000-000000000001','authenticated','authenticated','inspect-phase1-actor@example.test','{}'::jsonb,now(),now());
+VALUES
+  ('a6100000-0000-4000-8000-000000000001','authenticated','authenticated','inspect-phase1-actor@example.test','{}'::jsonb,now(),now()),
+  ('a6100000-0000-4000-8000-000000000099','authenticated','authenticated','inspect-phase1-forged@example.test','{}'::jsonb,now(),now());
 
 SELECT set_config('request.jwt.claim.sub','a6100000-0000-4000-8000-000000000001',true);
 
