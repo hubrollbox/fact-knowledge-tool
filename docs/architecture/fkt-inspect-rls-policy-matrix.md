@@ -269,3 +269,41 @@ Esta matriz acrescenta o domínio operacional. É uma proposta de autorização 
 - O gerente não pode transformar um parâmetro interno em obrigação legal nem dispensar validação profissional quando esta for necessária.
 - O acesso externo é revogável e verificado no servidor em cada operação.
 - A matriz final deve ser convertida em policies por tabela/operação e testes pgTAP negativos antes de DDL operacional.
+
+
+## 15. Decisões de autorização fechadas para o MVP
+
+### 15.1 Papéis e âmbito
+
+- **Gerente:** administra utilizadores, áreas, equipamentos e configuração operacional do estabelecimento; consulta registos e acompanha NC.
+- **Responsável HACCP:** prepara/revê plano e procedimentos, configura controlos, valida registos, gere NC e verifica acções correctivas.
+- **Colaborador:** consulta instruções necessárias, executa tarefas atribuídas, regista medições/higienização/recepção/óleos e reporta desvios.
+- **Consultor:** não é papel geral do restaurante; recebe concessão explícita por estabelecimento/domínio/operação/período.
+- **Auditor:** acede apenas ao âmbito e às amostras da auditoria atribuída, sem leitura geral do histórico operacional.
+
+### 15.2 Matriz CRUD mínima
+
+| Tipo de dado | Gerente | Responsável HACCP | Colaborador | Consultor com grant | Auditor atribuído |
+|---|---|---|---|---|---|
+| Configuração do estabelecimento, áreas e equipamentos | CRUD | R limitado; U apenas se delegado | R mínimo | Operações explicitadas no grant | R apenas amostra |
+| Plano e versões em rascunho | R/U; publicação sujeita a aprovação definida | CRUD; submete para aprovação | R | R/propor alterações se grant | R versão ligada à auditoria |
+| Versão publicada | R; não altera conteúdo | R; não altera conteúdo | R instruções | R se grant | R se auditoria |
+| Controlos e parâmetros | CRUD operacional, sem alterar versão publicada | CRUD em nova versão | R | R/U só se grant expresso | R |
+| Tarefas atribuídas | R e reatribuição | R e gestão | R; executar | R se grant | R amostral |
+| Registos submetidos | R; sem reescrita | R/rever; correcção por evento | Criar; sem UPDATE/DELETE | R se grant; sem reescrita | R amostral |
+| Recepção/lotes/validades/óleos | CRUD de configuração e R | R/rever; configuração aplicável | Criar eventos atribuídos; sem apagar histórico | R ou operação explicitada | R amostral |
+| NC/acções correctivas | Gerir/atribuir/acompanhar | Gerir/verificar | Reportar e executar atribuídas | Acompanhar se grant explícito | Criar finding, sem editar registos de origem |
+| Utilizadores/memberships | Gerir | Sem gestão geral | Sem gestão | Sem gestão | Sem gestão |
+
+R = leitura; C = criação; U = actualização; D = eliminação. D não é permitido para registos históricos, tarefas executadas, versões publicadas, medições submetidas, eventos, lotes com movimentos ou evidências referenciadas.
+
+### 15.3 Regras de enforcement
+
+1. Toda a policy valida `auth.uid()`, organização e estabelecimento através de relações de servidor; nunca confiar em `user_id`, `role` ou tenant enviados no payload.
+2. Gerente/responsável/colaborador só têm acesso enquanto membership activa e dentro da vigência.
+3. Consultor/auditor só têm acesso com grant activo, scope de estabelecimento, domínio, operação e intervalo temporal. Revogação produz efeito na próxima query/RPC.
+4. Owner/admin do workspace Core não recebe acesso automático aos dados operacionais.
+5. Escrita de registos submetidos, publicação de versão, geração de tarefas e transições NC/acções ocorre por RPC transaccional com validação de estado, actor e motivo.
+6. Storage é privado; autorização de download consulta a autorização do registo pai. Não basta conhecer o caminho do objecto.
+7. Testes pgTAP obrigatórios: utilizador sem membership; membership expirada/revogada; utilizador de outro estabelecimento; consultor sem grant; grant fora do período; auditor de outra auditoria; owner Core sem função Inspect; colaborador a tentar editar parâmetro ou registo submetido.
+8. O desenho desta matriz ainda exige revisão de compatibilidade com as funções Core existentes antes de escrever policies SQL.
