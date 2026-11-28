@@ -60,9 +60,15 @@ Representa o local físico:
 - nome, morada, actividade e estado;
 - timestamps.
 
-Para uma consultora, o estabelecimento pertence à sua carteira e identifica o operador. Para uma empresa que audita internamente, a party operadora pertence à própria organização Inspect e não é necessário inventar um cliente contratual. A relação cliente contratual ↔ estabelecimento é registada na auditoria, permitindo que cliente e operador coincidam ou sejam diferentes.
+Para uma consultora, o estabelecimento pertence à sua carteira e identifica o operador. Para uma empresa que audita internamente, a party operadora pertence à própria organização Inspect e não é necessário inventar um cliente contratual.
 
-Se houver necessidade de gerir contratos que abrangem estabelecimentos sem auditoria ainda criada, pode acrescentar-se uma relação explícita `inspect_client_establishments`; não a introduzir sem caso funcional validado.
+A carteira de cada cliente exige a relação `inspect_client_establishments`:
+- `id`, `inspect_organisation_id`, `client_id`, `establishment_id`;
+- estado e datas de vigência da relação;
+- referência contratual opcional e timestamps;
+- unicidade por cliente/estabelecimento/organização e FKs compostas.
+
+A relação é N:M: um cliente pode abranger vários estabelecimentos e um estabelecimento pode estar associado a mais do que um cliente contratual ao longo da carteira. A auditoria continua a identificar o cliente contratual concreto.
 
 ### 2.5. `inspect_audit_templates`, `inspect_audit_template_versions`, `inspect_audit_sections`, `inspect_audit_criteria`
 
@@ -83,12 +89,14 @@ Unidade de auditoria:
 - `inspect_organisation_id`
 - `establishment_id`
 - `contract_client_id nullable`
+- `operator_party_id nullable` (snapshot da entidade operadora à data da auditoria)
+- `operator_identity_pending_reason nullable` (obrigatório quando o operador não está identificado)
 - `template_version_id`
 - âmbito, datas, estado, auditor responsável;
 - `submitted_at`, `closed_at`, versão/submissão;
 - timestamps.
 
-Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. A FK da versão deve usar `(template_version_id, inspect_organisation_id)`. `contract_client_id` pode ser nulo em auditorias internas do operador.
+Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. Quando `contract_client_id` não é nulo, a combinação cliente/estabelecimento tem de existir em `inspect_client_establishments`. A FK da versão usa `(template_version_id, inspect_organisation_id)`. O operador é copiado para a auditoria como snapshot histórico, para que alterações posteriores no estabelecimento não reescrevam quem foi identificado como operador na data auditada. `contract_client_id` pode ser nulo em auditorias internas do operador.
 
 ### 2.7. Resultados e medições
 
@@ -147,6 +155,8 @@ erDiagram
   INSPECT_PARTIES ||--o{ INSPECT_CLIENTS : contracts
   INSPECT_ORGANISATIONS ||--o{ INSPECT_ESTABLISHMENTS : manages
   INSPECT_PARTIES ||--o{ INSPECT_ESTABLISHMENTS : operates
+  INSPECT_CLIENTS ||--o{ INSPECT_CLIENT_ESTABLISHMENTS : contracts
+  INSPECT_ESTABLISHMENTS ||--o{ INSPECT_CLIENT_ESTABLISHMENTS : included_in_client
   INSPECT_ORGANISATIONS ||--o{ INSPECT_AUDIT_TEMPLATES : owns
   INSPECT_AUDIT_TEMPLATES ||--o{ INSPECT_AUDIT_TEMPLATE_VERSIONS : versions
   INSPECT_AUDIT_TEMPLATE_VERSIONS ||--o{ INSPECT_AUDIT_CRITERIA : defines
@@ -175,9 +185,11 @@ O diagrama é conceptual. As cardinalidades opcionais e constraints finais devem
 Usar unique constraints e foreign keys compostas, por exemplo:
 - `inspect_clients (id, inspect_organisation_id)`;
 - `inspect_establishments (id, inspect_organisation_id)`;
+- `inspect_client_establishments (client_id, establishment_id, inspect_organisation_id)` e chave única equivalente;
 - `inspect_audits (id, inspect_organisation_id)`;
 - `inspect_audits (establishment_id, inspect_organisation_id)` referencia estabelecimento no mesmo âmbito;
-- `inspect_audits (contract_client_id, inspect_organisation_id)` referencia cliente no mesmo âmbito;
+- `inspect_audits (contract_client_id, establishment_id, inspect_organisation_id)` referencia a relação cliente/estabelecimento no mesmo âmbito quando o cliente contratual não é nulo;
+- `inspect_audits (operator_party_id, inspect_organisation_id)` referencia a party operadora snapshot no mesmo âmbito;
 - resultados, evidências, findings, acções, relatórios, grants e publicações carregam `inspect_organisation_id` e referenciam a auditoria no mesmo âmbito.
 
 Usar `ON DELETE RESTRICT` para dados históricos e relações referenciadas; evitar cascatas destrutivas sobre auditorias submetidas, relatórios, evidências e eventos.
@@ -348,3 +360,14 @@ Para evitar duas fontes de verdade e impedir que uma alteração posterior no ra
 A tabela `inspect_publications` não deve conter um par polimórfico `resource_type/resource_id`. O modelo físico deve usar FKs reais para `inspect_audits` e `inspect_audit_submissions`; a associação de ficheiros usa a tabela tipada `inspect_publication_evidence`.
 
 Esta decisão substitui qualquer interpretação anterior de publicação genérica por recurso. Não criar simultaneamente `inspect_evidence_publications` e `inspect_publication_evidence`.
+
+
+## 16. Relação cliente–estabelecimento e snapshot do operador
+
+A gestão de carteira exige uma associação explícita entre clientes e estabelecimentos, mesmo antes de existir uma auditoria. Por isso, `inspect_client_establishments` faz parte do modelo MVP e não é uma extensão futura.
+
+A associação é N:M e tem vigência/estado. A auditoria referencia a combinação cliente contratual + estabelecimento através de FK composta; não basta validar cada ID isoladamente.
+
+O operador alimentar é uma entidade distinta do cliente contratual. O estabelecimento guarda o operador actualmente identificado, mas cada auditoria conserva um snapshot de `operator_party_id` (ou uma pendência justificada) no momento da sua criação/submissão. Uma alteração posterior do operador não modifica auditorias históricas.
+
+Não inferir o operador a partir do cliente contratual. Se for desconhecido, guardar a pendência e tornar explícita essa limitação no relatório.
