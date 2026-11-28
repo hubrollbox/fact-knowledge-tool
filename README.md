@@ -124,6 +124,7 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 ## Estrutura de documentação
 
 - [Visão do produto](docs/Visao.md) — propósito, arquitetura funcional, módulos e princípios.
+- [FKT Works — Orçamentação e controlo financeiro](docs/architecture/fkt-works-budgeting.md) — âmbito aprovado e sequência planeada para orçamentos, importação, aprovação, medições e desvios.
 - [Modelo funcional e de dados do FKT Lex](docs/architecture/fkt-lex-data-model.md) — proposta e auditoria do domínio jurídico.
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
 - [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.\n- [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
