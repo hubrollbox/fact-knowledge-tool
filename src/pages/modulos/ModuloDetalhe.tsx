@@ -52,6 +52,7 @@ export default function ModuloDetalhe() {
             <ModuloIcon name={modulo.icone} className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{modulo.nome}</h1>
+          {modulo.destaque && <span className="inline-block rounded-full border border-border px-3 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">{modulo.destaque}</span>}
           {modulo.tagline && (
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{modulo.tagline}</p>
           )}
@@ -142,11 +143,10 @@ export default function ModuloDetalhe() {
 
         {/* CTA FINAL */}
         <section className="max-w-3xl mx-auto px-6 py-20 text-center space-y-6 border-t border-border">
-          {modulo.slug === 'inspect' ? (
+          {modulo.emPreparacao || modulo.slug === 'inspect' ? (
             <>
-              <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">Planeamento e revisão técnica</span>
-              <h2 className="text-3xl font-bold tracking-tight">Ainda não disponível</h2>
-              <p className="text-muted-foreground">O FKT Inspect está em definição. Não é possível activar ou utilizar o módulo nesta fase.</p>
+              <h2 className="text-3xl font-bold tracking-tight">{modulo.slug === 'inspect' ? 'Planeado — ainda não disponível' : 'Em preparação'}</h2>
+              <p className="text-muted-foreground">{modulo.slug === 'inspect' ? 'O FKT Inspect está em definição e revisão técnica. Não é possível activar ou utilizar o módulo nesta fase.' : 'Este módulo ainda não está disponível para novas activações. Se já o tem activo, pode continuar a aceder à sua área de trabalho.'}</p>
               <div className="flex justify-center"><ModuloCTA modulo={modulo} /></div>
             </>
           ) : (
