@@ -1,0 +1,264 @@
+# FKT Inspect — decisão de arquitectura multi-cliente e acesso externo
+
+## Estado da decisão
+
+**Proposta técnica para revisão.** Esta decisão concretiza o desenho funcional e de segurança do Inspect, mas ainda não autoriza migrações, alterações ao Core ou implementação de interface. Deve ser revista antes de se iniciar a issue de modelo físico/RLS.
+
+## 1. Problema a resolver
+
+O FKT Core tem um workspace principal por utilizador proprietário, reforçado pelo índice único `workspaces_user_id_unique`. Os membros actuais pertencem a um workspace e recebem permissões gerais nesse espaço (`owner`, `admin`, `editor`, `viewer`).
+
+Este mecanismo é adequado à colaboração interna de uma organização. Não é adequado para representar clientes de uma consultora: adicionar o restaurante a `workspace_members` permitiria, em princípio, consultar dados do workspace que não pertencem àquele cliente. Também não se deve criar um workspace por restaurante, porque isso contraria a regra actual de um workspace proprietário por utilizador e multiplica a administração.
+
+## 2. Decisão proposta
+
+Separar dois conceitos que não devem ser confundidos:
+
+1. **Organização proprietária do Inspect:** organização que possui os modelos, clientes, auditorias e dados de trabalho. É ancorada a um workspace FKT.
+2. **Acesso externo do cliente:** concessão independente, limitada a recursos Inspect concretos. Não transforma o utilizador externo em membro do workspace da consultora.
+
+O workspace continua a ser a fronteira de propriedade e administração interna. O acesso externo é uma autorização adicional, específica do módulo Inspect, verificada no servidor/base de dados.
+
+### Regra fundamental
+
+**Um utilizador externo não recebe acesso ao workspace da consultora. Recebe acesso apenas às auditorias e às acções que lhe forem explicitamente partilhadas.**
+
+O acesso não deve herdar automaticamente dados de Works, Lex, Vet, Dev ou outros clientes da consultora.
+
+## 3. Modelo de utilização
+
+### 3.1. Consultora / auditor independente
+
+- Tem o seu workspace FKT e uma Organização Inspect associada.
+- Regista vários clientes e vários estabelecimentos por cliente.
+- Cria e executa auditorias para esses estabelecimentos.
+- Mantém notas internas, planeamento e documentação de trabalho sob controlo da sua organização.
+- Partilha uma auditoria específica com um ou mais utilizadores do cliente.
+- Pode conceder a um cliente acesso a uma acção concreta para responder/submeter evidência, sem expor o resto da carteira.
+
+Um consultor independente é uma organização Inspect com um utilizador proprietário; não precisa de um modelo especial de workspace.
+
+### 3.2. Empresa / operador alimentar
+
+- Tem a sua própria Organização Inspect ancorada ao seu workspace.
+- Gere os seus estabelecimentos próprios.
+- Executa auditorias internas no mesmo motor de auditorias.
+- Pode convidar membros internos usando o modelo actual de workspace.
+- Pode, em fase posterior, conceder a uma consultora externa acesso a auditorias/estabelecimentos seleccionados, sempre através de concessão Inspect explícita.
+
+A empresa não deve ser obrigada a criar um registo de «cliente» para si própria quando é simultaneamente proprietária da organização Inspect e operadora auditada.
+
+### 3.3. Utilizador do cliente externo
+
+- Autentica-se com a sua própria conta FKT.
+- Não é adicionado a `workspace_members` da consultora.
+- Acede a uma área Inspect partilhada, separada do espaço interno da consultora.
+- Só vê auditorias, relatórios, não conformidades e acções explicitamente partilhadas e dentro das permissões concedidas.
+- Não vê notas internas, modelos privados, outros clientes, dados administrativos internos nem módulos alheios ao Inspect.
+
+A conta externa pode também ter um workspace próprio. A existência desse workspace não aumenta nem reduz as concessões externas.
+
+## 4. Entidades lógicas propostas
+
+Os nomes são conceptuais, não nomes SQL finais.
+
+### 4.1. Organização Inspect
+
+- `id`
+- `workspace_id` — único e obrigatório
+- `tipo` — consultoria ou operador
+- `nome`, estado e timestamps
+
+Relação proposta: uma Organização Inspect por workspace. Não se propõe alterar a regra Core de um workspace principal por utilizador.
+
+### 4.2. Cliente
+
+- `id`
+- `inspect_organisation_id`
+- designação, contactos mínimos, estado e timestamps
+
+Representa a entidade contratante/auditada gerida por uma consultora. Não é um utilizador nem um workspace.
+
+### 4.3. Estabelecimento
+
+- `id`
+- `client_id`
+- designação, morada, actividade e estado
+
+Cada estabelecimento pertence a exactamente um cliente da mesma Organização Inspect. Para o operador que usa o módulo internamente, os estabelecimentos pertencem à organização proprietária por uma relação própria ou por um cliente interno explicitamente tipificado; a escolha física deve evitar duplicação e manter constraints claras.
+
+### 4.4. Auditoria
+
+A auditoria pertence a uma Organização Inspect, a um estabelecimento e, quando aplicável, ao cliente externo. Deve ter chaves compostas/constraints que garantam que organização, cliente e estabelecimento são compatíveis.
+
+A auditoria contém o âmbito, modelo/versão, auditores, estado, resultados e histórico.
+
+### 4.5. Concessão de acesso externo
+
+Entidade conceptual `inspect_access_grants`:
+- utilizador autenticado destinatário (`user_id`);
+- organização Inspect que concede;
+- auditoria específica;
+- permissões explícitas;
+- estado (pendente, activa, revogada, expirada);
+- autor da concessão, datas de criação, aceitação e revogação;
+- validade opcional;
+- motivo/nota administrativa.
+
+A concessão inicial deve ser **ao nível da auditoria**, não ao nível de toda a carteira do cliente. Evita que auditorias futuras ou informação nova sejam partilhadas automaticamente sem decisão explícita.
+
+A tabela de convites pode ser separada da concessão activa. Convites por email não são autorização: só depois de o destinatário autenticar e aceitar, com identidade verificada, é associada a concessão ao `auth.users.id`. Não guardar tokens em claro; usar hash, validade, uso único e limitação de tentativas.
+
+### 4.6. Permissões por recurso
+
+Conjunto inicial proposto:
+- `view_summary`: ver identificação, âmbito e resumo da auditoria;
+- `view_results`: ver resultados por critério;
+- `view_report`: consultar relatório emitido;
+- `view_evidence`: consultar evidências autorizadas;
+- `view_findings`: consultar não conformidades partilhadas;
+- `respond_actions`: responder a acções que lhe foram atribuídas;
+- `submit_action_evidence`: submeter evidência de execução;
+- `comment_shared`: adicionar comentário visível ao cliente.
+
+Não conceder por defeito:
+- leitura de notas internas do auditor;
+- edição de resultados de auditoria;
+- alteração de critérios/modelos;
+- encerramento ou verificação de eficácia;
+- gestão de outros utilizadores;
+- acesso a outros clientes ou auditorias.
+
+A matriz exacta deve ser aplicada por operação, não apenas por um campo genérico «role». A concessão deve poder ser de leitura sem escrita.
+
+## 5. Contexto de navegação na aplicação
+
+O contexto de workspace interno e o contexto de auditoria partilhada são distintos.
+
+A interface Inspect deverá separar claramente:
+- **Área da organização:** clientes, estabelecimentos, modelos, auditorias próprias, notas internas e gestão de equipa;
+- **Partilhado comigo:** auditorias e acções que outras organizações partilharam com o utilizador.
+
+Não alterar o workspace activo global do Core quando o utilizador abre uma auditoria partilhada. Não usar a selecção de workspace para simular o acesso externo.
+
+O Core actual procura primeiro workspace próprio e, na ausência deste, um workspace de membro. A futura entrada Inspect tem de suportar também concessões externas sem inserir o utilizador como membro do workspace da consultora. Esta evolução deve ser desenhada como contexto específico do Inspect, sem alterar silenciosamente o comportamento de Works, Lex, Vet ou Dev.
+
+Se a conta não tiver workspace próprio, a aplicação deverá ainda conseguir apresentar o contexto Inspect partilhado após autenticação. O fluxo de activação de um módulo próprio não pode ser pré-requisito para consultar uma auditoria partilhada. Este ponto exige revisão do routing/guards do Core antes da implementação.
+
+## 6. Regras de autorização e RLS
+
+### 6.1. Organização e equipa interna
+
+A organização Inspect é acessível aos proprietários e membros internos autorizados do workspace associado, através dos helpers/políticas de workspace já existentes e de permissões Inspect adicionais quando necessário.
+
+### 6.2. Acesso externo
+
+Uma política de acesso externo deve verificar cumulativamente:
+1. `auth.uid()` corresponde ao destinatário da concessão;
+2. concessão está activa, aceite e não expirada/revogada;
+3. a auditoria pedida corresponde à auditoria da concessão;
+4. a operação está incluída nas permissões concedidas;
+5. o recurso filho pertence à mesma auditoria/organização;
+6. o estado da auditoria permite a operação solicitada.
+
+Não aceitar um `workspace_id`, `client_id` ou `audit_id` enviado pelo cliente como prova de autorização.
+
+### 6.3. Isolamento e negação por defeito
+
+- O utilizador externo não consulta `workspaces` nem `workspace_members` da consultora.
+- O utilizador externo não enumera clientes nem auditorias não partilhadas.
+- O utilizador de outra consultora não vê quaisquer dados.
+- IDs conhecidos, URLs antigas ou caminhos Storage não contornam RLS.
+- As políticas de Storage aplicam a mesma autorização por auditoria/evidência.
+- Operações privilegiadas são implementadas apenas através de RPC controlada, com actor derivado de `auth.uid()`, `search_path` fixo e privilégios mínimos.
+- Não usar a chave `service_role` no cliente.
+
+### 6.4. Integridade relacional
+
+Seguir o padrão já usado no FKT Vet e em Works: chaves candidatas e foreign keys compostas para impedir relações entre workspaces/organizações/clientes/auditorias incompatíveis.
+
+Exemplo conceptual:
+- auditoria tem `(id, inspect_organisation_id, client_id, establishment_id)`;
+- resultado referencia `(audit_id, inspect_organisation_id)`;
+- evidência referencia a auditoria e o mesmo âmbito;
+- acção referencia a não conformidade e a mesma auditoria.
+
+Os nomes e colunas finais dependem do esquema físico aprovado. RLS não substitui constraints e constraints não substituem RLS.
+
+## 7. Ciclo de vida de acesso
+
+1. Auditor/administrador escolhe uma auditoria concreta e as permissões a conceder.
+2. Sistema cria convite pendente para endereço de email.
+3. Destinatário autentica-se e confirma controlo desse endereço.
+4. Aceitação associa o convite à conta autenticada e cria/activa concessão.
+5. Cada pedido valida a concessão actual, sem confiar em permissões guardadas no frontend.
+6. Auditor/administrador pode revogar ou deixar expirar a concessão.
+7. Revogação bloqueia imediatamente novas consultas e uploads; URLs assinados emitidos anteriormente devem ter validade curta.
+8. Histórico de concessão, aceitação e revogação é preservado.
+
+A cessação da relação comercial não apaga auditorias ou evidências que a organização tenha obrigação legítima de conservar. Revoga o acesso externo e segue a política de retenção aplicável.
+
+## 8. Notas internas e informação partilhada
+
+A auditoria deve distinguir conteúdo interno da consultora e conteúdo partilhável com o cliente. Não basta esconder campos na interface: as políticas devem impedir a leitura externa das tabelas/colunas internas ou expor vistas/RPCs com projecção explícita.
+
+Comentários, observações e evidências devem ter classificação de visibilidade explícita. O valor por defeito é interno até ser partilhado pelo auditor.
+
+## 9. Alternativas rejeitadas
+
+### Adicionar o cliente a `workspace_members`
+Rejeitada. A membership actual dá acesso ao workspace e não representa o isolamento por cliente.
+
+### Criar um workspace por restaurante
+Rejeitada. Contraria o modelo actual de workspace principal por utilizador, fragmenta a gestão e complica a relação entre auditor e carteira de clientes.
+
+### Dar ao cliente acesso ao workspace e esconder dados na UI
+Rejeitada. A UI não é fronteira de segurança; acesso deve ser limitado na base de dados e Storage.
+
+### Partilhar toda a carteira do cliente por defeito
+Rejeitada para a primeira versão. A concessão por auditoria é mais restritiva e evita exposição automática de auditorias futuras.
+
+### Criar uma segunda base de dados ou aplicação
+Rejeitada. O Inspect reutiliza a plataforma e a única instância Supabase FKT.
+
+## 10. Plano de implementação após aprovação
+
+1. Rever routing e guards do Core para suportar contexto Inspect partilhado sem workspace da consultora.
+2. Fechar modelo físico e cardinalidades, incluindo estabelecimento interno do operador.
+3. Criar tabelas, constraints e funções de autorização numa migração própria.
+4. Implementar RLS e políticas Storage com negação por defeito.
+5. Criar testes pgTAP com, pelo menos, duas consultoras, dois clientes na mesma consultora, dois utilizadores externos, uma conta sem workspace próprio e uma conta com workspace próprio.
+6. Implementar convites e aceitação com identidade autenticada.
+7. Implementar a área «Partilhado comigo» e permissões de leitura/resposta.
+8. Testar revogação, URLs assinados, enumeração, acesso por ID e tentativas de associação cruzada.
+9. Só depois considerar qualquer migração na única base Supabase existente.
+
+## 11. Testes de segurança mínimos
+
+- Cliente A não lê cliente B da mesma consultora.
+- Utilizador externo não lê qualquer tabela geral do workspace da consultora.
+- Utilizador externo só lê a auditoria concedida.
+- Permissão `view_report` não permite ler anexos/evidências originais.
+- Permissão `respond_actions` não permite editar resultados ou encerrar auditoria.
+- Revogação bloqueia consultas e uploads subsequentes.
+- Convite pendente, expirado, usado ou enviado para outro utilizador não concede acesso.
+- Utilizador sem workspace próprio consegue consultar apenas o Inspect partilhado.
+- Utilizador com workspace próprio mantém acesso ao seu contexto e às auditorias partilhadas, sem mistura de dados.
+- Manipulação de IDs, filtros, RPC e caminhos Storage não permite acesso transversal.
+- Constraints rejeitam referências cruzadas mesmo quando o cliente tenta inserir IDs válidos de outra organização.
+
+## 12. Questões ainda por fechar
+
+1. O acesso externo será apenas por convite individual no MVP ou será necessário convidar grupos de utilizadores por cliente?
+2. A partilha de auditoria inclui sempre o relatório final ou o auditor escolhe separadamente cada permissão?
+3. O cliente poderá responder a uma acção antes de a auditoria ser formalmente submetida?
+4. Qual o prazo de validade por defeito de um convite e de uma concessão?
+5. Que dados pessoais de contacto do cliente são estritamente necessários e qual a política de retenção?
+
+Estas questões não impedem a decisão arquitectural principal, mas têm de ser fechadas antes do modelo físico e da implementação do fluxo de convites.
+
+## 13. Limites desta análise
+
+A proposta resulta de análise estática do repositório e das migrações versionadas. Não houve consulta à base de dados remota, execução de SQL, testes de RLS do Inspect ou validação de routing em execução. Não afirmar que a arquitectura está implementada ou que o isolamento foi comprovado em runtime.
+
+A prioridade do FKT Works mantém-se. Não criar projectos Supabase, branches de BD ou alterações remotas para esta fase.
