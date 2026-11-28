@@ -262,3 +262,69 @@ Estas questões não impedem a decisão arquitectural principal, mas têm de ser
 A proposta resulta de análise estática do repositório e das migrações versionadas. Não houve consulta à base de dados remota, execução de SQL, testes de RLS do Inspect ou validação de routing em execução. Não afirmar que a arquitectura está implementada ou que o isolamento foi comprovado em runtime.
 
 A prioridade do FKT Works mantém-se. Não criar projectos Supabase, branches de BD ou alterações remotas para esta fase.
+
+
+## 14. Revisão crítica da proposta — correcções obrigatórias antes do modelo físico
+
+A revisão confirmou a separação entre workspace e acesso externo, mas identificou decisões que têm de ficar explícitas. Esta secção prevalece sobre formulações anteriores mais genéricas deste documento.
+
+### 14.1. Distinguir cliente contratual de operador alimentar
+
+«Cliente» não deve ser automaticamente tratado como sinónimo de operador responsável pelo estabelecimento. Uma consultora pode ser contratada por uma entidade gestora, enquanto a responsabilidade pela exploração alimentar pertence a outra entidade; também pode haver vários estabelecimentos e operadores diferentes.
+
+O modelo físico deve distinguir:
+- a relação comercial/cliente da organização Inspect;
+- a entidade operadora do estabelecimento, quando identificável;
+- o estabelecimento físico.
+
+No cenário de utilização interna por uma empresa, não se deve exigir uma relação comercial fictícia consigo própria. A organização Inspect pode ter uma entidade operadora própria associada aos seus estabelecimentos. A forma física final (entidade comum com papéis ou entidades separadas) deve preservar esta distinção e permitir que cliente contratual e operador sejam a mesma entidade quando efectivamente o são.
+
+### 14.2. A concessão externa é por auditoria, não por cliente
+
+A regra do MVP é uma concessão explícita por auditoria. Não existe associação de utilizador externo ao cliente que, por si só, dê acesso a todas as auditorias desse cliente.
+
+Se futuramente for necessário um acesso permanente à carteira de um cliente, isso será uma capacidade distinta, com âmbito e consentimento próprios, fora do MVP.
+
+A referência a «cliente N:M utilizadores externos» noutros documentos deve ser entendida apenas como relação de contactos/convidados, nunca como autorização. A autorização efectiva resulta exclusivamente das concessões activas por auditoria.
+
+### 14.3. Separar dados internos de dados partilháveis ao nível da base de dados
+
+RLS em PostgreSQL/Supabase é essencialmente aplicada por linha; não se deve assumir que uma política de linha consegue esconder selectivamente colunas sensíveis de uma linha que o utilizador pode ler.
+
+Assim, notas internas, avaliações reservadas ao auditor, comunicações internas e campos de trabalho não podem residir na mesma linha/tabela exposta ao cliente externo se tiverem de permanecer confidenciais. Devem ficar em tabelas separadas, ou ser expostos através de vistas/RPC com projecção explícita e privilégios cuidadosamente definidos. A UI não é mecanismo de confidencialidade.
+
+### 14.4. Convites e identidade
+
+O convite deve ficar associado a um endereço de email normalizado e verificado. Na aceitação, o servidor confirma que o endereço verificado da sessão corresponde ao destinatário do convite. O cliente não pode escolher livremente o `user_id` a associar.
+
+O token deve ser aleatório, de uso único, armazenado apenas sob forma não reversível (hash), com validade, limitação de tentativas e consumo atómico. Convite pendente nunca equivale a concessão activa.
+
+### 14.5. Revogação e Storage
+
+Uma URL assinada já emitida pode continuar utilizável até expirar; revogar a concessão não garante a invalidação instantânea de URLs assinados previamente emitidos.
+
+Consequentemente:
+- URLs assinados de duração muito curta;
+- não guardar URLs assinados nas tabelas;
+- verificar autorização em cada novo pedido de emissão;
+- para requisitos de revogação imediata, usar um endpoint/proxy autenticado que volte a validar a concessão em cada download, em vez de depender exclusivamente de URLs assinados directos.
+
+A decisão entre URL curta e proxy deve ser tomada em função do risco e da experiência móvel, antes da implementação.
+
+### 14.6. Permissões externas mínimas do MVP
+
+Começar com o menor conjunto:
+- consultar resumo e estado da auditoria partilhada;
+- consultar resultados e relatório explicitamente partilhados;
+- consultar evidências explicitamente partilhadas;
+- responder a acções atribuídas e submeter evidência para essas acções, se essa funcionalidade for incluída no primeiro piloto.
+
+Não permitir ao cliente externo editar resultados, critérios, medições originais, classificação de não conformidade, verificação de eficácia ou fechar a auditoria.
+
+### 14.7. Separar estado da auditoria de estado da partilha
+
+Uma auditoria pode estar em rascunho, em execução, submetida ou fechada; a concessão de acesso tem o seu próprio ciclo de vida. A política deve definir quais os dados visíveis em cada estado. Não assumir que «concessão activa» significa acesso irrestrito a todos os estados e conteúdos da auditoria.
+
+### 14.8. Resultado da validação
+
+A arquitectura base fica validada com estas correcções. O modelo físico, as funções de autorização e as políticas RLS continuam por desenhar e testar. Não se autoriza ainda migração ou alteração da base de dados.
