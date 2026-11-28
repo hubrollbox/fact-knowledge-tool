@@ -27,10 +27,6 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
     );
   }
 
-  if (modulo.emPreparacao) {
-    return <Button size={size} variant="outline" disabled>Em preparação — ainda não disponível</Button>;
-  }
-
   if (loading || isLoading) {
     return (
       <Button size={size} disabled>
@@ -40,6 +36,9 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
   }
 
   if (!user) {
+    if (modulo.emPreparacao) {
+      return <Button size={size} variant="outline" disabled>Em preparação — ainda não disponível</Button>;
+    }
     if (modulo.slug === 'obras') {
       return (
         <Button size={size} onClick={() => navigate('/modulos/obras#pedido-piloto')}>
@@ -62,6 +61,10 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
         Abrir módulo <ArrowRight className="h-4 w-4 ml-2" />
       </Button>
     );
+  }
+
+  if (modulo.emPreparacao) {
+    return <Button size={size} variant="outline" disabled>Em preparação — ainda não disponível</Button>;
   }
 
   const handleActivate = async () => {
