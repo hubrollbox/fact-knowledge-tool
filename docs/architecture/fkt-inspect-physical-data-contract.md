@@ -179,3 +179,23 @@ Não executar esta sequência na BD remota. Cada migração deve ser criada e va
 - [Supabase Changelog — CLI v3](https://supabase.com/changelog/cli-v3)
 
 A documentação consultada indica que a partir de 30/10/2026 a exposição de novos objectos em `public` é opt-in por GRANT; o desenho deve ser compatível com esse comportamento. O projecto remoto observado está em PostgreSQL 17.6 no levantamento anterior; confirmar a versão actual na stack local antes de decidir a extensão e executar migrações. Este documento não substitui revisão SQL, testes reais ou validação de segurança.
+
+
+## 9. Integração com autorização Core existente — confirmação remota
+
+A consulta read-only ao catálogo remoto confirmou a existência dos helpers:
+- `private.workspace_can_read(uuid)`
+- `private.workspace_can_write(uuid)`
+- `private.workspace_is_owner(uuid)`
+- `private.workspace_role_for_current_user(uuid)`
+
+Estão em schema `private`, são `SECURITY DEFINER`, derivam a identidade do próprio `auth.uid()`, têm `search_path` controlado na migração Core e são executáveis por `authenticated`, não por `anon`. As funções públicas de compatibilidade correspondentes são `SECURITY INVOKER`.
+
+Regras Inspect:
+1. As policies internas devem chamar os helpers privados com a assinatura actual, sem passar um `user_id` controlado pelo cliente.
+2. Não criar novos helpers Inspect em `public`.
+3. Os helpers Core apenas provam membership/papel no workspace; **não provam atribuição à auditoria**. As policies Inspect têm de verificar também `inspect_audit_assignments` e a vigência/estado da atribuição.
+4. Não reutilizar `workspace_can_write` como autorização suficiente para resultados, medições, evidências ou transições de auditoria.
+5. Para funções privilegiadas Inspect, seguir o padrão Core apenas quando tecnicamente necessário: schema não exposto, `search_path` fixo, actor de `auth.uid()`, sem actor/tenant recebido do browser, grants mínimos e testes negativos.
+
+Esta secção foi confirmada com consulta read-only à BD remota em 28/11/2026; não foram alterados helpers, grants ou policies.
