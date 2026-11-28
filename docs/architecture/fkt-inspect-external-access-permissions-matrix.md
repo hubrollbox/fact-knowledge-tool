@@ -114,7 +114,7 @@ Não incluir no MVP permissões de edição de resultados, edição de critério
 - Metadados na BD ligam cada objecto a organização, auditoria, recurso, autor, visibilidade e estado de publicação.
 - O caminho Storage não é prova de autorização.
 - Não guardar URLs assinados na BD nem em logs.
-- Downloads externos: verificar sessão, concessão activa, permissão específica, estado da auditoria e publicação do objecto no momento de cada pedido; emitir URL assinada de curta duração, recomendação inicial de 60 segundos.
+- Downloads externos: preferir pedido autenticado ao Storage, com RLS por objecto a revalidar sessão, concessão, permissão, estado e publicação em cada pedido; não emitir URL assinada bearer por defeito.
 - Uploads externos: emitir autorização de upload apenas após validar concessão, acção atribuída, tipo/tamanho permitido e estado; usar caminho gerado pelo servidor e URL de upload de curta duração.
 - Validar MIME real/assinatura do ficheiro, tamanho, extensão, nome normalizado e limites de quantidade; não confiar no Content-Type fornecido pelo browser.
 - Isolar anexos internos e anexos partilhados em registos/áreas lógicas distintas. Não expor metadados internos na resposta externa.
@@ -181,7 +181,7 @@ Decisões para o MVP:
 - leitura apenas de conteúdo publicado após submissão;
 - cliente pode responder apenas a acções atribuídas, se a permissão for concedida;
 - sem edição de resultados nem verificação/fecho pelo cliente;
-- Storage privado, autorização por pedido e URLs de curta duração (60 segundos como valor inicial);
+- Storage privado, downloads externos autenticados com RLS por objecto; proxy autenticado se for necessária URL bearer;
 - sem promessa de revogação instantânea de URLs já emitidas;
 - convite de 7 dias como valor inicial, com reenvio explícito.
 
