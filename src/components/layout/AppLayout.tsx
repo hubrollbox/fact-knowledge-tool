@@ -332,9 +332,15 @@ export function AppLayout({ children }: AppLayoutProps) {
           className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur md:hidden"
         >
           <NavLink
-            end
             to="/obras"
-            className={({ isActive }) => cn("flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}
+            className={() => cn(
+              "flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium",
+              location.pathname.startsWith("/obras") &&
+                !location.pathname.startsWith("/obras/acoes") &&
+                !location.pathname.startsWith("/obras/formularios")
+                ? "text-primary"
+                : "text-muted-foreground"
+            )}
           >
             <HardHat className="h-5 w-5" />
             <span>Obras</span>
