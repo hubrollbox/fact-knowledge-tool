@@ -25,7 +25,7 @@ A aplicação partilha capacidades transversais, cuja utilização depende do m�
 | **FKT Lex** | Em preparação | Processos, documentos, prazos e análise jurídica estruturada, incluindo FIRAC. |
 | **FKT Vet** | Em preparação | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. |
 | **FKT Dev** | Em preparação | Projetos, issues e decisões técnicas (ADRs). |
-| **FKT Inspect** | Planeado; documentado, não implementado | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. |
+| **FKT Inspect** | Próximo MVP; documentação e desenho em revisão, ainda não implementado | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. |
 
 A existência de código, rotas ou FAQ para um módulo não significa que esteja concluído, validado ou disponível para utilização geral. O FKT Works é o módulo escolhido para o primeiro piloto comercial.
 
