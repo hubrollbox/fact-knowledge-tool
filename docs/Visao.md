@@ -117,7 +117,7 @@ O FKT Inspect está planeado como módulo de auditoria, recolha de evidências, 
 
 O produto destina-se tanto a consultores/auditores que trabalham com vários clientes como a empresas que executam verificações internas. O modelo deverá permitir acesso externo estritamente limitado aos dados do cliente correspondente, sem criar um workspace por cliente nem expor a carteira de uma consultora.
 
-O Inspect encontra-se documentado, mas **não está implementado**. O FKT Works mantém prioridade de conclusão do MVP. O âmbito, modelo de dados, segurança e catálogo inicial estão descritos em:
+O Inspect encontra-se documentado, mas **não está implementado**. A prioridade de produto foi alterada em 28/11/2026: o próximo MVP a concluir é o FKT Inspect. O desenvolvimento deve preservar os módulos existentes e a única base de dados Supabase configurada. O âmbito, modelo de dados, segurança e catálogo inicial estão descritos em:
 - [Arquitectura funcional do FKT Inspect](architecture/fkt-inspect-functional-architecture.md);
 - [Modelo de dados e segurança do FKT Inspect](architecture/fkt-inspect-data-model-security.md);
 - [Modelo inicial de auditoria FKT Food Safety](architecture/fkt-food-safety-audit-model.md).
