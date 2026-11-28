@@ -5,6 +5,16 @@ Data da auditoria: 28-11-2026
 Projecto Supabase confirmado: `gllrqrqonwuacjxbtgnp` (região eu-west-1; PostgreSQL 17.6).
 **Não foram efectuadas alterações à base de dados.**
 
+## Decisões funcionais fechadas em 28-11-2026
+
+1. **IVA:** suportar preços com IVA incluído e sem IVA. O modelo deve guardar a base tributável, taxa e valor de imposto de forma explícita, permitindo apresentar os dois modos. A regra de incidência e arredondamento por linha/documento será fechada na especificação de cálculo antes da migração.
+2. **Verbas globais:** permitir linhas de valor global sem quantidade nem preço unitário. O tipo de linha deve distinguir verba global de quantidade × preço unitário.
+3. **Custos internos:** decomposição de custos internos (materiais, mão-de-obra, equipamentos e outros) é opcional. Deve poder coexistir com um preço proposto ao cliente, sem obrigar a expor custos internos ao destinatário/fiscal.
+4. **Edição após aprovação:** orçamento aprovado continua editável por utilizadores autorizados, mas cada edição deve gerar um registo de auditoria detalhado e recuperável, com actor, data, campos alterados e valores anterior/novo. Não pode haver alteração silenciosa. O histórico de aprovação mantém-se identificável; alterações posteriores devem assinalar que o conteúdo aprovado foi modificado e exigir nova confirmação/aprovação quando aplicável. A regra exacta de reaprovação fica por definir no fluxo.
+5. **Perfis profissionais:** suportar os perfis Empreiteiro e Fiscal, separados dos papéis de segurança. Mantêm-se os papéis técnicos existentes (owner/admin/editor/viewer); o perfil profissional determina perspectiva e interface, não concede permissões por si só.
+
+Estas decisões substituem os pontos correspondentes da secção 5 abaixo.
+
 ## 1. Estruturas existentes que podem ser reutilizadas
 
 ### Obra e workspace
@@ -55,22 +65,23 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 - Políticas com as funções de autorização Works existentes; não criar um modelo paralelo de permissões.
 - Chaves estrangeiras compostas que impeçam misturar orçamento, obra e workspace.
 - Índices para FKs e consultas por obra/estado/data, justificados pelos padrões de acesso.
-- Operações críticas atómicas: criação de orçamento e linhas, importação confirmada, aprovação e criação de revisão.
-- Orçamento aprovado não pode ser editado directamente; nova revisão cria novo registo relacionado.
+- Operações críticas atómicas: criação de orçamento e linhas, importação confirmada, aprovação e gravação de alterações.
+- Orçamento aprovado pode ser editado por utilizador autorizado, mas cada edição tem de criar evento de auditoria detalhado e recuperável; nunca actualizar silenciosamente.
+- A edição após aprovação deve marcar o orçamento como alterado após aprovação e permitir identificar se aguarda nova confirmação/aprovação.
 - Não confiar em valores de autor, workspace ou estado enviados pelo cliente.
 - Verificar permissões de Storage e usar bucket privado existente.
 
 ## 5. Pontos a resolver antes de fechar o desenho
 
 1. **Perspectiva comercial:** o orçamento é elaborado pelo empreiteiro, recebido de terceiro, ou ambos? A origem do ficheiro não determina o papel do utilizador.
-2. **IVA e preços:** armazenar preços com IVA incluído/excluído e taxa por linha ou por orçamento? Não fixar uma regra fiscal sem requisito validado.
-3. **Unidades e quantidades:** permitir linhas sem quantidade/preço (p.ex. verba global), ou exigir valores numéricos?
-4. **Aprovação:** registar aprovação externa declarada no FKT; não é assinatura electrónica nem certificação.
-5. **Imutabilidade:** decidir se a aprovação congela cabeçalho e linhas integralmente e como se corrigem erros.
-6. **Permissões:** papéis actuais são genéricos. Não acrescentar já novos papéis “empreiteiro/fiscal” à tabela de membros; primeiro definir se são perfis de utilização do workspace, da obra ou apenas modos de interface.
+2. **IVA:** está decidido suportar preços com e sem IVA; falta fechar se a taxa é definida por linha ou por orçamento e a regra exacta de arredondamento.
+3. **Aprovação:** registar aprovação externa declarada no FKT; não é assinatura electrónica nem certificação.
+4. **Reaprovação:** definir quando uma edição posterior à aprovação exige nova aprovação e como se notifica a contraparte.
+5. **Perfis profissionais:** definir se Empreiteiro/Fiscal é escolhido por workspace ou por obra, sem confundir perfil profissional com papel de segurança.
+6. **Cálculos comerciais:** definir tratamento de descontos, retenções, encargos e moeda, se necessários no MVP.
 
 ## 6. Resultado
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria não autoriza ainda uma migração de esquema: primeiro fechar as regras de IVA/valores, linhas de verba global, papel do proponente e imutabilidade da aprovação.
+A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. Ainda é necessário especificar a incidência do IVA, arredondamentos, reaprovação após edição e âmbito dos perfis antes de escrever a migração.
