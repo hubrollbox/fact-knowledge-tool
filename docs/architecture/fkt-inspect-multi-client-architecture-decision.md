@@ -328,3 +328,21 @@ Uma auditoria pode estar em rascunho, em execução, submetida ou fechada; a con
 ### 14.8. Resultado da validação
 
 A arquitectura base fica validada com estas correcções. O modelo físico, as funções de autorização e as políticas RLS continuam por desenhar e testar. Não se autoriza ainda migração ou alteração da base de dados.
+
+
+## 15. Matriz de permissões e estratégia de Storage — decisão MVP
+
+A matriz normativa encontra-se em [FKT Inspect — matriz de permissões de acesso externo](fkt-inspect-external-access-permissions-matrix.md).
+
+Decisões para o MVP:
+- deny-by-default e menor privilégio;
+- nenhuma leitura externa em rascunho ou durante execução;
+- após submissão, leitura apenas de conteúdos publicados e concedidos;
+- cliente não edita resultados, critérios, medições, classificações nem verifica eficácia/fecha acções;
+- resposta externa apenas a acções atribuídas e apenas quando a permissão específica foi concedida;
+- convite de 7 dias, uso único, email verificado e aceitação autenticada;
+- bucket privado; downloads validados por pedido e URL assinada com TTL inicial de 60 segundos;
+- URL assinada já emitida pode funcionar até expirar; não prometer revogação instantânea;
+- notas internas separadas dos dados publicados ao nível da BD.
+
+A matriz é a referência de produto para o desenho físico e RLS. Não é implementação nem prova de segurança em runtime.
