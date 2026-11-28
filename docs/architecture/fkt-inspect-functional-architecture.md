@@ -143,7 +143,7 @@ O Inspect deve reutilizar, quando tecnicamente adequado, autenticação, workspa
 
 Reutilizar padrões não significa copiar tabelas de Works nem acoplar o Inspect ao domínio de obras. As entidades, estados, permissões e políticas de retenção do Inspect devem ser próprias.
 
-O FKT Works mantém a prioridade de conclusão do seu MVP. O desenvolvimento do Inspect deve ser planeado sem alterar ou atrasar os compromissos já assumidos para Works.
+A prioridade de produto é concluir o MVP do FKT Inspect. O desenvolvimento deve evitar regressões nos módulos existentes, mas já não está subordinado à conclusão do FKT Works.
 
 ## 12. Referências normativas iniciais
 
