@@ -144,6 +144,7 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [Matriz de permissões do FKT Vet](docs/security/FKT-VET-PERMISSION-MATRIX.md) — políticas e limites de validação documentados para o módulo Vet.
 - [Arquitectura operacional HACCP do FKT Inspect](docs/architecture/fkt-inspect-haccp-operational-architecture.md) — âmbito funcional, fluxos operacionais e limites do produto.
 - [Dicionário físico de dados do FKT Inspect](docs/architecture/fkt-inspect-physical-data-dictionary.md) — entidades, campos, chaves, relações, integridade e decisões técnicas fechadas; dependências de validação externa identificadas.
+- [Plano de migrações físicas do FKT Inspect](docs/architecture/fkt-inspect-migration-phasing.md) — execução por fases: entidades, relações temporais e permissões/RLS.
 - [Migrações Supabase](supabase/migrations/) — histórico versionado de alterações à base de dados.
 - [Manutenção das FAQ](docs/FAQ-MAINTENANCE.md) — processo obrigatório de revisão e publicação da ajuda.
 - [Snapshot SQL legado](docs/migration.sql) — apenas referência histórica; **não executar**. A fonte de alterações ao esquema é `supabase/migrations/`.
