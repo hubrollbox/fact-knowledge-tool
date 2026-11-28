@@ -25,7 +25,7 @@ A aplicação partilha capacidades transversais, cuja utilização depende do m�
 | **FKT Lex** | Em preparação | Processos, documentos, prazos e análise jurídica estruturada, incluindo FIRAC. |
 | **FKT Vet** | Em preparação | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. |
 | **FKT Dev** | Em preparação | Projetos, issues e decisões técnicas (ADRs). |
-| **FKT Inspect** | Fundação de dados e primeira interface de carteira implementadas no repositório; validação CI em curso, ainda não activável | Gestão de clientes, estabelecimentos e relações históricas como primeira etapa do MVP de auditorias de segurança alimentar. |
+| **FKT Inspect** | Fundação de dados, primeira interface de carteira e integração de FAQ implementadas no repositório; testes CI aprovados no commit de referência, ainda não activável em produção | Gestão de clientes, estabelecimentos e relações históricas como primeira etapa do MVP de auditorias de segurança alimentar. |
 
 A existência de código, rotas ou FAQ para um módulo não significa que esteja concluído, validado ou disponível para utilização geral. O FKT Works é o módulo escolhido para o primeiro piloto comercial.
 
@@ -133,6 +133,9 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Inspect — modelo relacional lógico](docs/architecture/fkt-inspect-relational-model.md) — entidades, relações, constraints, RLS, Storage e testes pgTAP propostos.
 - [FKT Inspect — contrato físico de dados](docs/architecture/fkt-inspect-physical-data-contract.md) — inventário de tabelas/colunas, tipos, constraints, índices, GRANT, RLS e sequência de migrações.
 - [FKT Inspect — interface de carteira](src/modules/inspect/pages/InspectDashboard.tsx) — primeira interface para organização, clientes, estabelecimentos e histórico de associações; acesso ainda não activado no selector geral.
+- [FKT Inspect — identidade visual](src/index.css) — tema verde tropa escuro aplicado apenas ao módulo Inspect.
+- [FKT Inspect — FAQ e suporte](supabase/migrations/20261128173000_fkt_inspect_support_faq.sql) — inclui Inspect nos filtros de FAQ/pedidos e publica sete respostas com o estado e os limites actualmente confirmados.
+- [FKT Inspect — teste de FAQ](supabase/tests/fkt_inspect_support_faq.test.sql) — verifica as constraints de módulo e o conteúdo publicado.
 - [FKT Inspect — migração de fundação](supabase/migrations/20261128170000_fkt_inspect_foundation.sql) — organização Inspect por workspace, carteira de clientes, estabelecimentos e associação temporal; aguarda validação CI local.
 - [FKT Inspect — teste de fundação](supabase/tests/fkt_inspect_foundation.test.sql) — verifica RLS, GRANT, integridade multi-tenant e trigger temporal.
 - [FKT Inspect — matriz RLS e Storage](docs/architecture/fkt-inspect-rls-policy-matrix.md) — regras propostas por grupo de tabelas, operações, convites e ficheiros.
@@ -148,7 +151,7 @@ A documentação específica de cada módulo deve ser lida em conjunto com o có
 
 ## Estado e validação
 
-O estado de desenvolvimento deve ser distinguido de disponibilidade, validação funcional e validação comercial. O repositório contém código para os quatro módulos, mas o próprio produto identifica Works como piloto fechado e os restantes como em preparação.
+O estado de desenvolvimento deve ser distinguido de disponibilidade, validação funcional e validação comercial. O repositório contém código para os módulos Works, Lex, Vet, Dev e Inspect. O Inspect tem a fundação e a primeira interface de carteira em código, mas não está disponível para utilização: a migração ainda não foi aplicada à BD de produção e a activação do módulo não está concluída.
 
 Não se declara aqui que todos os fluxos estejam concluídos, que todos os módulos estejam prontos para produção ou que a validação comercial esteja terminada. Consultar as issues, pull requests, workflows e migrações para o estado técnico actualizado.
 
