@@ -10,6 +10,7 @@ import { FotosGaleria } from '../components/FotosGaleria';
 import { DocumentosAssociados } from '../components/DocumentosAssociados';
 import { EditarRegistoDialog } from '../components/EditarRegistoDialog';
 import { FormResponses } from '../components/FormResponses';
+import { AcaoDialog } from '../components/AcaoDialog';
 
 export function VisitaDetail() {
   const { id, visitaId } = useParams();
@@ -35,7 +36,13 @@ export function VisitaDetail() {
       </div>
       <FormResponses obraId={visita.obra_id} visitaId={visita.id} canWrite={canWrite} />
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0"><CardTitle className="text-base">Ocorrências</CardTitle>{canWrite && <OcorrenciaDialog obraId={id!} visitaId={visita.id} />}</CardHeader>
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+          <CardTitle className="text-base">Ocorrências ({daVisita.length})</CardTitle>
+          {canWrite && <div className="flex flex-wrap gap-2">
+            <OcorrenciaDialog obraId={id!} visitaId={visita.id} />
+            <AcaoDialog obraId={id!} ocorrencias={daVisita} visitas={[visita]} visitaId={visita.id} triggerLabel="Nova acção desta visita" />
+          </div>}
+        </CardHeader>
         <CardContent className="space-y-2">
           {!daVisita.length ? <p className="text-sm text-muted-foreground">Nenhuma ocorrência registada nesta visita.</p> : daVisita.map((o) => <OcorrenciaItem key={o.id} o={o} canWrite={canWrite} />)}
         </CardContent>
