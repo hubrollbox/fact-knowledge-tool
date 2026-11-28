@@ -120,6 +120,7 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
 
   const refresh = useCallback(async () => {
     if (!user?.id || !workspaceId) { setOperations([]); setQueueLoaded(false); setStorageError(null); return; }
+    setQueueLoaded(false);
     try {
       setOperations(await listarOperacoesOffline(user.id, workspaceId));
       setStorageError(null);
