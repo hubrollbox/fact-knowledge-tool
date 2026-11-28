@@ -141,3 +141,34 @@ All colors MUST be HSL.
   --sidebar-accent-foreground: 340 30% 88%;
   --sidebar-ring: 340 38% 58%;
 }
+
+/* Identidade visual exclusiva do FKT Inspect — verde tropa escuro */
+.fkt-inspect-theme {
+  --primary: 96 18% 25%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 90 14% 93%;
+  --secondary-foreground: 96 18% 22%;
+  --accent: 90 14% 93%;
+  --accent-foreground: 96 18% 22%;
+  --ring: 96 18% 25%;
+  --sidebar-primary: 96 18% 25%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 90 14% 88%;
+  --sidebar-accent-foreground: 96 18% 22%;
+  --sidebar-ring: 96 18% 25%;
+}
+
+.dark .fkt-inspect-theme {
+  --primary: 96 20% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 96 14% 17%;
+  --secondary-foreground: 90 18% 88%;
+  --accent: 96 14% 17%;
+  --accent-foreground: 90 18% 88%;
+  --ring: 96 20% 48%;
+  --sidebar-primary: 96 20% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 96 14% 17%;
+  --sidebar-accent-foreground: 90 18% 88%;
+  --sidebar-ring: 96 20% 48%;
+}
