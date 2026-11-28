@@ -95,7 +95,7 @@ Não incluir no MVP permissões de edição de resultados, edição de critério
 ## 5. Convites e ciclo de vida
 
 - O convite é enviado para email normalizado.
-- A aceitação exige sessão autenticada e email verificado coincidente com o destinatário.
+- A aceitação exige sessão autenticada e confirmação no servidor de que o email da conta está verificado e coincide com o destinatário.
 - O token é aleatório, de uso único, armazenado apenas como hash, com validade e consumo atómico.
 - O convite não concede acesso antes da aceitação.
 - Não associar `user_id` fornecido pelo cliente; o servidor deriva a identidade de `auth.uid()`.
