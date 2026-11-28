@@ -20,7 +20,7 @@ Se a alteração não afectar a experiência do utilizador, registar «Sem impac
 No primeiro dia útil de cada mês, o responsável pelo produto deve percorrer a área Ajuda e Suporte e:
 
 - testar as instruções de acesso, conta, workspaces, módulos e permissões;
-- verificar os percursos principais de FKT Works, Lex, Vet e Dev;
+- verificar os percursos principais de FKT Works, Lex, Vet, Dev e Inspect;
 - pesquisar respostas duplicadas, contraditórias ou sem percurso de navegação;
 - confirmar que as limitações conhecidas continuam actuais;
 - rever a data de revisão apenas depois de validar o conteúdo;
@@ -59,3 +59,13 @@ A FAQ não guarda o commit nem a versão exacta da aplicação contra a qual foi
 - A migração `20261128130000_fkt_lex_conclusion_context_snapshots.sql` existe no repositório, mas não consta do histórico remoto consultado em 28-11-2026. Não documentar snapshots de contexto como disponíveis até ser aplicada e testada.
 - Não afirmar que o histórico antigo foi reconstruído: a migração de snapshots declara expressamente que as versões anteriores não são reconstruídas.
 - Não declarar o fluxo integralmente validado apenas porque a migração está aplicada; testar os percursos na interface e as permissões com contas distintas.
+
+
+## Regra específica do FKT Inspect
+
+- A FAQ pública do módulo é mantida em `src/data/modulos.ts`; a FAQ da área Ajuda e Suporte é publicada por migração na tabela `public.fkt_support_faq`.
+- O tipo de módulo `inspect` na área de suporte deve manter-se alinhado com as constraints de `fkt_support_faq.module` e `fkt_support_tickets.module`.
+- Descrever a carteira de clientes/estabelecimentos como primeira interface no repositório, não como funcionalidade disponível em produção enquanto a migração e a activação não estiverem concluídas.
+- Não afirmar que o Inspect executa auditorias, valida HACCP, determina conformidade legal ou emite relatórios operacionais: essas capacidades fazem parte do âmbito previsto, não do primeiro ecrã implementado.
+- A identidade verde tropa escuro é exclusiva das rotas `/inspect`; não aplicar ao login, dashboard geral ou outros módulos.
+- As FAQ só ficam publicadas na área Ajuda e Suporte depois da migração `20261128173000_fkt_inspect_support_faq.sql` ser aplicada à base de dados correspondente.
