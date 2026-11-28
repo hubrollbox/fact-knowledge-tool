@@ -55,12 +55,12 @@ export function ObraDetail() {
       </div>
 
       {canWrite && (
-        <section aria-label="Registos rápidos" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <section aria-label="Registos rápidos" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1 [&>div>button]:min-h-12 [&>div>button]:w-full">
+            <OcorrenciaDialog obraId={obra.id} />
+          </div>
           <div className="[&>button]:min-h-12 [&>button]:w-full">
             <VisitaDialog obraId={obra.id} />
-          </div>
-          <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
-            <OcorrenciaDialog obraId={obra.id} />
           </div>
           <div className="[&>div>button]:min-h-12 [&>div>button]:w-full">
             <AcaoDialog obraId={obra.id} ocorrencias={ocorrencias ?? []} visitas={visitas ?? []} />
