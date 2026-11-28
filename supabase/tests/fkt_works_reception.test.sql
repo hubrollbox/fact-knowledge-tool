@@ -91,7 +91,15 @@ BEGIN
  EXCEPTION WHEN unique_violation THEN caught:=true;
  END;
  IF NOT caught THEN RAISE EXCEPTION 'A second reception was created for the same work'; END IF;
-END $$ $test$, 'documents cannot cross workspaces and a work has only one reception');
+ IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid='public.obras_recepcoes'::regclass) THEN
+   RAISE EXCEPTION 'RLS is not enabled on reception records';
+ END IF;
+ IF has_table_privilege('anon','public.obras_recepcoes','SELECT')
+    OR has_table_privilege('anon','public.obras_recepcoes','INSERT')
+    OR has_table_privilege('anon','public.obras_recepcoes','UPDATE') THEN
+   RAISE EXCEPTION 'anon has direct privileges on reception records';
+ END IF;
+END $ $test$, 'documents cannot cross workspaces; reception is unique and protected by RLS');
 
 RESET ROLE;
 SET LOCAL ROLE authenticated;
