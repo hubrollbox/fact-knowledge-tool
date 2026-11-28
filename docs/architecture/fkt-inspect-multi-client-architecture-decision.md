@@ -107,7 +107,7 @@ Entidade conceptual `inspect_access_grants`:
 
 A concessão inicial deve ser **ao nível da auditoria**, não ao nível de toda a carteira do cliente. Evita que auditorias futuras ou informação nova sejam partilhadas automaticamente sem decisão explícita.
 
-A tabela de convites pode ser separada da concessão activa. Convites por email não são autorização: só depois de o destinatário autenticar e aceitar, com identidade verificada, é associada a concessão ao `auth.users.id`. Não guardar tokens em claro; usar hash, validade, uso único e limitação de tentativas.
+A tabela de convites é separada da concessão activa. Convites por email não são autorização: só depois de o destinatário autenticar e aceitar, com o estado de verificação do email confirmado no servidor através do Supabase Auth, é associada a concessão ao `auth.users.id`. Não presumir um claim JWT `email_verified`. Não guardar tokens em claro; usar hash, validade, uso único e limitação de tentativas.
 
 ### 4.6. Permissões por recurso
 
@@ -295,7 +295,7 @@ Assim, notas internas, avaliações reservadas ao auditor, comunicações intern
 
 ### 14.4. Convites e identidade
 
-O convite deve ficar associado a um endereço de email normalizado e verificado. Na aceitação, o servidor confirma que o endereço verificado da sessão corresponde ao destinatário do convite. O cliente não pode escolher livremente o `user_id` a associar.
+O convite deve ficar associado a um endereço de email normalizado. Na aceitação, o servidor valida a identidade com Supabase Auth, confirma `email_confirmed_at` e compara o email da conta com o destinatário. O cliente não pode escolher livremente o `user_id` a associar.
 
 O token deve ser aleatório, de uso único, armazenado apenas sob forma não reversível (hash), com validade, limitação de tentativas e consumo atómico. Convite pendente nunca equivale a concessão activa.
 
