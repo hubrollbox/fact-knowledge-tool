@@ -91,7 +91,7 @@ Constraints compostas garantem que estabelecimento, cliente contratual e versão
 
 ### 2.7. Resultados e medições
 
-- `inspect_audit_results`: uma linha por critério da versão aplicada, estado, observação partilhável/factual, autor e timestamps.
+- `inspect_audit_results`: uma linha por critério da versão aplicada, estado, observação partilhável/factual, autor e timestamps. Cada resultado deve incluir `template_version_id` e usar FKs compostas para provar que a auditoria e o critério pertencem à mesma versão e organização.
 - `inspect_audit_measurements`: valor, unidade, parâmetro, equipamento/local, instante de recolha, autor, limite/regra aplicável e referência/versão da regra.
 
 As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas das tabelas de resultados partilháveis. Não confiar em RLS para esconder colunas.
@@ -130,7 +130,7 @@ Separar convite pendente de concessão activa:
 - `inspect_access_grant_permissions`: concessão e permissão enum/controlada.
 - `inspect_access_events`: eventos append-only de envio, reenvio, aceitação, alteração de permissões, expiração e revogação.
 
-Aceitação através de RPC/Edge Function autenticada: confirmar email verificado da sessão, token válido e não consumido; consumir atomicamente; derivar `auth.uid()`; criar concessão. Não aceitar `user_id` do cliente como autoridade.
+Aceitação através de RPC/Edge Function autenticada: confirmar no servidor o estado de verificação do email da conta (não presumir que existe um claim `email_verified` no JWT), comparar o email normalizado com o destinatário, validar token válido e não consumido; consumir atomicamente; derivar `auth.uid()`; criar concessão. Não aceitar `user_id` do cliente como autoridade.
 
 A concessão é por auditoria concreta. Uma associação a cliente/contacto nunca é suficiente para autorizar acesso.
 
@@ -258,7 +258,7 @@ Cobrir:
 4. utilizador externo só lê a auditoria concedida e conteúdos publicados;
 5. grant a uma auditoria não dá acesso a outra auditoria do mesmo cliente;
 6. convite pendente/expirado/consumido/revogado não autoriza;
-7. email não verificado ou divergente não aceita convite;
+7. email não confirmado no servidor ou divergente não aceita convite;
 8. grant sem `view_published_evidence` não descarrega evidência;
 9. `respond_assigned_actions` não permite alterar finding, acção, resultado ou eficácia;
 10. upload apenas na acção atribuída e com MIME/tamanho válidos;
@@ -300,3 +300,18 @@ Consequências para este modelo:
 - o contexto «Partilhado comigo» não depende de `useModuloActivo` nem muda o workspace activo;
 - os membros internos da organização Inspect continuam sujeitos ao modelo Core; a política de memberships múltiplas tem de ser decidida na issue #173;
 - não criar constraints únicas globais nem alterar a resolução de workspace sem auditoria dos dados e decisão transversal ao Core.
+
+
+## 12. Integridade entre versão do modelo e resultados
+
+A revisão identificou uma constraint composta ainda necessária no desenho:
+- `inspect_audit_template_versions` deve ter chave única composta por `(id, inspect_organisation_id)`;
+- `inspect_audits` deve referenciar essa versão com `(template_version_id, inspect_organisation_id)`;
+- `inspect_audit_criteria` deve ter chave única composta por `(id, template_version_id, inspect_organisation_id)`;
+- `inspect_audit_results` deve referenciar a auditoria e o critério com o mesmo `template_version_id` e `inspect_organisation_id`.
+
+Isto impede que um resultado de auditoria use, por erro ou manipulação, um critério de outra versão de checklist ou de outra organização. A constraint final deve ser validada com o ERD e os nomes SQL definitivos antes da migração.
+
+## 13. Verificação de email em convites
+
+Não assumir a existência de um claim JWT chamado `email_verified`. A aceitação deve ser autenticada e a verificação do estado do email deve ser feita no servidor através da identidade validada pelo Supabase Auth (por exemplo, consulta autenticada ao utilizador e confirmação de `email_confirmed_at)), comparando o endereço normalizado com o destinatário do convite. O token é consumido atomicamente e o actor é derivado da sessão; o browser não escolhe o `user_id`.
