@@ -27,7 +27,7 @@ Nomes conceptuais, não SQL final:
 - `private.inspect_has_active_grant(_audit_id)`: concessão aceite, activa e não expirada para `auth.uid()`.
 - `private.inspect_has_grant_permission(_audit_id, _permission)`: grant activo mais permissão explícita.
 - `private.inspect_audit_is_submitted(_audit_id)`: auditoria submetida e não anulada.
-- `private.inspect_resource_is_published(_resource_id, _resource_type)`: publicação válida para a versão consultada.
+- `private.inspect_evidence_is_published(_evidence_id, _audit_id)`: publicação válida da evidência para a auditoria consultada.
 - `private.inspect_can_respond_to_action(_action_id)`: grant, permissão de resposta, atribuição da acção ao destinatário e estado aberto.
 
 Todos os helpers externos derivam identidade de `auth.uid()`. Não devem aceitar `user_id` arbitrário. As funções têm de ser estáveis/imutáveis apenas quando a semântica o permita; não marcar como IMMUTABLE verificações dependentes de tabelas.
@@ -182,3 +182,12 @@ Este documento é especificação de políticas, não migração. Antes de SQL:
 8. só aplicar à instância remota com autorização explícita.
 
 A revisão até agora foi estática sobre migrações versionadas; não foi executada consulta ao catálogo remoto nem teste em runtime. Não declarar as políticas seguras até aos testes locais/CI passarem.
+
+
+## 11. Integridade de relações e publicações
+
+Não implementar autorização baseada em identificadores polimórficos `resource_type/resource_id` sem FK real. Para evidências, usar associações tipadas com FKs compostas para organização/auditoria e recurso, ou tabelas de ligação separadas por tipo.
+
+A publicação de resultados deve referir uma submissão/snapshot concreta; relatórios referem a submissão que os originou; evidências têm publicação própria. As funções de autorização recebem IDs de publicação/evidência tipados, não pares arbitrários de tipo e ID fornecidos pelo browser.
+
+As constraints compostas devem garantir que auditoria, versão de modelo, critério, resultado, finding, acção, resposta, evidência e publicação pertencem ao mesmo âmbito. A aplicação não substitui estas constraints.
