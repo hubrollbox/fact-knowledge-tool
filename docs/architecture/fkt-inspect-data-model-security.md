@@ -350,3 +350,18 @@ Este modelo:
 - usa snapshots para submissões e relatórios imutáveis.
 
 O desenho ainda exige revisão de PK/FK reais do Core, cardinalidades e políticas SQL antes de migrações. Não foi executado contra a BD remota.
+
+
+## 16. Alinhamento do modelo com a decisão HACCP operacional — 28/11/2026
+
+A arquitectura funcional detalhada e o inventário de entidades constam de fkt-inspect-haccp-operational-architecture.md e fkt-inspect-relational-model.md.
+
+**Correcções ao texto anterior deste documento:**
+- A relação cliente–estabelecimento é N:M através de inspect_client_establishments, não Cliente 1:N Estabelecimentos.
+- Cliente contratual e operador alimentar são entidades distintas, ainda que possam coincidir. O operador deve ser uma party identificada no estabelecimento e preservada como snapshot em auditorias.
+- O utilizador externo não é membro do workspace da consultora e o acesso a auditorias não concede acesso automático aos registos operacionais.
+- Os papéis do workspace não equivalem a gerente, responsável HACCP ou colaborador do restaurante. São necessárias funções Inspect por organização/estabelecimento, com permissões por operação.
+
+A matriz provisória de autorização operacional está na secção 14 de fkt-inspect-rls-policy-matrix.md. Deve ser fechada por tabela e operação em #175. Não criar ainda papéis ou policies SQL.
+
+O modelo lógico e físico foram revistos para distinguir plano/versão, configuração de controlo, atribuição, tarefa prevista, execução, evento, recepção, lote, transformação, validade e não conformidade. As entidades permanecem candidatas até validação e DDL revisto.
