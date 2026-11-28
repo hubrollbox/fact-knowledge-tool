@@ -6,6 +6,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
         <p className="italic tracking-wide">Scientia potentia est</p>
         <nav className="flex items-center gap-4">
+          <Link to="/precos" className="hover:text-foreground transition-colors">Preços e utilização</Link>
           <Link to="/termos" className="hover:text-foreground transition-colors">
             Termos e Condições
           </Link>
