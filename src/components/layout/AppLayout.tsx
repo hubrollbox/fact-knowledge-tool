@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Layers, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, Layers, ListChecks, ClipboardList
+  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Layers, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, ListChecks, ClipboardList
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
