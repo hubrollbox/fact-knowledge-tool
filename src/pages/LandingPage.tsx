@@ -1,6 +1,6 @@
 import { PublicHeader } from '@/components/layout/PublicHeader';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, Scale, Dog, Code, HardHat } from 'lucide-react';
+import { ArrowRight, Boxes, FolderKanban, ShieldCheck, Network, FileText, Dog, Code, HardHat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/layout/Footer';
 
@@ -37,7 +37,7 @@ const modules = [
   {
     name: 'FKT Lex',
     description: 'Organização de processos, factos, documentos e prazos.',
-    icon: Scale,
+    icon: FileText,
     href: '/modulos/juridico',
   },
   {
