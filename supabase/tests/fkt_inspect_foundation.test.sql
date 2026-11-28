@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 
 BEGIN;
-SELECT plan(30);
+SELECT plan(31);
 
 SELECT ok(
   EXISTS (
@@ -94,6 +94,10 @@ SELECT ok(to_regclass('public.inspect_client_establishments') IS NULL, 'Relaçã
 SELECT ok(
   EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid='public.inspect_organisations'::regclass AND tgname='inspect_organisations_actor_fields' AND NOT tgisinternal),
   'Trigger de autoria em inspect_organisations'
+);
+SELECT ok(
+  EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid='public.inspect_parties'::regclass AND tgname='inspect_parties_actor_fields' AND NOT tgisinternal),
+  'Trigger de autoria em inspect_parties'
 );
 SELECT ok(
   EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid='public.inspect_clients'::regclass AND tgname='inspect_clients_actor_fields' AND NOT tgisinternal),
