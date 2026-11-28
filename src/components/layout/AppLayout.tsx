@@ -276,7 +276,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className={cn("md:hidden", moduloSlug === 'obras' && "hidden")}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={mobileOpen}
