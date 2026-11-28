@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, Layers
+  LayoutDashboard, ChevronDown, ChevronRight, LogOut, Menu, X, Scale, Sun, Moon, UserCircle, Dog, Code, Calendar, BarChart3, HardHat, LifeBuoy, Layers, ListChecks, ClipboardList
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModuloActivo } from '@/hooks/useModuloActivo';
@@ -298,7 +298,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <GlobalSearch />
 
           {moduloActivo && (
-            <Button asChild variant="outline" size="sm" className="max-w-[150px]">
+            <Button asChild variant="outline" size="sm" className="hidden max-w-[150px] md:flex">
               <Link to="/modulos" title="Alterar módulo activo">
                 <Layers className="mr-2 h-4 w-4 shrink-0" />
                 <span className="truncate">{moduloActivo.nome}</span>
@@ -306,24 +306,64 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Button>
           )}
           <AlertasBadge />
-          <CountdownFab contentSide="bottom" />
+          <div className="hidden md:block"><CountdownFab contentSide="bottom" /></div>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setDark(d => !d)}
+            className="hidden md:flex"
             aria-label="Alternar modo escuro"
           >
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className={cn("flex-1 overflow-y-auto", moduloSlug === 'obras' && "pb-20 md:pb-0")}>
           {moduloSlug === 'obras' && <div className="px-4 pt-3"><OfflineSyncStatus /></div>}
           {children}
         </main>
         <Footer />
       </div>
+
+      {moduloSlug === 'obras' && (
+        <nav
+          aria-label="Navegação rápida FKT Works"
+          className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur md:hidden"
+        >
+          <NavLink
+            end
+            to="/obras"
+            className={({ isActive }) => cn("flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}
+          >
+            <HardHat className="h-5 w-5" />
+            <span>Obras</span>
+          </NavLink>
+          <NavLink
+            to="/obras/acoes"
+            className={({ isActive }) => cn("flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}
+          >
+            <ListChecks className="h-5 w-5" />
+            <span>Ações</span>
+          </NavLink>
+          <NavLink
+            to="/obras/formularios"
+            className={({ isActive }) => cn("flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}
+          >
+            <ClipboardList className="h-5 w-5" />
+            <span>Formulários</span>
+          </NavLink>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Abrir menu"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground"
+          >
+            <Menu className="h-5 w-5" />
+            <span>Menu</span>
+          </button>
+        </nav>
+      )}
     </div>
   );
 }
