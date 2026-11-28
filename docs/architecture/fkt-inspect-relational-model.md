@@ -22,7 +22,7 @@
 Uma organização que usa o módulo:
 - `id uuid primary key`
 - `workspace_id uuid not null unique references workspaces(id)`
-- `organisation_type` — `consultancy`, `operator` ou `both`
+- `organisation_type` — `consultant`, `operator` ou `hybrid`
 - `display_name`
 - `status`
 - timestamps e actor de criação
