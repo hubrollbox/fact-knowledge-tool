@@ -442,3 +442,40 @@ A submissão cria o snapshot na mesma transacção que altera o estado. Não per
 Para organizações sem pessoa revisora distinta, permitir configuração explícita de auto-revisão pelo owner/auditor principal, com evento que identifica a excepção. Não presumir que toda a consultora tem equipa suficiente para segregação de funções.
 
 Testar todas as transições válidas e inválidas, concorrência de submissão, duplicação de números, tentativas de alteração após submissão e publicação de snapshot diferente do relatório.
+
+## 19. Extensão candidata — gestão operacional HACCP (28/11/2026)
+
+A arquitectura operacional completa está descrita em fkt-inspect-haccp-operational-architecture.md. O modelo relacional anterior cobre sobretudo carteira, auditorias e partilha; **não é suficiente, por si só, para um produto HACCP operacional**. As entidades seguintes são candidatas para revisão em #175, não SQL aprovado.
+
+### Plano e conhecimento HACCP
+- inspect_food_safety_plans: plano por organização/estabelecimento e estado.
+- inspect_food_safety_plan_versions: versão, snapshot, aprovação, autor e vigência.
+- inspect_processes, inspect_process_steps: processos e etapas reais do estabelecimento.
+- inspect_hazards: perigo identificado, categoria, etapa, fundamento e estado de validação.
+- inspect_control_measures: medida, classificação atribuída no plano, justificação e responsável.
+- inspect_control_parameters: parâmetro, valor/intervalo, unidade, tipo de limite, fonte, âmbito e versão.
+- inspect_haccp_documents: procedimentos, instruções e documentos ligados à versão do plano.
+
+### Operação
+- inspect_areas, inspect_equipment: locais e equipamentos do estabelecimento.
+- inspect_monitoring_plans, inspect_monitoring_assignments: controlos configurados e atribuições.
+- inspect_monitoring_records, inspect_monitoring_record_events: execução e histórico append-only.
+- inspect_cleaning_plans, inspect_cleaning_tasks, inspect_cleaning_records: plano, tarefas e execução de higienização.
+- inspect_suppliers, inspect_food_products: fornecedores e produtos alimentares.
+- inspect_receipts, inspect_receipt_items: recepção e itens recebidos.
+- inspect_lots, inspect_lot_events: lotes e eventos de rastreabilidade.
+- inspect_product_life_records: abertura/preparação, data de utilização definida pelo procedimento, responsável e estado.
+- inspect_oil_control_records: registos de óleo, apenas se confirmados no âmbito do piloto.
+
+### Integridade e histórico
+- Cada registo operacional pertence a uma organização e estabelecimento e, quando aplicável, referencia o plano/versão e controlo que o originou.
+- O registo concreto preserva snapshot do parâmetro/regra/unidade aplicados no momento; alterações posteriores ao plano não alteram medições históricas.
+- Eventos de execução, correcção, validação, lote e acção são append-only ou versionados.
+- A origem de uma não conformidade deve ser tipada com FK real. Não usar source_type + source_id sem integridade referencial; usar tabelas de ligação tipadas ou FKs opcionais mutuamente exclusivas com CHECK.
+- Consultores não recebem acesso operacional por pertencerem à carteira: é necessária concessão explícita, com âmbito e permissões definidos.
+- Não codificar temperaturas, frequências, prazos de validade ou classificações universais.
+
+### Relação com auditorias
+Auditorias continuam como processo distinto. Podem referenciar uma versão do plano e amostras/registos operacionais, mas não devem duplicar a fonte operacional nem substituir o registo diário.
+
+A lista é um ponto de partida. Cardinalidades, campos, chaves compostas, políticas RLS, GRANT e retenção têm de ser revistos em #175 e validados com o esquema Core antes do DDL.
