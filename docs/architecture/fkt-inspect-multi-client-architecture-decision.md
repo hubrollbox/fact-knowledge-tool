@@ -350,3 +350,42 @@ Decisões para o MVP:
 - notas internas separadas dos dados publicados ao nível da BD.
 
 A matriz é a referência de produto para o desenho físico e RLS. Não é implementação nem prova de segurança em runtime.
+
+
+## 9. Fecho das decisões para o MVP — 28/11/2026
+
+Este aditamento fecha as decisões de arquitectura que estavam em proposta. Em caso de conflito, prevalece esta secção e o dicionário físico.
+
+### 9.1. Estado e fronteira
+
+A separação entre workspace proprietário, carteira Inspect e concessões externas fica adoptada para o MVP. A organização Inspect continua 1:1 com o workspace Core; o cliente não é workspace nem membership Core.
+
+### 9.2. Party e operador
+
+- `inspect_parties` é scoped por `inspect_organisation_id`.
+- Não existe party global nem partilha transversal entre organizações Inspect no MVP.
+- O mesmo restaurante pode ter fichas independentes em organizações diferentes; não há pesquisa transversal nem deduplicação automática.
+- Dentro da mesma organização, a mesma party pode representar o cliente contratual e o operador alimentar.
+- O operador do estabelecimento é identificado por `operator_party_id`; a relação cliente-estabelecimento é apenas comercial/gestão de carteira.
+- Os valores físicos de `organisation_type` são os da migração: `consultant`, `operator`, `hybrid`. Os termos antigos `consultancy` e `both` ficam obsoletos.
+
+### 9.3. Utilizadores e tarefas
+
+- Papéis internos Inspect: `manager`, `haccp_responsible`, `staff`, atribuídos por estabelecimento e período.
+- Consultor e auditor usam grants/atribuições explícitas, nunca acesso por membership de workspace do cliente.
+- Tarefas persistidas são geradas on-demand por RPC idempotente, com cursor por controlo, lock transaccional e chave única. Cron não é requisito do MVP.
+- Registos retroactivos são permitidos com motivo obrigatório, identificação visível e evento auditável; janela configurável por estabelecimento.
+
+### 9.4. Rastreabilidade e não conformidades
+
+- Quantidade/unidade são opcionais em recepção e ligações de lote, mas têm de estar ambas preenchidas ou ambas vazias.
+- Transformações exigem quantidades quando o procedimento aplicável o determinar.
+- Uma NC agrega várias origens tipadas; cada origem fica ligada a uma única NC ao longo do seu ciclo de vida.
+- A NC é reaberta para recorrência da mesma origem; não se cria duplicação silenciosa.
+- Controlo manual de óleos integra o MVP; sensores e limiares universais codificados ficam fora.
+
+### 9.5. Dependências que não ficam fechadas por decisão de arquitectura
+
+A validação dos perigos, limites, frequências, prazos, métodos, critérios de aceitação e retenção específica continua dependente de profissional competente e do plano do estabelecimento. O FKT não define estes valores por defeito.
+
+A migração de fundação Inspect está no repositório, mas declara-se destinada a validação local/CI e não deve ser aplicada remotamente sem aprovação. A constraint de módulo, tabelas e RLS só ficam disponíveis em produção depois da migração ser aplicada e testada. O código de selector mantém Inspect fora da activação geral enquanto esta condição não estiver cumprida.
