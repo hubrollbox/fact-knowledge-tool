@@ -26,7 +26,7 @@ export default function ModuloDetalhe() {
 
   if (!modulo) return <Navigate to="/modulos" replace />;
 
-  const jsonLd = modulo.slug === 'inspect' ? null : {
+  const jsonLd = modulo.emPreparacao ? null : {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: `${modulo.nome} — FKT`,
