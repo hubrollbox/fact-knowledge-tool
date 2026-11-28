@@ -163,6 +163,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   });
 
   useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
     if (dark) {
       root.classList.add('dark');
@@ -252,7 +264,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         'fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-sidebar border-r border-sidebar-border md:hidden transition-transform duration-300',
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
-        <SidebarContent collapsed={false} />
+        <div id="fkt-mobile-navigation" className="flex min-h-0 flex-1 flex-col">
+          <SidebarContent collapsed={false} />
+        </div>
       </aside>
 
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -262,6 +276,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             size="icon"
             className="md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="fkt-mobile-navigation"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
