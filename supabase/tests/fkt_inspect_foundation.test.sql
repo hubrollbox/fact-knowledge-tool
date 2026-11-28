@@ -1,4 +1,4 @@
--- FKT Inspect foundation: schema, tenant boundaries, RLS and grants.
+-- FKT Inspect Phase 1: base entities and deny-by-default.
 -- Run after migrations with: supabase test db
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
@@ -10,7 +10,6 @@ SELECT extensions.lives_ok($test$ DO $$
 DECLARE
   _table text;
   _policy_count integer;
-  _table_name text;
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
@@ -24,13 +23,16 @@ BEGIN
   FOREACH _table IN ARRAY ARRAY[
     'inspect_organisations',
     'inspect_clients',
-    'inspect_establishments',
-    'inspect_client_establishments'
+    'inspect_establishments'
   ] LOOP
+    IF to_regclass(format('public.%I', _table)) IS NULL THEN
+      RAISE EXCEPTION 'Falta a tabela public.%', _table;
+    END IF;
+
     IF NOT EXISTS (
       SELECT 1 FROM pg_class c
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-      WHERE n.nspname = 'public' AND c.relname = _table AND c.relrowsecurity
+      WHERE c.oid = to_regclass(format('public.%I', _table))
+        AND c.relrowsecurity
     ) THEN
       RAISE EXCEPTION 'RLS não está activa em public.%', _table;
     END IF;
@@ -42,80 +44,81 @@ BEGIN
       RAISE EXCEPTION 'anon mantém privilégios em public.%', _table;
     END IF;
 
-    IF has_table_privilege('authenticated', format('public.%I', _table), 'DELETE') THEN
-      RAISE EXCEPTION 'DELETE directo não deve estar concedido em public.%', _table;
+    IF has_table_privilege('authenticated', format('public.%I', _table), 'SELECT')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'INSERT')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'UPDATE')
+      OR has_table_privilege('authenticated', format('public.%I', _table), 'DELETE') THEN
+      RAISE EXCEPTION 'authenticated não deve ter privilégios antes da fase 3 em public.%', _table;
     END IF;
 
     SELECT count(*) INTO _policy_count
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = _table
-      AND 'authenticated' = ANY(roles);
-    IF _policy_count < 2 THEN
-      RAISE EXCEPTION 'Políticas RLS insuficientes em public.%', _table;
+      AND tablename = _table;
+    IF _policy_count <> 0 THEN
+      RAISE EXCEPTION 'A fase 1 não deve criar policies em public.%', _table;
     END IF;
   END LOOP;
 
+  IF to_regclass('public.inspect_client_establishments') IS NOT NULL THEN
+    RAISE EXCEPTION 'A relação temporal pertence à fase 2';
+  END IF;
+
   IF NOT EXISTS (
     SELECT 1 FROM pg_trigger
-    WHERE tgrelid = 'public.inspect_client_establishments'::regclass
-      AND tgname = 'inspect_client_establishments_period_guard'
+    WHERE tgrelid = 'public.inspect_organisations'::regclass
+      AND tgname = 'inspect_organisations_actor_fields'
       AND NOT tgisinternal
   ) THEN
-    RAISE EXCEPTION 'Falta trigger que impede vigências sobrepostas';
+    RAISE EXCEPTION 'Falta trigger de autoria na organização';
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'private'
-      AND p.proname = 'inspect_guard_client_establishment_period'
-      AND p.prosecdef
-      AND p.proconfig @> ARRAY['search_path=pg_catalog, public']
+      AND p.proname = 'inspect_set_actor_fields'
+      AND NOT p.prosecdef
+      AND p.proconfig @> ARRAY['search_path=pg_catalog, auth']
   ) THEN
-    RAISE EXCEPTION 'Trigger function não está isolada com search_path fixo';
+    RAISE EXCEPTION 'A função de autoria não tem search_path controlado ou mudou para SECURITY DEFINER';
   END IF;
 
   IF has_function_privilege(
     'authenticated',
-    'private.inspect_guard_client_establishment_period()',
+    'private.inspect_set_actor_fields()',
     'EXECUTE'
   ) OR has_function_privilege(
     'anon',
-    'private.inspect_guard_client_establishment_period()',
+    'private.inspect_set_actor_fields()',
     'EXECUTE'
   ) THEN
-    RAISE EXCEPTION 'A trigger function não deve ser invocável directamente';
+    RAISE EXCEPTION 'A função de trigger não deve ser invocável directamente';
   END IF;
 
-  IF EXISTS (
+  IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
-    WHERE conrelid IN (
-      'public.inspect_clients'::regclass,
-      'public.inspect_establishments'::regclass,
-      'public.inspect_client_establishments'::regclass
-    )
-      AND contype = 'f'
-      AND array_length(conkey, 1) = 1
-      AND confrelid IN (
-        'public.inspect_clients'::regclass,
-        'public.inspect_establishments'::regclass
-      )
+    WHERE conrelid = 'public.inspect_organisations'::regclass
+      AND conname = 'inspect_organisations_workspace_id_key'
   ) THEN
-    RAISE EXCEPTION 'Foi encontrada FK simples onde é exigida integridade composta por organização';
+    RAISE EXCEPTION 'A organização não está limitada a uma por workspace';
   END IF;
 
-  IF EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'inspect_organisations'
-      AND cmd = 'INSERT'
-      AND coalesce(with_check, '') NOT LIKE '%workspace_is_owner%'
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.inspect_clients'::regclass
+      AND contype = 'f'
+      AND confrelid = 'public.inspect_organisations'::regclass
+  ) OR NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.inspect_establishments'::regclass
+      AND contype = 'f'
+      AND confrelid = 'public.inspect_organisations'::regclass
   ) THEN
-    RAISE EXCEPTION 'Criação de organização não está limitada ao owner do workspace';
+    RAISE EXCEPTION 'Clientes e estabelecimentos devem pertencer a uma organização';
   END IF;
 END;
-$$ $test$, 'FKT Inspect foundation enforces tenant RLS, explicit grants and temporal relation guard');
+$$ $test$, 'Fase 1 cria entidades base com RLS e acesso negado por defeito');
 
 SELECT * FROM finish();
 ROLLBACK;
