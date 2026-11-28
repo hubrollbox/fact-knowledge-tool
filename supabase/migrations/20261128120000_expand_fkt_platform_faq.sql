@@ -10,6 +10,13 @@ where module = 'lex'
   and category = 'Dossiers'
   and question = 'Tenho de associar um cliente a cada dossier?';
 
+update public.fkt_support_faq
+set answer = 'O FKT Vet inclui um ecrã de criação de reservas, com animal, datas de entrada e saída, box, preço por dia e instruções. No entanto, na interface actual não existe um atalho visível no ecrã «Canil» ou no menu lateral para abrir «Nova reserva». Por isso, esta operação ainda não tem um percurso de navegação normal documentável.',
+    reviewed_at = now()
+where module = 'vet'
+  and category = 'Alojamento'
+  and question = 'É possível gerir reservas de alojamento?';
+
 insert into public.fkt_support_faq
   (module, category, question, answer, is_published, sort_order, reviewed_at)
 select v.module, v.category, v.question, v.answer, true, v.sort_order, now()
@@ -32,12 +39,9 @@ from (values
   ('lex','Análise FIRAC','Como organizo os factos e as questões jurídicas?','No detalhe do processo, utilize «Factos» para registar factos e o respectivo estado de validação. Em «Questões», registe as perguntas jurídicas e associe-lhes factos e fontes. Em «Fontes», registe legislação, jurisprudência, doutrina ou outras referências. Em «Aplicação», documente o raciocínio e os argumentos. As «Conclusões» têm fluxo de rascunho, revisão e aprovação.',260),
   ('lex','Relatórios','Como gero o relatório de um processo?','Abra o processo no FKT Lex e escolha «Relatório PDF», no cabeçalho do detalhe. Na página do relatório, escolha «Imprimir / Guardar PDF» e, na janela de impressão, seleccione a opção de guardar em PDF.',270),
 
-  ('vet','Animais','Como registo um animal no FKT Vet?','Abra «FKT Vet» no menu lateral. No ecrã «Canil», escolha a opção para criar um novo animal. Preencha o nome (obrigatório) e, se aplicável, raça, sexo, data de nascimento, número de chip, número LOP, proprietário, contacto e observações. Termine em «Criar».',280),
   ('vet','Ficha do animal','Que informação encontro na ficha de um animal?','Na página «Canil», seleccione o animal. A ficha apresenta os separadores «Ficha», «Historial clínico» e «Ninhadas». Os dados de identificação incluem, entre outros, nome, raça, sexo, data de nascimento, número de chip, número LOP e dados do proprietário.',290),
   ('vet','Historial clínico','Como adiciono um registo clínico?','Abra «FKT Vet» > «Canil», seleccione o animal e entre em «Historial clínico». Escolha a opção para adicionar um registo. O formulário permite indicar tipo, descrição, data, próxima data, produto, veterinário e custo.',300),
-  ('vet','Reservas e agenda','Como registo uma reserva de alojamento?','No FKT Vet, abra a opção «Nova reserva». Seleccione o animal e indique as datas de entrada e saída. Pode ainda preencher box, preço por dia e instruções. Depois de criar a reserva, a aplicação encaminha-o para «Agenda diária».',310),
 
-  ('dev','Projectos','Como crio um projecto no FKT Dev?','Abra «FKT Dev» no menu lateral e escolha «Novo projecto». Indique o nome. Pode acrescentar descrição, URL do repositório, URL da documentação, URL de deploy, versão actual e tecnologias da stack. Os endereços, quando preenchidos, têm de começar por http:// ou https://.',320),
   ('dev','Projectos','Como consulto a informação de um projecto?','No FKT Dev, seleccione um projecto na lista de projectos activos. O detalhe apresenta os separadores «Projecto», «Issues», «ADRs» e «Contribuidores». Em «Projecto» pode consultar as ligações, versão e stack registadas.',330),
   ('dev','ADRs','Como registo uma decisão de arquitectura (ADR)?','Abra um projecto no FKT Dev, entre em «ADRs» e escolha «Novo ADR». Indique um título e registe o contexto, problema, alternativas, análise e decisão. Termine em «Guardar ADR».',340),
   ('dev','Issues','Que filtros existem para as issues de um projecto?','No detalhe do projecto, abra «Issues». Pode filtrar por tipo (bug, feature, decisão, discussão ou outro), prioridade (crítica, alta, média ou baixa) e estado (aberto, em progresso, resolvido ou fechado).',350)
