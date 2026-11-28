@@ -22,7 +22,7 @@
 Uma organização que usa o módulo:
 - `id uuid primary key`
 - `workspace_id uuid not null unique references workspaces(id)`
-- `organisation_type` — `consultancy` ou `operator`
+- `organisation_type` — `consultancy`, `operator` ou `both`
 - `display_name`
 - `status`
 - timestamps e actor de criação
@@ -99,8 +99,9 @@ As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas 
 
 ### 2.8. Evidências
 
-- `inspect_evidence`: metadados do objecto privado, organização, auditoria, recurso associado, autor, hash, MIME, tamanho, estado e retenção.
+- `inspect_evidence`: metadados do objecto privado, organização, auditoria, autor, hash, MIME, tamanho, estado e retenção. Não usar `resource_type + resource_id` como única ligação relacional.
 - `inspect_evidence_publications`: publicação explícita de uma evidência para uma auditoria/versão, com actor e instante.
+- `inspect_evidence_links`: associação tipada a resultado, finding, resposta ou relatório, através de FKs reais e constraints compostas; alternativa: tabelas de ligação separadas por tipo. Não aceitar IDs polimórficos sem FK.
 
 O caminho Storage não contém PII nem nomes de clientes. Constraint composta liga evidência e recurso à mesma auditoria/organização. A autorização de download é verificada por pedido.
 
@@ -316,3 +317,16 @@ Isto impede que um resultado de auditoria use, por erro ou manipulação, um cri
 ## 13. Verificação de email em convites
 
 Não assumir a existência de um claim JWT chamado `email_verified`. A aceitação deve ser autenticada e a verificação do estado do email deve ser feita no servidor através da identidade validada pelo Supabase Auth, confirmando o campo `email_confirmed_at` do utilizador autenticado e comparando o endereço normalizado com o destinatário do convite. O token é consumido atomicamente e o actor é derivado da sessão; o browser não escolhe o `user_id`.
+
+
+## 14. Evitar relações polimórficas sem integridade referencial
+
+A revisão identificou que expressões genéricas como `resource_type + resource_id` não criam uma FK real para cada tipo de recurso. Não devem ser a única forma de ligar evidências, publicações ou eventos a entidades.
+
+Preferência:
+- evidências ligadas por tabela de associação tipada, com FKs para os recursos suportados e CHECK que exige exactamente uma relação válida; ou
+- tabelas de associação separadas por tipo de recurso.
+
+Aplicar o mesmo princípio a publicações: evitar `resource_type/resource_id` sem FK. Resultados publicados devem estar ligados a uma submissão/snapshot concreta; relatórios a uma submissão; evidências a uma publicação de evidência; respostas a uma acção concreta.
+
+Constraints compostas devem preservar simultaneamente `inspect_organisation_id`, `audit_id` e, quando aplicável, `template_version_id`. O modelo físico não pode depender apenas da validação na aplicação.
