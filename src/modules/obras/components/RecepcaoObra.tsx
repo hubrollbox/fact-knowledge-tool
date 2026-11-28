@@ -52,7 +52,7 @@ export function RecepcaoObra({ obraId, workspaceId, canWrite }: Props) {
       }, { onConflict: 'obra_id' });
       if (error) throw error;
     },
-    onSuccess: async () => { setEstado(save.variables ?? 'em_preparacao'); await qc.invalidateQueries({ queryKey: ['obras-recepcao', obraId] }); toast({ title: 'Recepção guardada' }); },
+    onSuccess: async (_data, nextState) => { setEstado(nextState); await qc.invalidateQueries({ queryKey: ['obras-recepcao', obraId] }); toast({ title: 'Recepção guardada' }); },
     onError: (e: Error) => toast({ title: 'Não foi possível guardar', description: e.message, variant: 'destructive' }),
   });
   const porTratar = pendencias.filter((p) => !p.decisao || (p.decisao === 'reserva_aceite' && !p.justificacao.trim()));
