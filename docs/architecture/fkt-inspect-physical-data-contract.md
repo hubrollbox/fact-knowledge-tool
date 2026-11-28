@@ -216,7 +216,7 @@ Esta extensão é **inventário candidato para revisão em #175**, não DDL apro
 | Fornecedores/recepção | inspect_suppliers, inspect_food_products, inspect_receipts, inspect_receipt_items | Fornecedor, produto, lote, validade e parâmetros de recepção aplicáveis; aceitação/rejeição e evidência |
 | Rastreabilidade | inspect_lots, inspect_lot_events | Lotes de origem/destino e transformação ligados por FKs; eventos com actor/instante; pesquisa de origem/destino |
 | Validades | inspect_product_life_records | Abertura/preparação, origem, data definida pelo procedimento, responsável e estado |
-| Óleos | inspect_oil_control_records | Apenas após validação do âmbito e requisitos do piloto |
+| Óleos | inspect_oil_control_records | Registo manual básico incluído no MVP; critérios e frequências configurados pelo plano validado do estabelecimento |
 | Desvios | Extensão de inspect_findings e inspect_corrective_actions | Origem tipada; preservação do registo operacional; contenção, acção e verificação |
 
 ### Regras adicionais
