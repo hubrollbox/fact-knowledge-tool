@@ -31,30 +31,35 @@ const modules = [
   {
     name: 'FKT Works',
     description: 'Registo de visitas, ocorrências e acompanhamento de ações de fiscalização.',
+    status: 'Piloto fechado',
     icon: HardHat,
     href: '/modulos/obras',
   },
   {
     name: 'FKT Lex',
     description: 'Organização de processos, factos, documentos e prazos.',
+    status: 'Em preparação',
     icon: FileText,
     href: '/modulos/juridico',
   },
   {
     name: 'FKT Vet',
     description: 'Gestão de informação sobre animais, registos e ninhadas.',
+    status: 'Em preparação',
     icon: Dog,
     href: '/modulos/canil',
   },
   {
     name: 'FKT Dev',
     description: 'Organização de projetos, tarefas, issues e decisões técnicas.',
+    status: 'Em preparação',
     icon: Code,
     href: '/modulos/dev',
   },
   {
     name: 'FKT Inspect',
-    description: 'Auditorias, evidências e acompanhamento de não conformidades. Em preparação.',
+    description: 'Auditorias, evidências e acompanhamento de não conformidades.',
+    status: 'Planeado',
     icon: ClipboardCheck,
     href: '/modulos/inspect',
   },
@@ -135,12 +140,13 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {modules.map(({ name, description, icon: Icon, href }) => (
+              {modules.map(({ name, description, status, icon: Icon, href }) => (
                 <article key={name} className="flex flex-col rounded-lg border border-border bg-card p-6">
                   <div className="inline-flex items-center justify-center h-10 w-10 rounded-md bg-primary text-primary-foreground mb-4">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-semibold">{name}</h3>
+                  {status && <span className="mt-1 w-fit rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">{status}</span>}
                   <p className="text-sm text-muted-foreground leading-relaxed mt-2 flex-1">{description}</p>
                   <Button asChild variant="outline" className="mt-5 w-full">
                     <Link to={href}>Conhecer módulo <ArrowRight className="h-4 w-4 ml-2" /></Link>
