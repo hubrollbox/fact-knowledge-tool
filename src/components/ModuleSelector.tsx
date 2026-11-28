@@ -1,4 +1,4 @@
-import { Scale, Dog, Code, HardHat, LucideIcon } from 'lucide-react';
+import { FileText, Dog, Code, HardHat, LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { modulos } from '@/data/modulos';
