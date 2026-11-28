@@ -1503,6 +1503,76 @@ export type Database = {
           },
         ]
       }
+      juridico_conclusoes_snapshots: {
+        Row: {
+          aplicacao: Json | null
+          aplicacao_id: string | null
+          captured_at: string
+          captured_by: string | null
+          conclusao_id: string
+          factos_aplicacao: Json
+          factos_questao: Json
+          fontes_aplicacao: Json
+          fontes_questao: Json
+          id: string
+          processo_id: string
+          questao_id: string | null
+          workspace_id: string
+        }
+        Insert: {
+          aplicacao?: Json | null
+          aplicacao_id?: string | null
+          captured_at?: string
+          captured_by?: string | null
+          conclusao_id: string
+          factos_aplicacao?: Json
+          factos_questao?: Json
+          fontes_aplicacao?: Json
+          fontes_questao?: Json
+          id?: string
+          processo_id: string
+          questao_id?: string | null
+          workspace_id: string
+        }
+        Update: {
+          aplicacao?: Json | null
+          aplicacao_id?: string | null
+          captured_at?: string
+          captured_by?: string | null
+          conclusao_id?: string
+          factos_aplicacao?: Json
+          factos_questao?: Json
+          fontes_aplicacao?: Json
+          fontes_questao?: Json
+          id?: string
+          processo_id?: string
+          questao_id?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "juridico_conclusoes_snapshots_conclusao_scope_fk"
+            columns: ["conclusao_id", "processo_id", "workspace_id"]
+            isOneToOne: true
+            referencedRelation: "juridico_conclusoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_conclusoes_snapshots_process_fk"
+            columns: ["processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_processos"
+            referencedColumns: ["id", "workspace_id"]
+          },
+          {
+            foreignKeyName: "juridico_conclusoes_snapshots_questao_scope_fk"
+            columns: ["questao_id", "processo_id", "workspace_id"]
+            isOneToOne: false
+            referencedRelation: "juridico_questoes"
+            referencedColumns: ["id", "processo_id", "workspace_id"]
+          },
+        ]
+      }
       juridico_documentos: {
         Row: {
           categoria: string | null
