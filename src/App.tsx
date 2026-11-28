@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 import LandingPage from "./pages/LandingPage";
+import PrecosUtilizacao from "./pages/PrecosUtilizacao";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Index";
 import ConfiguracaoInicial from "./pages/ConfiguracaoInicial";
@@ -79,6 +80,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/precos" element={<PrecosUtilizacao />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/configuracao-inicial" element={<ProtectedRoute allowNoWorkspace><ConfiguracaoInicial /></ProtectedRoute>} />
             <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
