@@ -130,7 +130,7 @@ Não permitir UPDATE/DELETE directo pelo cliente externo. A substituição é no
 ## 7. Convites e grants
 
 - Tabela de convite não expõe token_hash nem destinatários a listagem externa.
-- Aceitação é RPC transaccional: normalizar email, verificar claim de email verificado da sessão, validar hash/expiração/uso, consumir token e criar grant com `auth.uid()`.
+- Aceitação é RPC transaccional: normalizar email, verificar claim de email da conta confirmado no servidor, validar hash/expiração/uso, consumir token e criar grant com `auth.uid()`.
 - Não permitir que a função receba destinatário `user_id`.
 - Reenvio invalida convite anterior e cria token novo.
 - Revogação altera estado e cria evento; não elimina grant.
