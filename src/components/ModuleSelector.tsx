@@ -43,7 +43,7 @@ export default function ModuleSelector({ onSelect, activeSlug }: ModuleSelectorP
                 <CardTitle className="text-lg">{mod.nome}</CardTitle>
                 {mod.destaque && (
                   <span className="text-[10px] uppercase tracking-wider border border-border rounded-full px-2 py-0.5 text-muted-foreground">
-                    {mod.emPreparacao ? 'Em piloto' : mod.destaque}
+                    {mod.destaque ?? (mod.emPreparacao ? 'Em preparação' : null)}
                   </span>
                 )}
                 <CardDescription>{mod.descricao}</CardDescription>
