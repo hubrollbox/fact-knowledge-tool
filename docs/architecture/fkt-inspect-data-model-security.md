@@ -280,3 +280,16 @@ Princípios agora explicitados:
 - RLS, Storage e constraints compostas têm de validar o mesmo âmbito.
 
 Esta decisão é proposta para revisão. Não representa implementação nem validação em runtime.
+
+
+## 13. Correcções resultantes da revisão arquitectural
+
+- Distinguir cliente contratual da entidade que opera legalmente o estabelecimento alimentar. A relação comercial não prova, por si, quem é o operador responsável.
+- A autorização externa do MVP é por auditoria concreta. Uma eventual relação de contacto ao nível do cliente não concede acesso.
+- Não colocar notas internas e conteúdo partilhável na mesma linha/tabela se o utilizador externo puder ler essa linha. Usar separação física ou projecções controladas; RLS não é controlo de ocultação de colunas.
+- Aceitação de convite exige email verificado da sessão igual ao destinatário normalizado; token de uso único armazenado como hash e consumo atómico.
+- URL assinada previamente emitida pode sobreviver à revogação até expirar. Para revogação imediata, avaliar proxy autenticado com autorização por pedido.
+- Separar ciclo de vida da auditoria do ciclo de vida da concessão e definir visibilidade por estado.
+- O cliente externo não altera resultados, critérios, medições originais, classificações nem verificações de eficácia. A resposta a acções atribuídas é a única escrita candidata ao MVP, sujeita a aprovação.
+
+Estas correcções são requisitos de desenho, não implementação. O modelo físico deve reflecti-las antes da primeira migração.
