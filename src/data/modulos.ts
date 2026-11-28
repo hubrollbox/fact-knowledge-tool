@@ -40,6 +40,8 @@ export const modulos: Modulo[] = [
     nome: 'FKT Lex',
     descricao: 'Processos, documentos e prazos',
     icone: 'Scale',
+    destaque: 'Em preparação',
+    emPreparacao: true,
     tagline: 'Organiza processos, prazos e documentos com rigor.',
     rotaPrincipal: '/juridico',
     descricaoLonga: [
@@ -71,6 +73,8 @@ export const modulos: Modulo[] = [
     nome: 'FKT Vet',
     descricao: 'Animais, ninhadas e alojamento',
     icone: 'Dog',
+    destaque: 'Em preparação',
+    emPreparacao: true,
     tagline: 'Gere animais, ninhadas e reservas de alojamento.',
     rotaPrincipal: '/canil',
     descricaoLonga: [
@@ -101,6 +105,8 @@ export const modulos: Modulo[] = [
     nome: 'FKT Dev',
     descricao: 'Projectos, issues e decisões técnicas',
     icone: 'Code',
+    destaque: 'Em preparação',
+    emPreparacao: true,
     tagline: 'Decisões técnicas documentadas, projectos sob controlo.',
     rotaPrincipal: '/dev',
     descricaoLonga: [
