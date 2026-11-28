@@ -301,9 +301,11 @@ Testar com roles reais (`anon`, `authenticated`) e claims reais de sessão nos t
 - Não assumir TTL fixo para URLs assinadas; preferir download autenticado com autorização revalidada em cada pedido. Se URL bearer for inevitável, definir o TTL mínimo compatível com o uso móvel e documentar que a revogação não é imediata.
 - Rever cardinalidade da relação cliente contratual/estabelecimento para contratos que abrangem múltiplos locais.
 
-## 10. Limites
+## 10. Limites e validação efectuada
 
-Este documento é um modelo lógico-relacional proposto, não migração SQL. A análise é estática e documental; não foram consultadas tabelas remotas, executados testes RLS nem verificados fluxos de UI. A implementação deve começar localmente, com pgTAP/CI, após revisão do esquema real. A BD remota única não deve ser alterada sem autorização específica.
+Este documento é um modelo lógico-relacional proposto, não migração SQL. Foi feita revisão estática do repositório e consulta read-only ao catálogo da única BD remota. Confirmou-se que não existem tabelas/bucket Inspect e que a constraint actual de módulos não permite ainda `inspect`. Foram também verificadas as políticas e constraints actuais de `workspaces` e `workspace_members`.
+
+Não foram executados testes RLS Inspect, porque o módulo ainda não tem tabelas nem políticas. Os testes CI actualmente verdes cobrem o estado existente do Core, não o Inspect. A implementação deve começar localmente, com pgTAP/CI, após fechar o modelo físico. A BD remota única não deve ser alterada sem autorização específica.
 
 
 ## 11. Compatibilidade com a cardinalidade actual de memberships do Core
@@ -372,7 +374,7 @@ Esta decisão substitui qualquer interpretação anterior de publicação genér
 
 A gestão de carteira exige uma associação explícita entre clientes e estabelecimentos, mesmo antes de existir uma auditoria. Por isso, `inspect_client_establishments` faz parte do modelo MVP e não é uma extensão futura.
 
-A associação é N:M e tem vigência/estado. A auditoria referencia a combinação cliente contratual + estabelecimento através de FK composta; não basta validar cada ID isoladamente.
+A associação é N:M e tem vigência/estado. Para o mesmo par cliente/estabelecimento não são permitidos períodos de vigência sobrepostos; intervalos usam semântica semiaberta `[valid_from, valid_until)` para permitir transição sem ambiguidade. Se o negócio exigir contratos simultâneos distintos para o mesmo par, deve existir entidade `inspect_contracts` própria antes de permitir duplicação. A auditoria referencia a associação concreta e guarda snapshot do identificador/referência contratual e do intervalo vigente à data da auditoria, através de FK composta; não basta validar cada ID isoladamente. A integridade temporal deve ser garantida na BD por exclusion constraint sobre intervalo (ou trigger transaccional equivalente, se a extensão necessária não estiver disponível), não apenas pela aplicação.
 
 O operador alimentar é uma entidade distinta do cliente contratual. O estabelecimento guarda o operador actualmente identificado, mas cada auditoria conserva um snapshot de `operator_party_id` (ou uma pendência justificada) no momento da sua criação/submissão. Uma alteração posterior do operador não modifica auditorias históricas.
 
