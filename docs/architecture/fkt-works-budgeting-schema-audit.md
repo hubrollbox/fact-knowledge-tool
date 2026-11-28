@@ -74,14 +74,73 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 ## 5. Pontos a resolver antes de fechar o desenho
 
 1. **Perspectiva comercial:** o orçamento é elaborado pelo empreiteiro, recebido de terceiro, ou ambos? A origem do ficheiro não determina o papel do utilizador.
-2. **IVA:** está decidido suportar preços com e sem IVA; falta fechar se a taxa é definida por linha ou por orçamento e a regra exacta de arredondamento.
+2. **Cálculos:** regras de precisão, arredondamento, descontos por linha e encargos explícitos definidas na secção 7.
 3. **Aprovação:** registar aprovação externa declarada no FKT; não é assinatura electrónica nem certificação.
 4. **Reaprovação:** definir quando uma edição posterior à aprovação exige nova aprovação e como se notifica a contraparte.
 5. **Perfis profissionais:** definir se Empreiteiro/Fiscal é escolhido por workspace ou por obra, sem confundir perfil profissional com papel de segurança.
-6. **Cálculos comerciais:** definir tratamento de descontos, retenções, encargos e moeda, se necessários no MVP.
+6. **Âmbito dos perfis:** decidir se Empreiteiro/Fiscal é escolhido por workspace ou por obra. Retenções/cauções/penalizações e descontos globais ficam fora do MVP.
 
 ## 6. Resultado
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. Ainda é necessário especificar os arredondamentos, reaprovação após edição e âmbito dos perfis antes de escrever a migração.
+A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. Antes da migração, ainda falta fechar o âmbito dos perfis profissionais e o fluxo de reaprovação após edição de orçamento aprovado.
+
+## 7. Regras de cálculo — decisão funcional de 28-11-2026
+
+Estas regras definem o comportamento do produto. Não constituem aconselhamento fiscal nem substituem validação contabilística/fiscal antes da entrada em produção.
+
+### Precisão e arredondamento
+
+- Quantidades: precisão até 4 casas decimais.
+- Preços unitários: precisão até 4 casas decimais.
+- Percentagens de desconto e taxas: guardar com precisão suficiente (pelo menos 4 casas decimais).
+- Valores monetários apresentados e persistidos: 2 casas decimais.
+- Usar tipos decimais exactos na base de dados e na lógica de cálculo; nunca usar ponto flutuante binário para valores monetários.
+- Calcular cada linha com precisão intermédia, arredondar a base tributável da linha a 2 casas decimais e calcular o IVA dessa linha sobre essa base arredondada.
+- Arredondamento monetário: ao cêntimo mais próximo; em empate exacto, afastar de zero (half-up).
+- O total do documento é a soma dos valores já arredondados por linha. Não recalcular o IVA global sobre a soma das bases, pois isso pode produzir diferenças de cêntimos.
+- Apresentar discriminação por taxa de IVA, com base tributável, IVA e total.
+
+### Preços com IVA incluído ou excluído
+
+- Cada orçamento define o modo de introdução/apresentação por predefinição: com IVA ou sem IVA.
+- Cada linha pode herdar o modo e a taxa do orçamento ou substituí-los explicitamente.
+- O modelo guarda sempre base tributável, taxa, IVA e total com IVA.
+- Quando o preço introduzido inclui IVA, o sistema calcula a base tributável por divisão pela taxa aplicável e determina o IVA como diferença entre total bruto e base arredondada, preservando o total introduzido ao cêntimo.
+- Quando o preço é introduzido sem IVA, calcula o IVA sobre a base tributável arredondada e soma-o para obter o total.
+- Não codificar taxas fiscais fixas. A taxa aplicável tem de ser seleccionada de uma configuração controlada e datada; a importação nunca deve inferir uma taxa em falta sem confirmação do utilizador.
+
+### Descontos
+
+- MVP: permitir desconto por linha, em percentagem ou valor fixo.
+- Um desconto é aplicado antes do cálculo do IVA.
+- Não permitir aplicar simultaneamente desconto percentual e fixo à mesma linha; o utilizador escolhe um método.
+- Validar que o desconto não excede o valor da linha.
+- Não incluir desconto global ao documento no primeiro MVP: a sua distribuição por linhas com taxas diferentes exige regras explícitas de imputação e reconciliação.
+- Descontos globais ficam para evolução posterior, com distribuição proporcional por base tributável e preservação dos grupos de taxa, sujeita a testes.
+
+### Encargos e custos adicionais
+
+- No MVP, representar custos adicionais cobrados ao cliente como linhas explícitas do orçamento, com descrição, valor e taxa de IVA própria/herdada.
+- Não aplicar sobretaxas globais ocultas.
+- Retenções, cauções, garantias, penalizações e encargos contratuais não são descontos nem linhas genéricas de preço; ficam fora do cálculo-base do MVP até haver requisitos específicos.
+- Custos internos de materiais, mão-de-obra, equipamentos e outros permanecem separados do preço proposto ao cliente.
+
+### Exemplos mínimos de teste
+
+1. Linha de 100,00 € sem IVA a 23%: base 100,00 €, IVA 23,00 €, total 123,00 €.
+2. Linha de 100,00 € com IVA incluído a 23%: total 100,00 €, base calculada 81,30 €, IVA 18,70 €.
+3. Linha de 3 × 10,1234 € sem IVA: cálculo intermédio 30,3702 €, base arredondada 30,37 € antes do IVA.
+4. Duas linhas com taxas distintas: apurar IVA por linha e apresentar subtotais separados por taxa.
+5. Desconto fixo ou percentual reduz a base tributável antes do IVA.
+6. Verba global sem quantidade nem preço unitário calcula imposto como uma linha normal.
+7. Preço negativo/desconto superior ao valor da linha deve ser rejeitado ou tratado por um tipo de linha de crédito explicitamente definido, nunca silenciosamente.
+8. Somatório do documento deve corresponder exactamente à soma dos totais de linha, incluindo diferenças de arredondamento.
+
+### Limitações deliberadas do MVP
+
+- Sem desconto global no documento.
+- Sem retenções/cauções/penalizações.
+- Sem motor de aconselhamento fiscal ou determinação automática de taxas.
+- Sem cálculo de pagamentos, facturação ou certificação de medições.
