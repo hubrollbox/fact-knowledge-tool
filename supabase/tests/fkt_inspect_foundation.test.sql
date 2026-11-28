@@ -79,6 +79,7 @@ SELECT ok(
 );
 
 
+-- Phase 1 contract: schema foundation only; no authenticated table grants or policies.
 -- Behavioural checks using a local fixture. No remote project is linked.
 INSERT INTO auth.users (id,aud,role,email,raw_user_meta_data,created_at,updated_at)
 VALUES
