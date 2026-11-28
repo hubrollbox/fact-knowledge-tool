@@ -72,6 +72,7 @@ Modelo de auditoria versionado:
 - secções e critérios pertencem a uma versão concreta;
 - cada critério guarda código estável, texto, instrução, tipo de resposta, aplicabilidade e referência normativa versionada;
 - uma versão publicada não é alterada; uma alteração cria versão nova.
+- versões devem ter chave única composta `(id, inspect_organisation_id)`; critérios devem ter chave única composta `(id, template_version_id, inspect_organisation_id)`.
 
 Critérios normativos não devem guardar apenas um URL genérico. Preservar diploma/fonte, artigo/ponto, versão/data de consulta e nota de aplicabilidade.
 
@@ -87,7 +88,7 @@ Unidade de auditoria:
 - `submitted_at`, `closed_at`, versão/submissão;
 - timestamps.
 
-Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. `contract_client_id` pode ser nulo em auditorias internas do operador.
+Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. A FK da versão deve usar `(template_version_id, inspect_organisation_id)`. `contract_client_id` pode ser nulo em auditorias internas do operador.
 
 ### 2.7. Resultados e medições
 
@@ -314,4 +315,4 @@ Isto impede que um resultado de auditoria use, por erro ou manipulação, um cri
 
 ## 13. Verificação de email em convites
 
-Não assumir a existência de um claim JWT chamado `email_verified`. A aceitação deve ser autenticada e a verificação do estado do email deve ser feita no servidor através da identidade validada pelo Supabase Auth (por exemplo, consulta autenticada ao utilizador e confirmação de `email_confirmed_at)), comparando o endereço normalizado com o destinatário do convite. O token é consumido atomicamente e o actor é derivado da sessão; o browser não escolhe o `user_id`.
+Não assumir a existência de um claim JWT chamado `email_verified`. A aceitação deve ser autenticada e a verificação do estado do email deve ser feita no servidor através da identidade validada pelo Supabase Auth, confirmando o campo `email_confirmed_at` do utilizador autenticado e comparando o endereço normalizado com o destinatário do convite. O token é consumido atomicamente e o actor é derivado da sessão; o browser não escolhe o `user_id`.
