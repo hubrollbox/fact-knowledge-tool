@@ -313,3 +313,19 @@ Requisitos vinculativos para o desenho físico:
 O desenho deve considerar funções RPC/Edge Function com identidade derivada da sessão e privilégios mínimos. Nenhuma função deve aceitar `user_id`, `workspace_id` ou organização como autoridade fornecida pelo cliente.
 
 A matriz fecha decisões funcionais do MVP. Não autoriza migração remota.
+
+
+## 15. Modelo relacional lógico
+
+O desenho relacional candidato, incluindo entidades, cardinalidades, constraints compostas, grupos RLS, Storage e testes pgTAP, está em [FKT Inspect — modelo relacional lógico e integridade](fkt-inspect-relational-model.md).
+
+Este modelo:
+- distingue parte contratante, operador alimentar e estabelecimento;
+- permite auditorias internas sem cliente contratual fictício;
+- mantém a auditoria como unidade de concessão externa;
+- separa convites pendentes de concessões activas;
+- separa notas internas de resultados/conteúdos publicados;
+- mantém respostas externas separadas das acções e findings originais;
+- usa snapshots para submissões e relatórios imutáveis.
+
+O desenho ainda exige revisão de PK/FK reais do Core, cardinalidades e políticas SQL antes de migrações. Não foi executado contra a BD remota.
