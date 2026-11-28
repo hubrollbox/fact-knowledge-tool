@@ -17,6 +17,32 @@ where module = 'vet'
   and category = 'Alojamento'
   and question = 'É possível gerir reservas de alojamento?';
 
+
+update public.fkt_support_faq
+set category = 'Diário e ocorrências',
+    answer = 'No FKT Works, cada obra tem um separador «Diário» para registar o que aconteceu em cada dia, incluindo trabalhos executados, técnico, condições meteorológicas, equipas, equipamentos, materiais e condicionantes. As ocorrências são registadas separadamente e podem incluir fotografia, descrição e localização. As acções permitem acompanhar responsáveis e prazos.',
+    reviewed_at = now()
+where module = 'works'
+  and question = 'O que posso registar no FKT Works?';
+
+update public.fkt_support_faq
+set answer = 'O FKT Lex organiza processos jurídicos. Cada processo pode reunir factos, questões, fontes, aplicação, conclusões, partes e intervenientes, documentos e prazos. A estrutura permite organizar uma análise FIRAC; não substitui o trabalho nem o aconselhamento de um profissional jurídico.',
+    reviewed_at = now()
+where module = 'lex'
+  and question = 'Para que serve o FKT Lex?';
+
+update public.fkt_support_faq
+set answer = 'O FKT Vet reúne fichas de animais, historial clínico, ninhadas, reservas e agenda. Na ficha de cada animal pode consultar os dados de identificação e os registos clínicos. O formulário de registo clínico permite indicar tipo, descrição, data, próxima data, produto, veterinário e custo.',
+    reviewed_at = now()
+where module = 'vet'
+  and question = 'Que informação posso organizar no FKT Vet?';
+
+update public.fkt_support_faq
+set answer = 'Não. O FKT Dev tem o seu próprio registo de issues por projecto, com tipo, prioridade e estado. No código actual não existe evidência de sincronização automática com GitHub Issues; não conte com sincronização entre as duas ferramentas.',
+    reviewed_at = now()
+where module = 'dev'
+  and question = 'O FKT Dev substitui o GitHub Issues?';
+
 insert into public.fkt_support_faq
   (module, category, question, answer, is_published, sort_order, reviewed_at)
 select v.module, v.category, v.question, v.answer, true, v.sort_order, now()
