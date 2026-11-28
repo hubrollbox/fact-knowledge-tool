@@ -40,7 +40,8 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
   const [descricao, setDescricao] = useState('');
   const [evidencia, setEvidencia] = useState('');
   const [evidenciaFotoId, setEvidenciaFotoId] = useState('none');
-  const { data: fotografias = [] } = useFotos({ ocorrenciaId });
+  const [mostrarFotografias, setMostrarFotografias] = useState(false);
+  const { data: fotografias = [] } = useFotos({ ocorrenciaId: mostrarFotografias ? ocorrenciaId : undefined });
   const fotografiasDisponiveis = fotografias.filter((foto) => !foto.pending);
 
   const { data: verificacoes = [], isLoading, isError } = useQuery<Verificacao[]>({
@@ -78,6 +79,7 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
       setDescricao('');
       setEvidencia('');
       setEvidenciaFotoId('none');
+      setMostrarFotografias(false);
       await qc.invalidateQueries({ queryKey });
       toast({ title: 'Verificação registada' });
     },
@@ -123,13 +125,14 @@ export function AcaoVerificacao({ acaoId, ocorrenciaId, workspaceId, estado, can
           </div>
           <div className="space-y-1">
             <Label>Fotografia da ocorrência (opcional)</Label>
-            <Select value={evidenciaFotoId} onValueChange={setEvidenciaFotoId}>
-              <SelectTrigger className="min-h-11"><SelectValue placeholder="Sem fotografia associada" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Sem fotografia</SelectItem>
-                {fotografiasDisponiveis.map((foto) => <SelectItem key={foto.id} value={foto.id}>{foto.legenda || 'Fotografia'} · {foto.capturada_em ? new Date(foto.capturada_em).toLocaleDateString('pt-PT') : 'Sem data'}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {!mostrarFotografias ? <Button type="button" variant="outline" className="min-h-10 w-full sm:w-auto" onClick={() => setMostrarFotografias(true)}>Escolher fotografia existente</Button>
+              : <Select value={evidenciaFotoId} onValueChange={setEvidenciaFotoId}>
+                  <SelectTrigger className="min-h-11"><SelectValue placeholder="Sem fotografia associada" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sem fotografia</SelectItem>
+                    {fotografiasDisponiveis.map((foto) => <SelectItem key={foto.id} value={foto.id}>{foto.legenda || 'Fotografia'} · {foto.capturada_em ? new Date(foto.capturada_em).toLocaleDateString('pt-PT') : 'Sem data'}</SelectItem>)}
+                  </SelectContent>
+                </Select>}
             <Label>Evidência escrita (opcional)</Label>
             <Textarea value={evidencia} onChange={(event) => setEvidencia(event.target.value)} rows={2} maxLength={5000} placeholder="Identifique medições, documentos ou fotografias que sustentam a verificação." />
           </div>
