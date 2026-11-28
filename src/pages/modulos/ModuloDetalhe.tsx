@@ -26,7 +26,7 @@ export default function ModuloDetalhe() {
 
   if (!modulo) return <Navigate to="/modulos" replace />;
 
-  const jsonLd = {
+  const jsonLd = modulo.slug === 'inspect' ? null : {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: `${modulo.nome} — FKT`,
@@ -36,7 +36,7 @@ export default function ModuloDetalhe() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <PublicHeader />
 
       <main className="flex-1">
@@ -142,9 +142,20 @@ export default function ModuloDetalhe() {
 
         {/* CTA FINAL */}
         <section className="max-w-3xl mx-auto px-6 py-20 text-center space-y-6 border-t border-border">
-          <h2 className="text-3xl font-bold tracking-tight">Pronto para começar?</h2>
-          <p className="text-muted-foreground">Activa o módulo {modulo.nome} no teu workspace em segundos.</p>
-          <div className="flex justify-center"><ModuloCTA modulo={modulo} /></div>
+          {modulo.slug === 'inspect' ? (
+            <>
+              <span className="inline-block text-[11px] uppercase tracking-wider border border-border rounded-full px-3 py-1 text-muted-foreground">Planeamento e revisão técnica</span>
+              <h2 className="text-3xl font-bold tracking-tight">Ainda não disponível</h2>
+              <p className="text-muted-foreground">O FKT Inspect está em definição. Não é possível activar ou utilizar o módulo nesta fase.</p>
+              <div className="flex justify-center"><ModuloCTA modulo={modulo} /></div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-3xl font-bold tracking-tight">Pronto para começar?</h2>
+              <p className="text-muted-foreground">Activa o módulo {modulo.nome} no teu workspace em segundos.</p>
+              <div className="flex justify-center"><ModuloCTA modulo={modulo} /></div>
+            </>
+          )}
         </section>
       </main>
 
