@@ -38,6 +38,21 @@ function ErrorToast(error: unknown, fallback: string) {
   toast.error(error instanceof Error ? error.message : fallback);
 }
 
+function snapshotDelta(previous: unknown, current: unknown, idKey: 'facto_id' | 'fonte_id') {
+  const before = Array.isArray(previous) ? previous as Record<string, any>[] : [];
+  const after = Array.isArray(current) ? current as Record<string, any>[] : [];
+  const beforeIds = new Set(before.map(item => item[idKey]));
+  const afterIds = new Set(after.map(item => item[idKey]));
+  return {
+    added: after.filter(item => !beforeIds.has(item[idKey])),
+    removed: before.filter(item => !afterIds.has(item[idKey])),
+  };
+}
+
+function snapshotItemLabel(item: Record<string, any>) {
+  return item.descricao ?? item.titulo ?? item.referencia ?? item.facto_id ?? item.fonte_id ?? 'Registo sem descrição';
+}
+
 export function PartesTab({ processoId }: { processoId: string }) {
   const { data: partes = [], isLoading } = usePartes(processoId);
   const create = useCreateParte(processoId);
@@ -407,6 +422,16 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
             const previousSnapshot: any = previousVersion ? snapshots.find(item => item.conclusao_id === previousVersion.id) : null;
             const expanded = expandedComparison === c.id;
             const jsonList = (value: unknown) => Array.isArray(value) ? value as any[] : [];
+            const relationDeltas = [
+              { label: 'Factos da questão', ...snapshotDelta(previousSnapshot?.factos_questao, currentSnapshot?.factos_questao, 'facto_id') },
+              { label: 'Fontes da questão', ...snapshotDelta(previousSnapshot?.fontes_questao, currentSnapshot?.fontes_questao, 'fonte_id') },
+              { label: 'Factos da aplicação', ...snapshotDelta(previousSnapshot?.factos_aplicacao, currentSnapshot?.factos_aplicacao, 'facto_id') },
+              { label: 'Fontes da aplicação', ...snapshotDelta(previousSnapshot?.fontes_aplicacao, currentSnapshot?.fontes_aplicacao, 'fonte_id') },
+            ];
+            const previousApplication = previousSnapshot?.aplicacao ?? {};
+            const currentApplication = currentSnapshot?.aplicacao ?? {};
+            const changedApplicationFields = [...new Set([...Object.keys(previousApplication), ...Object.keys(currentApplication)])]
+              .filter(key => JSON.stringify(previousApplication[key]) !== JSON.stringify(currentApplication[key]));
             return <div key={c.id} className="space-y-3 rounded-md border p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">v{c.versao}</Badge>
@@ -432,7 +457,26 @@ export function ConclusoesTab({ processoId, onNavigate }: { processoId: string; 
                     <p className="text-xs text-muted-foreground">Factos: {jsonList(currentSnapshot?.factos_aplicacao).length} · Fontes: {jsonList(currentSnapshot?.fontes_aplicacao).length}</p>
                     {!currentSnapshot && <p className="text-xs text-amber-700">Snapshot histórico indisponível.</p>}
                   </div>
-                  <p className="text-xs text-muted-foreground md:col-span-2">Comparação lado a lado do texto e do número de factos/fontes associados à aplicação em cada versão. Não substitui uma comparação semântica detalhada.</p>
+                  <div className="space-y-3 md:col-span-2">
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold">Alterações nas relações preservadas</p>
+                      {relationDeltas.map(delta => (
+                        <div key={delta.label} className="space-y-1">
+                          <p className="text-xs font-medium">{delta.label}</p>
+                          {delta.added.map(item => <p key={item.facto_id ?? item.fonte_id} className="text-xs text-emerald-700">+ Adicionado: {snapshotItemLabel(item)}</p>)}
+                          {delta.removed.map(item => <p key={item.facto_id ?? item.fonte_id} className="text-xs text-destructive">− Removido: {snapshotItemLabel(item)}</p>)}
+                          {delta.added.length===0 && delta.removed.length===0 && <p className="text-xs text-muted-foreground">Sem alterações.</p>}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold">Campos da aplicação alterados</p>
+                      {changedApplicationFields.length ? changedApplicationFields.map(key => (
+                        <p key={key} className="text-xs"><strong>{key}:</strong> {String(previousApplication[key] ?? '—')} → {String(currentApplication[key] ?? '—')}</p>
+                      )) : <p className="text-xs text-muted-foreground">Sem alterações nos campos da aplicação.</p>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">O texto das conclusões e as relações de factos/fontes são apresentados lado a lado e com as entradas adicionadas ou removidas identificadas.</p>
+                  </div>
                 </div>}
               </div>}
               {c.aplicacao_id && <div className="space-y-1 text-xs">
