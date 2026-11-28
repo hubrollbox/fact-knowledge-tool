@@ -7,7 +7,7 @@ describe('public module catalogue', () => {
 
     expect(inspect).toBeDefined();
     expect(inspect?.nome).toBe('FKT Inspect');
-    expect(inspect?.destaque).toBe('Planeado');
+    expect(inspect?.destaque).toBe('Próximo MVP');
     expect(inspect?.emPreparacao).toBe(true);
     expect(inspect?.rotaPrincipal).toBeUndefined();
   });
