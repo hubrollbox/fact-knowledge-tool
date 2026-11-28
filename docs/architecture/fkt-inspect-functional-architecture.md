@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Proposta aprovada para documentação e decomposição em issues; não implementada nem validada como produto.** O primeiro domínio previsto é segurança alimentar e higiene na restauração. O FKT Works mantém prioridade de conclusão do MVP; esta documentação não autoriza desvio de âmbito nem alterações imediatas ao código.
+**Âmbito funcional aprovado para preparação do MVP; ainda não implementado nem validado como produto.** Em 28/11/2026, a prioridade foi alterada: o FKT Inspect passa a ser o próximo MVP. O primeiro domínio é segurança alimentar e higiene na restauração. A implementação depende do fecho do modelo de dados/RLS e da validação profissional do catálogo inicial.
 
 ## 1. Objectivo e posicionamento
 
