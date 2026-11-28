@@ -22,10 +22,22 @@ export function ObrasDashboard() {
         {canWrite && <Button asChild size="sm"><Link to="/obras/nova"><Plus className="h-4 w-4 mr-1" />Nova obra</Link></Button>}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
-        <div><h2 className="text-sm font-semibold">Acompanhamento operacional</h2><p className="text-xs text-muted-foreground">Consulte responsáveis, prazos e acções pendentes.</p></div>
-        <div className="flex flex-wrap gap-2"><Button asChild size="sm" variant="outline"><Link to="/obras/formularios"><ClipboardList className="mr-2 h-4 w-4" />Modelos de formulários</Link></Button><Button asChild size="sm" variant="outline"><Link to="/obras/acoes"><ListChecks className="mr-2 h-4 w-4" />Fila de acções</Link></Button></div>
-      </div>
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Ocorrências por resolver</h2>
+        {!abertas?.length ? <p className="text-sm text-muted-foreground">Nenhuma ocorrência por resolver.</p> : (
+          <div className="space-y-2">
+            {abertas.map((oc) => (
+              <Link key={oc.id} to={`/obras/${oc.obra_id}/ocorrencia/${oc.id}`} className="flex items-center justify-between gap-2 border border-border rounded-md p-3 hover:bg-muted/50">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{oc.titulo}</div>
+                  <div className="text-xs text-muted-foreground">{(oc.obras as { nome: string } | null)?.nome}</div>
+                </div>
+                <Badge variant={gravidadeVariant(oc.gravidade)}>{GRAVIDADES[oc.gravidade as keyof typeof GRAVIDADES]}</Badge>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Obras</h2>
@@ -59,22 +71,14 @@ export function ObrasDashboard() {
         )}
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Ocorrências por resolver</h2>
-        {!abertas?.length ? <p className="text-sm text-muted-foreground">Nenhuma ocorrência por resolver.</p> : (
-          <div className="space-y-2">
-            {abertas.map((oc) => (
-              <Link key={oc.id} to={`/obras/${oc.obra_id}/ocorrencia/${oc.id}`} className="flex items-center justify-between gap-2 border border-border rounded-md p-3 hover:bg-muted/50">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium truncate">{oc.titulo}</div>
-                  <div className="text-xs text-muted-foreground">{(oc.obras as { nome: string } | null)?.nome}</div>
-                </div>
-                <Badge variant={gravidadeVariant(oc.gravidade)}>{GRAVIDADES[oc.gravidade as keyof typeof GRAVIDADES]}</Badge>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
+        <div><h2 className="text-sm font-semibold">Acompanhamento operacional</h2><p className="text-xs text-muted-foreground">Consulte responsáveis, prazos e acções pendentes.</p></div>
+        <div className="flex flex-wrap gap-2"><Button asChild size="sm" variant="outline"><Link to="/obras/formularios"><ClipboardList className="mr-2 h-4 w-4" />Modelos de formulários</Link></Button><Button asChild size="sm" variant="outline"><Link to="/obras/acoes"><ListChecks className="mr-2 h-4 w-4" />Fila de acções</Link></Button></div>
+      </div>
+
+
     </div>
   );
 }
