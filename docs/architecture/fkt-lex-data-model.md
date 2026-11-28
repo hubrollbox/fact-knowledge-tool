@@ -101,7 +101,9 @@ Estes pontos são um registo histórico da auditoria de 20-11-2026, não uma afi
 
 - O repositório documenta os separadores Resumo, Factos, Questões, Fontes, Aplicação, Conclusões, Partes, Documentos e Prazos.
 - As FAQ de produto incluem percursos para criar processos, navegar no detalhe, estruturar a análise FIRAC e gerar o relatório PDF. A presença dessas instruções não comprova que todos os fluxos tenham passado testes end-to-end.
-- A versão de conclusões e o histórico jurídico devem ser considerados não validados até existir confirmação explícita do esquema, das políticas RLS, dos testes e do comportamento da interface.
+- A migração `20261120145052_fkt_lex_immutable_conclusion_audit.sql` consta do histórico remoto de migrações consultado em 28-11-2026. Implementa versões de conclusão imutáveis, eventos de ciclo de revisão e funções de transição (`rascunho` → `em_revisao` → `final`, com devolução e reabertura controladas). A aplicação da migração está confirmada; isso não equivale a validação end-to-end da interface.
+- A migração `20261128130000_fkt_lex_conclusion_context_snapshots.sql` existe no repositório, mas não consta do histórico remoto consultado em 28-11-2026. A captura imutável do contexto de factos, fontes e aplicação ainda não deve ser apresentada como funcionalidade operacional.
+- A própria migração de snapshots indica que as versões anteriores não são reconstruídas; não se pode afirmar que o contexto histórico antigo esteja preservado.
 - Não declarar o FKT Lex pronto para processos reais enquanto não forem testados isolamento entre workspaces, permissões por função, upload e leitura segura de documentos, PDF e fluxos completos de análise/conclusão.
 
 ### Navegação e identidade visual
@@ -110,15 +112,14 @@ Estes pontos são um registo histórico da auditoria de 20-11-2026, não uma afi
 - Não deve aparecer no login, no dashboard geral, no selector de módulos ou em componentes comuns fora do contexto Lex.
 - O ícone genérico do Core e os ícones dos restantes módulos mantêm-se independentes.
 
-## 7. Sequência de implementação
+## 7. Próximos passos de validação
 
-1. Corrigir resolução do workspace e acesso seguro a documentos.
-2. Fechar o esquema relacional e migrações, com RLS, índices e integridade referencial.
-3. Implementar CRUD de partes, factos, questões, fontes, documentos e prazos.
-4. Implementar FIRAC por questão, com ligações verificáveis.
-5. Implementar histórico, tarefas, alertas e relatórios.
-6. Testar permissões com owner, admin, editor e viewer; testar isolamento entre workspaces.
-7. Só depois considerar o módulo pronto para uso com processos reais.
+1. Rever a migração de snapshots antes de a aplicar à BD remota; confirmar integridade, RLS, privilégios e triggers.
+2. Aplicar a migração apenas na sequência normal de deploy da única BD oficial e confirmar o registo no histórico remoto.
+3. Executar os testes pgTAP e testes de integração da criação de versões, captura de contexto e transições de estado.
+4. Testar owner, admin, editor e viewer, incluindo isolamento entre workspaces e ausência de acesso anónimo.
+5. Validar upload e leitura segura de documentos, relatório PDF e percurso FIRAC completo.
+6. Só depois considerar o módulo pronto para processos reais.
 
 ## 8. Decisões ainda necessárias
 
