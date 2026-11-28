@@ -293,3 +293,23 @@ Esta decisão é proposta para revisão. Não representa implementação nem val
 - O cliente externo não altera resultados, critérios, medições originais, classificações nem verificações de eficácia. A resposta a acções atribuídas é a única escrita candidata ao MVP, sujeita a aprovação.
 
 Estas correcções são requisitos de desenho, não implementação. O modelo físico deve reflecti-las antes da primeira migração.
+
+
+## 14. Matriz de permissões externas aprovada para desenho
+
+Consultar [FKT Inspect — matriz de permissões de acesso externo](fkt-inspect-external-access-permissions-matrix.md).
+
+Requisitos vinculativos para o desenho físico:
+- concessão por auditoria concreta; permissões por operação;
+- acesso de leitura externo apenas depois de submissão e publicação explícita;
+- separação física/lógica de notas internas e conteúdo partilhável;
+- respostas externas e anexos associados a acções atribuídas, sem alterar o registo original;
+- convite com email verificado, token hash, uso único e consumo atómico;
+- bucket privado; autorização antes de cada emissão de URL/download/upload;
+- TTL inicial de URL assinada de 60 segundos, reconhecendo que não permite revogação instantânea;
+- RLS e constraints compostas para todos os recursos e operações;
+- histórico append-only para concessões, publicações, downloads sensíveis e respostas.
+
+O desenho deve considerar funções RPC/Edge Function com identidade derivada da sessão e privilégios mínimos. Nenhuma função deve aceitar `user_id`, `workspace_id` ou organização como autoridade fornecida pelo cliente.
+
+A matriz fecha decisões funcionais do MVP. Não autoriza migração remota.
