@@ -126,6 +126,42 @@ export const modulos: Modulo[] = [
       { q: 'Suporta Markdown?', a: 'Sim, na maioria dos campos longos.' },
     ],
   },
+  ,
+  {
+    slug: 'inspect',
+    nome: 'FKT Inspect',
+    descricao: 'Auditorias, evidências e acompanhamento de não conformidades',
+    icone: 'ClipboardCheck',
+    destaque: 'Planeado',
+    emPreparacao: true,
+    tagline: 'Auditorias estruturadas, evidências rastreáveis e acompanhamento de ações correctivas.',
+    descricaoLonga: [
+      'O FKT Inspect está a ser planeado para apoiar consultores, auditores e organizações na preparação e execução de auditorias, começando pela segurança alimentar e higiene em estabelecimentos de restauração.',
+      'A proposta liga critérios de auditoria, observações, medições, evidências, não conformidades e ações correctivas, mantendo o histórico e a versão do modelo utilizado.',
+      'O módulo ainda não está implementado nem disponível para utilização. O seu âmbito, modelo de dados e arquitectura de segurança encontram-se em documentação e revisão. O FKT Works mantém prioridade de conclusão do MVP.',
+    ],
+    funcionalidades: [
+      { icone: 'ClipboardCheck', titulo: 'Auditorias estruturadas', descricao: 'Preparação e execução de auditorias com modelos versionados e critérios definidos.' },
+      { icone: 'Camera', titulo: 'Evidências e medições', descricao: 'Associação de fotografias, documentos, observações e medições aos critérios verificados.' },
+      { icone: 'ListChecks', titulo: 'Não conformidades', descricao: 'Registo de constatações, responsáveis, prazos e ações correctivas.' },
+      { icone: 'ShieldCheck', titulo: 'Rastreabilidade', descricao: 'Histórico de alterações, submissões e relatórios associados a cada auditoria.' },
+      { icone: 'Users', titulo: 'Consultoria e controlo interno', descricao: 'Concepção para consultores com vários clientes e empresas que auditam os próprios estabelecimentos.' },
+    ],
+    fluxo: [
+      { titulo: 'Define o âmbito', descricao: 'Identifica o estabelecimento, a actividade e o modelo de auditoria aplicável.' },
+      { titulo: 'Executa a auditoria', descricao: 'Regista resultados, observações, medições e evidências por critério.' },
+      { titulo: 'Regista constatações', descricao: 'Documenta não conformidades e respectivas evidências.' },
+      { titulo: 'Acompanha acções', descricao: 'Atribui responsáveis e prazos e recebe respostas às acções correctivas.' },
+      { titulo: 'Verifica e emite relatório', descricao: 'O auditor verifica a eficácia e emite uma versão identificada do relatório.' },
+    ],
+    faq: [
+      { q: 'O FKT Inspect já está disponível?', a: 'Não. Está em fase de planeamento e revisão técnica. Ainda não está implementado nem disponível para utilização.' },
+      { q: 'Qual é a primeira área prevista?', a: 'Segurança alimentar e higiene em estabelecimentos de restauração e preparação de refeições. A aplicação a outros sectores exige análise própria.' },
+      { q: 'O FKT Inspect substitui um sistema HACCP ou uma auditoria oficial?', a: 'Não. A ferramenta destina-se a organizar auditorias, evidências e acções. Não substitui a responsabilidade do operador alimentar, a análise de perigos específica, a consultoria especializada, a fiscalização oficial ou a certificação.' },
+      { q: 'Quem poderá utilizar o módulo?', a: 'A concepção prevê consultores e auditores que trabalham com vários clientes, bem como empresas que realizam controlos internos nos seus estabelecimentos.' },
+    ],
+  }
+
 ];
 
 export function getModulo(slug: string) {
