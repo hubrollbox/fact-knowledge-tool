@@ -164,7 +164,7 @@ Decisões de produto aprovadas para planeamento:
 - clientes e estabelecimentos como entidades próprias do domínio;
 - acesso externo delimitado;
 - Works continua prioritário;
-- sem alterações ao código ou à base de dados até à aprovação técnica das issues.
+- implementação faseada após fecho do modelo de dados/RLS; sem alterações à BD remota sem revisão e autorização explícita.
 
 Este documento descreve o âmbito pretendido. A implementação e a validação devem ser acompanhadas nas issues associadas.
 
