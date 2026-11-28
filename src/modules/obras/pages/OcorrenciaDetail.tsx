@@ -14,6 +14,7 @@ import { AcompanhamentoOcorrencia } from '../components/AcompanhamentoOcorrencia
 import { OcorrenciasRelacionadas } from '../components/OcorrenciasRelacionadas';
 import { ClassificacaoOcorrencia } from '../components/ClassificacaoOcorrencia';
 import { EditarRegistoDialog } from '../components/EditarRegistoDialog';
+import { AcaoDialog } from '../components/AcaoDialog';
 import { ESTADOS_ACAO, ESTADOS_OCORRENCIA, GRAVIDADES, gravidadeVariant } from '../types/obras';
 
 function dataPt(value?: string | null) {
@@ -45,7 +46,10 @@ export function OcorrenciaDetail() {
     <main className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Button asChild variant="ghost" size="sm"><Link to={visitaUrl}><ArrowLeft className="mr-1 h-4 w-4" />{visita ? 'Voltar à visita' : obra.nome}</Link></Button>
-        {ocorrencia.visita_id && <Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/visita/${ocorrencia.visita_id}/relatorio`}><FileText className="mr-2 h-4 w-4" />Relatório da visita</Link></Button>}
+        <div className="flex flex-wrap items-center gap-2">
+          {canWrite && <AcaoDialog obraId={obra.id} ocorrencias={[ocorrencia]} visitas={visita ? [visita] : []} ocorrenciaId={ocorrencia.id} visitaId={visita?.id} triggerLabel="Criar acção ligada" />}
+          {ocorrencia.visita_id && <Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/visita/${ocorrencia.visita_id}/relatorio`}><FileText className="mr-2 h-4 w-4" />Relatório da visita</Link></Button>}
+        </div>
       </div>
 
       <header className="space-y-3">
