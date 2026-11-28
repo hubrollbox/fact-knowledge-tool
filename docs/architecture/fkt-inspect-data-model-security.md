@@ -44,7 +44,7 @@ Entidade auditada/contratante gerida pela organização Inspect:
 - referência/estado da relação comercial;
 - timestamps.
 
-A entidade legal subjacente é registada uma única vez em `inspect_parties` e pode assumir o papel de cliente contratual e/ou operador alimentar. O cliente contratual não é utilizador nem workspace e não concede acesso externo por si só.
+A entidade legal subjacente é registada uma única vez por organização Inspect em `inspect_parties` e pode assumir o papel de cliente contratual e/ou operador alimentar. Não existe identidade global nem partilha transversal entre organizações no MVP. O cliente contratual não é utilizador nem workspace e não concede acesso externo por si só.
 
 ### Estabelecimento
 Local físico:
