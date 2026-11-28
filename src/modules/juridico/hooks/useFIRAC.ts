@@ -374,6 +374,19 @@ export function useConclusoes(processoId: string) {
   });
 }
 
+export function useConclusaoSnapshots(processoId: string) {
+  return useQuery({
+    queryKey: ['juridico_conclusoes_snapshots', processoId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('juridico_conclusoes_snapshots')
+        .select('*').eq('processo_id', processoId).order('captured_at', { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!processoId,
+  });
+}
+
 export function useConclusaoEventos(processoId: string) {
   return useQuery({
     queryKey: ['juridico_conclusoes_eventos', processoId],
