@@ -22,12 +22,18 @@ BEGIN
     IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = format('public.%I', _table)::regclass) THEN
       RAISE EXCEPTION 'RLS is not enabled on public.%', _table;
     END IF;
+  END LOOP;
+
+  -- Public/anonymous access is forbidden specifically for conclusions, events and snapshots.
+  FOREACH _table IN ARRAY ARRAY[
+    'juridico_conclusoes','juridico_conclusoes_eventos','juridico_conclusoes_snapshots'
+  ] LOOP
     IF has_table_privilege('anon', format('public.%I', _table), 'SELECT')
       OR has_table_privilege('anon', format('public.%I', _table), 'INSERT')
       OR has_table_privilege('anon', format('public.%I', _table), 'UPDATE')
       OR has_table_privilege('anon', format('public.%I', _table), 'DELETE')
       OR has_table_privilege('anon', format('public.%I', _table), 'TRUNCATE') THEN
-      RAISE EXCEPTION 'anon retains direct privileges on public.%', _table;
+      RAISE EXCEPTION 'anon retains direct privileges on protected history table public.%', _table;
     END IF;
   END LOOP;
 
