@@ -56,7 +56,7 @@ A party do cliente pertence à mesma Organização Inspect por constraint compos
 Representa o local físico:
 - `id`
 - `inspect_organisation_id`
-- `operator_party_id` (entidade que opera o estabelecimento, quando identificada)
+- `operator_party_id nullable` (entidade que opera o estabelecimento); quando desconhecida na criação, registar a pendência e impedir que a auditoria a apresente como identificada
 - nome, morada, actividade e estado;
 - timestamps.
 
@@ -279,7 +279,7 @@ Testar com roles reais (`anon`, `authenticated`) e claims reais de sessão nos t
 - Decidir se notas internas e resultados partilháveis exigem tabelas separadas ou snapshot publicado; preferência por tabelas separadas para conteúdo confidencial.
 - Confirmar comportamento de convite/entrega de email e recuperação de conta.
 - Confirmar política legal de retenção e eliminação.
-- Rever se o TTL de 60 segundos é operacionalmente compatível com downloads móveis.
+- Não assumir TTL fixo para URLs assinadas; preferir download autenticado com autorização revalidada em cada pedido. Se URL bearer for inevitável, definir o TTL mínimo compatível com o uso móvel e documentar que a revogação não é imediata.
 - Rever cardinalidade da relação cliente contratual/estabelecimento para contratos que abrangem múltiplos locais.
 
 ## 10. Limites
