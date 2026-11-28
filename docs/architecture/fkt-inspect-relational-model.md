@@ -1,0 +1,285 @@
+# FKT Inspect — modelo relacional lógico e integridade
+
+## Estado
+
+**Desenho lógico para revisão técnica.** Este documento traduz a arquitectura funcional e a matriz de permissões num modelo relacional candidato. Os nomes são propostos, não são nomes SQL aprovados. Não contém migração executável e não autoriza alterações à BD remota.
+
+## 1. Princípios
+
+1. Uma única instância Supabase FKT e a regra Core actual de workspace principal mantêm-se.
+2. Uma Organização Inspect pertence a um workspace FKT. A relação proposta é 1:1, com `workspace_id` único e obrigatório.
+3. Clientes, entidades operadoras e estabelecimentos são conceitos distintos.
+4. A auditoria é a unidade de trabalho e de concessão externa no MVP.
+5. Cada relação filha transporta as chaves de âmbito necessárias para constraints compostas; não confiar apenas em IDs isolados.
+6. RLS deny-by-default complementa, mas não substitui, constraints e validações de domínio.
+7. Dados internos e dados publicados externamente têm separação física.
+8. Registos submetidos/publicados são versionados e não reescritos silenciosamente.
+
+## 2. Modelo de entidades proposto
+
+### 2.1. `inspect_organisations`
+
+Uma organização que usa o módulo:
+- `id uuid primary key`
+- `workspace_id uuid not null unique references workspaces(id)`
+- `organisation_type` — `consultancy` ou `operator`
+- `display_name`
+- `status`
+- timestamps e actor de criação
+
+A relação 1:1 é deliberada para não contornar o modelo Core. Não criar organizações Inspect por cliente nem workspaces por estabelecimento.
+
+### 2.2. `inspect_parties`
+
+Entidades legais/organizacionais envolvidas:
+- `id`
+- `inspect_organisation_id`
+- designação e identificadores estritamente necessários;
+- tipo de entidade e estado;
+- timestamps.
+
+Uma party pode assumir diferentes papéis na relação comercial e operacional. Evitar duplicar a mesma entidade quando cliente contratual e operador são a mesma pessoa colectiva/singular.
+
+### 2.3. `inspect_clients`
+
+Representa a relação de cliente contratual gerida pela organização Inspect:
+- `id`
+- `inspect_organisation_id`
+- `party_id` (parte contratante)
+- referência/estado da relação comercial;
+- timestamps.
+
+A party do cliente pertence à mesma Organização Inspect por constraint composta. A tabela não concede acesso externo.
+
+### 2.4. `inspect_establishments`
+
+Representa o local físico:
+- `id`
+- `inspect_organisation_id`
+- `operator_party_id` (entidade que opera o estabelecimento, quando identificada)
+- nome, morada, actividade e estado;
+- timestamps.
+
+Para uma consultora, o estabelecimento pertence à sua carteira e identifica o operador. Para uma empresa que audita internamente, a party operadora pertence à própria organização Inspect e não é necessário inventar um cliente contratual. A relação cliente contratual ↔ estabelecimento é registada na auditoria, permitindo que cliente e operador coincidam ou sejam diferentes.
+
+Se houver necessidade de gerir contratos que abrangem estabelecimentos sem auditoria ainda criada, pode acrescentar-se uma relação explícita `inspect_client_establishments`; não a introduzir sem caso funcional validado.
+
+### 2.5. `inspect_audit_templates`, `inspect_audit_template_versions`, `inspect_audit_sections`, `inspect_audit_criteria`
+
+Modelo de auditoria versionado:
+- template pertence à organização;
+- versão é imutável depois de publicada;
+- secções e critérios pertencem a uma versão concreta;
+- cada critério guarda código estável, texto, instrução, tipo de resposta, aplicabilidade e referência normativa versionada;
+- uma versão publicada não é alterada; uma alteração cria versão nova.
+
+Critérios normativos não devem guardar apenas um URL genérico. Preservar diploma/fonte, artigo/ponto, versão/data de consulta e nota de aplicabilidade.
+
+### 2.6. `inspect_audits`
+
+Unidade de auditoria:
+- `id`
+- `inspect_organisation_id`
+- `establishment_id`
+- `contract_client_id nullable`
+- `template_version_id`
+- âmbito, datas, estado, auditor responsável;
+- `submitted_at`, `closed_at`, versão/submissão;
+- timestamps.
+
+Constraints compostas garantem que estabelecimento, cliente contratual e versão de modelo pertencem à mesma organização. `contract_client_id` pode ser nulo em auditorias internas do operador.
+
+### 2.7. Resultados e medições
+
+- `inspect_audit_results`: uma linha por critério da versão aplicada, estado, observação partilhável/factual, autor e timestamps.
+- `inspect_audit_measurements`: valor, unidade, parâmetro, equipamento/local, instante de recolha, autor, limite/regra aplicável e referência/versão da regra.
+
+As notas internas do auditor ficam em `inspect_audit_internal_notes`, separadas das tabelas de resultados partilháveis. Não confiar em RLS para esconder colunas.
+
+### 2.8. Evidências
+
+- `inspect_evidence`: metadados do objecto privado, organização, auditoria, recurso associado, autor, hash, MIME, tamanho, estado e retenção.
+- `inspect_evidence_publications`: publicação explícita de uma evidência para uma auditoria/versão, com actor e instante.
+
+O caminho Storage não contém PII nem nomes de clientes. Constraint composta liga evidência e recurso à mesma auditoria/organização. A autorização de download é verificada por pedido.
+
+### 2.9. Não conformidades e acções
+
+- `inspect_findings`: auditoria, resultado de origem, descrição factual, classificação/metodologia, estado, prazo e responsável.
+- `inspect_corrective_actions`: finding, descrição, responsável interno/externo, prazo e estado.
+- `inspect_action_responses`: submissão externa separada, autor autenticado, texto, instante do servidor e estado de revisão.
+- `inspect_action_response_evidence`: liga evidência submetida à resposta concreta.
+- `inspect_action_verifications`: registos internos append-only de verificação de implementação/eficácia.
+
+O utilizador externo não altera o finding nem a acção original; cria uma resposta. Só auditor autorizado pode verificar eficácia ou fechar.
+
+### 2.10. Relatórios e publicações
+
+- `inspect_audit_submissions`: snapshot imutável da submissão, número/versão, actor, instante, hash do payload.
+- `inspect_reports`: ficheiro emitido, versão do template, hash, emissor, instante e estado.
+- `inspect_publications`: publicação externa explícita de resumo/resultados/relatório/evidências, com versão, actor, instante e eventual revogação.
+
+O relatório final é um artefacto imutável. Correcções geram adenda ou nova emissão ligada à anterior.
+
+### 2.11. Convites e concessões
+
+Separar convite pendente de concessão activa:
+
+- `inspect_access_invitations`: organização, auditoria, email normalizado, token_hash, validade, estado, autor, consumo; sem `user_id` fornecido pelo browser.
+- `inspect_access_grants`: organização, auditoria, destinatário `user_id`, estado, criado/aceite/revogado/expirado, autor e motivo.
+- `inspect_access_grant_permissions`: concessão e permissão enum/controlada.
+- `inspect_access_events`: eventos append-only de envio, reenvio, aceitação, alteração de permissões, expiração e revogação.
+
+Aceitação através de RPC/Edge Function autenticada: confirmar email verificado da sessão, token válido e não consumido; consumir atomicamente; derivar `auth.uid()`; criar concessão. Não aceitar `user_id` do cliente como autoridade.
+
+A concessão é por auditoria concreta. Uma associação a cliente/contacto nunca é suficiente para autorizar acesso.
+
+## 3. Diagrama de relações
+
+```mermaid
+erDiagram
+  WORKSPACES ||--|| INSPECT_ORGANISATIONS : owns
+  INSPECT_ORGANISATIONS ||--o{ INSPECT_PARTIES : registers
+  INSPECT_ORGANISATIONS ||--o{ INSPECT_CLIENTS : manages
+  INSPECT_PARTIES ||--o{ INSPECT_CLIENTS : contracts
+  INSPECT_ORGANISATIONS ||--o{ INSPECT_ESTABLISHMENTS : manages
+  INSPECT_PARTIES ||--o{ INSPECT_ESTABLISHMENTS : operates
+  INSPECT_ORGANISATIONS ||--o{ INSPECT_AUDIT_TEMPLATES : owns
+  INSPECT_AUDIT_TEMPLATES ||--o{ INSPECT_AUDIT_TEMPLATE_VERSIONS : versions
+  INSPECT_AUDIT_TEMPLATE_VERSIONS ||--o{ INSPECT_AUDIT_CRITERIA : defines
+  INSPECT_ORGANISATIONS ||--o{ INSPECT_AUDITS : conducts
+  INSPECT_ESTABLISHMENTS ||--o{ INSPECT_AUDITS : audited_at
+  INSPECT_CLIENTS o|--o{ INSPECT_AUDITS : contracted_by
+  INSPECT_AUDITS ||--o{ INSPECT_AUDIT_RESULTS : records
+  INSPECT_AUDIT_CRITERIA ||--o{ INSPECT_AUDIT_RESULTS : evaluated
+  INSPECT_AUDITS ||--o{ INSPECT_EVIDENCE : supports
+  INSPECT_AUDITS ||--o{ INSPECT_FINDINGS : identifies
+  INSPECT_FINDINGS ||--o{ INSPECT_CORRECTIVE_ACTIONS : requires
+  INSPECT_CORRECTIVE_ACTIONS ||--o{ INSPECT_ACTION_RESPONSES : receives
+  INSPECT_AUDITS ||--o{ INSPECT_AUDIT_SUBMISSIONS : snapshots
+  INSPECT_AUDITS ||--o{ INSPECT_REPORTS : emits
+  INSPECT_AUDITS ||--o{ INSPECT_ACCESS_INVITATIONS : invites
+  INSPECT_AUDITS ||--o{ INSPECT_ACCESS_GRANTS : shares
+  INSPECT_ACCESS_GRANTS ||--o{ INSPECT_ACCESS_GRANT_PERMISSIONS : permits
+```
+
+O diagrama é conceptual. As cardinalidades opcionais e constraints finais devem ser confirmadas no SQL.
+
+## 4. Constraints e integridade
+
+### 4.1. Escopo composto
+
+Usar unique constraints e foreign keys compostas, por exemplo:
+- `inspect_clients (id, inspect_organisation_id)`;
+- `inspect_establishments (id, inspect_organisation_id)`;
+- `inspect_audits (id, inspect_organisation_id)`;
+- `inspect_audits (establishment_id, inspect_organisation_id)` referencia estabelecimento no mesmo âmbito;
+- `inspect_audits (contract_client_id, inspect_organisation_id)` referencia cliente no mesmo âmbito;
+- resultados, evidências, findings, acções, relatórios, grants e publicações carregam `inspect_organisation_id` e referenciam a auditoria no mesmo âmbito.
+
+Usar `ON DELETE RESTRICT` para dados históricos e relações referenciadas; evitar cascatas destrutivas sobre auditorias submetidas, relatórios, evidências e eventos.
+
+### 4.2. Unicidade e cardinalidade
+
+- `inspect_organisations.workspace_id UNIQUE NOT NULL`.
+- Uma organização por workspace.
+- Um resultado por (audit_id, criterion_id).
+- Uma submissão por (audit_id, submission_number).
+- Um convite activo por auditoria/email, com política de reenvio que invalida o token anterior.
+- Grants sem duplicados activos para (audit_id, user_id).
+- Permissões limitadas a enumeração controlada e únicas por grant.
+- Hash de token único; token em claro nunca persistido.
+
+### 4.3. Integridade de estado
+
+- Resultado `not_applicable` exige justificação.
+- Resultado `not_verified` exige motivo.
+- Auditoria submetida exige snapshot consistente e timestamp.
+- Relatório emitido referencia submissão concreta.
+- Resposta externa só pode referir acção atribuída ao grant e auditoria correspondente.
+- Acção fechada não aceita novas respostas, salvo reabertura interna explícita e auditada.
+- Evidência publicada tem de pertencer à auditoria e versão correctas.
+
+Constraints simples devem ser CHECK/FK/UNIQUE; regras transversais complexas são validadas por RPC/transacção e testes.
+
+## 5. RLS — desenho por grupos de tabelas
+
+A política exacta deve ser detalhada numa matriz SQL antes da migração. Direcção obrigatória:
+
+| Grupo | Equipa interna | Utilizador externo |
+|---|---|---|
+| Organização/clientes/estabelecimentos | Conforme workspace e papel Inspect | Sem leitura geral |
+| Templates e versões | Gestão conforme papel | Sem acesso |
+| Auditorias em rascunho/em execução | Equipa atribuída | Sem acesso |
+| Resultados e medições internas | Auditor/equipa autorizada | Sem leitura de rascunho |
+| Resultados publicados | Equipa autorizada | Só através da publicação/grant |
+| Notas internas | Equipa autorizada | Nunca |
+| Evidências privadas não publicadas | Equipa autorizada | Nunca |
+| Evidências publicadas | Equipa autorizada | Só grant + publicação + permissão |
+| Findings/acções | Equipa autorizada | Apenas versão publicada/atribuída |
+| Respostas externas | Leitura e revisão interna | Inserção limitada na acção atribuída; sem update/delete |
+| Verificações de eficácia | Auditor autorizado | Nunca |
+| Relatórios | Equipa autorizada | Apenas relatório emitido e publicado |
+| Convites/grants | Administradores autorizados | Apenas aceitação/consulta mínima do próprio convite; sem enumeração |
+| Eventos de segurança | Administradores autorizados | Sem acesso geral |
+
+Não expor tabelas internas directamente a utilizadores externos se a projecção de dados partilhados não estiver garantida. Preferir funções RPC/views com grants SQL mínimos e RLS nas tabelas subjacentes.
+
+## 6. Storage
+
+- Bucket dedicado privado para Inspect.
+- Prefixos gerados pelo servidor e opacos; o caminho não confere autorização.
+- Metadados de evidência ligam objecto, auditoria, organização e visibilidade.
+- Upload externo apenas para resposta de acção atribuída.
+- Validar MIME real, tamanho, extensão, hash e quota.
+- Emissão de URLs assinadas após verificação de grant e publicação; TTL inicial 60 segundos.
+- Para cada download, validar novamente concessão e publicação.
+- Não prometer revogação instantânea de URL já emitida; avaliar proxy autenticado se o risco justificar.
+
+## 7. Histórico e imutabilidade
+
+Eventos append-only para:
+- concessões, convites, permissões e revogações;
+- submissão, publicação e despublicação;
+- emissão/substituição de relatório;
+- respostas externas e anexos;
+- decisões do auditor sobre acções e eficácia.
+
+Rascunhos podem ser editáveis por utilizadores internos autorizados, com histórico. Submissões, versões de modelos e relatórios emitidos não são alterados no local.
+
+## 8. Testes pgTAP/CI obrigatórios
+
+Criar fixtures para duas consultoras A/B; dois clientes A1/A2 em A; operadores distintos; dois estabelecimentos; auditorias partilhadas e não partilhadas; utilizadores externos com concessões diferentes; conta externa sem workspace e com workspace próprio.
+
+Cobrir:
+1. leitura interna dentro da organização correcta;
+2. isolamento A/B;
+3. isolamento A1/A2;
+4. utilizador externo só lê a auditoria concedida e conteúdos publicados;
+5. grant a uma auditoria não dá acesso a outra auditoria do mesmo cliente;
+6. convite pendente/expirado/consumido/revogado não autoriza;
+7. email não verificado ou divergente não aceita convite;
+8. grant sem `view_published_evidence` não descarrega evidência;
+9. `respond_assigned_actions` não permite alterar finding, acção, resultado ou eficácia;
+10. upload apenas na acção atribuída e com MIME/tamanho válidos;
+11. IDs trocados em RPC, filtros e caminhos Storage não contornam autorização;
+12. revogação bloqueia novos downloads/uploads; URL previamente emitida respeita o TTL documentado;
+13. constraints rejeitam ligações cruzadas entre organizações;
+14. submissões/relatórios/modelos publicados são imutáveis;
+15. utilizador externo não consegue enumerar tabelas internas, clientes ou membros da organização.
+
+Testar com roles reais (`anon`, `authenticated`) e claims reais de sessão nos testes locais. Não usar apenas chamadas com `service_role`, porque isso contorna RLS.
+
+## 9. Pontos de revisão antes da migração
+
+- Confirmar nomes e tipos reais de PK/FK no Core e workspace.
+- Rever políticas existentes e evitar conflito com helpers/policies actuais.
+- Decidir se notas internas e resultados partilháveis exigem tabelas separadas ou snapshot publicado; preferência por tabelas separadas para conteúdo confidencial.
+- Confirmar comportamento de convite/entrega de email e recuperação de conta.
+- Confirmar política legal de retenção e eliminação.
+- Rever se o TTL de 60 segundos é operacionalmente compatível com downloads móveis.
+- Rever cardinalidade da relação cliente contratual/estabelecimento para contratos que abrangem múltiplos locais.
+
+## 10. Limites
+
+Este documento é um modelo lógico-relacional proposto, não migração SQL. A análise é estática e documental; não foram consultadas tabelas remotas, executados testes RLS nem verificados fluxos de UI. A implementação deve começar localmente, com pgTAP/CI, após revisão do esquema real. A BD remota única não deve ser alterada sem autorização específica.
