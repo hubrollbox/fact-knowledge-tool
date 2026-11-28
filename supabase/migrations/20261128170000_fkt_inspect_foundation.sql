@@ -131,6 +131,12 @@ BEGIN
         USING ERRCODE = 'check_violation';
     END IF;
 
+    IF TG_TABLE_NAME <> 'inspect_organisations'
+      AND NEW.inspect_organisation_id IS DISTINCT FROM OLD.inspect_organisation_id THEN
+      RAISE EXCEPTION 'inspect_organisation_id é imutável'
+        USING ERRCODE = 'check_violation';
+    END IF;
+
     IF _row ? 'created_at' THEN
       _row := jsonb_set(_row, '{created_at}', _old->'created_at', true);
     END IF;
@@ -163,6 +169,10 @@ REVOKE ALL ON FUNCTION private.inspect_set_actor_fields()
 
 CREATE TRIGGER inspect_organisations_actor_fields
   BEFORE INSERT OR UPDATE ON public.inspect_organisations
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
+
+CREATE TRIGGER inspect_parties_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_parties
   FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
 
 CREATE TRIGGER inspect_clients_actor_fields
