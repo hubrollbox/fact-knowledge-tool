@@ -160,7 +160,7 @@ export const modulos: Modulo[] = [
       { titulo: 'Verifica e emite relatório', descricao: 'O auditor verifica a eficácia e emite uma versão identificada do relatório.' },
     ],
     faq: [
-      { q: 'O FKT Inspect já está disponível?', a: 'Não. Está em fase de planeamento e revisão técnica. Ainda não está implementado nem disponível para utilização.' },
+      { q: 'O FKT Inspect já está disponível?', a: 'Não. É o próximo MVP do FKT e está em preparação técnica. Ainda não está implementado nem disponível para utilização.' },
       { q: 'Qual é a primeira área prevista?', a: 'Segurança alimentar e higiene em estabelecimentos de restauração e preparação de refeições. A aplicação a outros sectores exige análise própria.' },
       { q: 'O FKT Inspect substitui um sistema HACCP ou uma auditoria oficial?', a: 'Não. A ferramenta destina-se a organizar auditorias, evidências e acções. Não substitui a responsabilidade do operador alimentar, a análise de perigos específica, a consultoria especializada, a fiscalização oficial ou a certificação.' },
       { q: 'Quem poderá utilizar o módulo?', a: 'A concepção prevê consultores e auditores que trabalham com vários clientes, bem como empresas que realizam controlos internos nos seus estabelecimentos.' },
