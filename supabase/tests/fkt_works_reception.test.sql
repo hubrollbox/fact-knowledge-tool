@@ -101,11 +101,9 @@ DECLARE caught boolean:=false; n integer;
 BEGIN
  SELECT count(*) INTO n FROM public.obras_recepcoes WHERE obra_id='c4500000-0000-4000-8000-000000000001';
  IF n<>1 THEN RAISE EXCEPTION 'Viewer cannot read reception'; END IF;
- BEGIN
-  UPDATE public.obras_recepcoes SET notas='viewer edit' WHERE obra_id='c4500000-0000-4000-8000-000000000001';
- EXCEPTION WHEN insufficient_privilege THEN caught:=true;
- END;
- IF NOT caught THEN RAISE EXCEPTION 'Viewer unexpectedly edited reception'; END IF;
+ UPDATE public.obras_recepcoes SET notas='viewer edit' WHERE obra_id='c4500000-0000-4000-8000-000000000001';
+ GET DIAGNOSTICS n = ROW_COUNT;
+ IF n <> 0 THEN RAISE EXCEPTION 'Viewer unexpectedly edited reception'; END IF;
 END $$ $test$, 'viewer can read but cannot edit the reception');
 RESET ROLE;
 
