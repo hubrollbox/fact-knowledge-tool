@@ -250,17 +250,41 @@ Manter os modelos existentes `inspect_audits`, `inspect_findings`, evidências, 
 - RPC SECURITY DEFINER só para operações transaccionais que não possam ser garantidas por RLS; `search_path` fixo, validação de `auth.uid()`, sem actor/tenant recebido do cliente, EXECUTE revogado de PUBLIC/anon e concedido apenas a authenticated quando aplicável.
 - Cada tabela deve ter testes positivos e negativos para organização, estabelecimento, perfil, atribuição revogada e acesso externo.
 
-## 11. Decisões ainda abertas (bloqueiam DDL)
+## 11. Decisões de arquitectura fechadas para o MVP
 
-1. **Party e operador:** aprovar a separação proposta; confirmar se um operador pode ser party fora da organização Inspect quando o restaurante tem workspace próprio. A proposta actual limita party à organização Inspect, o que simplifica a carteira mas pode duplicar entidades entre organizações.
-2. **Tarefas:** decidir se a geração é por cron Supabase ou on-demand idempotente. Recomendo geração por janela on-demand para MVP, com tarefa persistida e chave única.
-3. **Rastreabilidade:** confirmar com restaurante piloto se quantidades são obrigatórias ou apenas quando necessárias; a proposta permite NULL.
-4. **Não conformidades:** aprovar cardinalidade de origens e regra de uma origem -> uma NC activa.
-5. **Perfis:** confirmar se gerente/responsável/colaborador são suficientes para MVP; consultor e auditor continuam em grants próprios.
-6. **Registos retroactivos:** aprovar se são permitidos; recomendação: sim, apenas com justificação, identificação visual e evento auditável.
-7. **Óleos alimentares:** manter fora do primeiro DDL até confirmação do piloto.
+As decisões seguintes fecham o desenho técnico. Não substituem validação profissional dos planos, parâmetros e procedimentos aplicados em cada restaurante.
 
-## 12. Critérios para aprovar este dicionário
+1. **Parties e isolamento:** `inspect_parties` é local à organização Inspect. Não haverá identidade global partilhada entre consultoras no MVP. A duplicação de uma entidade legal em duas organizações é intencional e protege o isolamento entre clientes. Cada organização mantém a sua própria ficha e evidências; não há pesquisa transversal por NIF. Dentro da mesma organização, cliente e operador podem apontar para a mesma party.
+2. **Operador alimentar:** `inspect_establishments.operator_party_id` aponta para party da mesma organização. Em modo operador directo, a organização cria a party da sua própria entidade. Em modo consultoria, cria/associa a party do operador. A relação comercial de cliente não determina o operador.
+3. **Geração de tarefas:** geração persistida on-demand por RPC, idempotente e limitada a uma janela de datas. A RPC avança um watermark por controlo sob lock transaccional, cria instâncias em falta e não duplica `(monitoring_control_id, scheduled_for)`. O dashboard invoca-a ao abrir tarefas; tarefas vencidas são classificadas como `missed` quando consultadas/actualizadas. Não exigir Supabase Cron para o MVP. Se o volume justificar, migrar depois para geração agendada sem alterar o modelo de tarefa.
+4. **Quantidades:** quantidade e unidade são opcionais na recepção e nos lotes no MVP; quando uma é preenchida, a outra é obrigatória. São obrigatórias apenas em processos de transformação/preparação em que o procedimento do estabelecimento as exija. O FKT não é inventário nem sistema de balanço de massas.
+5. **Não conformidades:** uma NC pode agregar várias origens tipadas. Cada origem operacional pode estar ligada a uma única NC durante todo o seu ciclo de vida; se voltar a ocorrer, reabre-se a NC existente ou cria-se uma nova origem/evento, não uma duplicação silenciosa. As tabelas tipadas de origem têm UNIQUE sobre o identificador de origem e FK real. Um finding de auditoria pode originar NC sem duplicar finding/evidência.
+6. **Perfis do MVP:** gerente, responsável HACCP e colaborador são os três papéis internos. Consultor e auditor continuam a usar atribuições/grants específicos já previstos no modelo de auditoria/partilha, não são novos papéis gerais do restaurante. Uma pessoa pode acumular funções.
+7. **Registos retroactivos:** permitidos no MVP, mas exigem motivo, distinguem `observed_at` de `recorded_at`, são visualmente identificados e geram evento auditável. Não impor um limite temporal universal; o estabelecimento pode configurar uma janela máxima. Sem janela configurada, só responsável HACCP/gerente podem submeter retroactivos.
+8. **Óleos alimentares:** incluídos no MVP como registo manual simples ligado ao equipamento/zona de fritura: tipo de evento (verificação, filtração, substituição/eliminação), instante, actor, observação e evidência opcional. Não incluir sensores, análise laboratorial, limiares legais codificados nem gestão de resíduos avançada. Frequência e critérios são definidos pelo plano/procedimento do estabelecimento.
+
+## 12. Ajustamentos obrigatórios ao esquema físico
+
+- Adicionar `generation_watermark timestamptz` a `inspect_monitoring_controls` (e ao plano de higienização, ou usar uma tabela comum de schedule cursors) para geração on-demand segura. Recomenda-se tabela comum `inspect_schedule_cursors` com `schedule_type`, `schedule_id`, `generated_through`, `updated_at` e UNIQUE por tipo/id; a função valida a FK real no domínio antes de gerar.
+- Adicionar CHECK de paridade quantidade/unidade em `inspect_receipt_items`, `inspect_lot_receipt_items` e inputs de transformação.
+- Criar `inspect_oil_control_records`: tenant/local, `equipment_id` ou `area_id`, `event_type CHECK ('check','filter','replace','dispose')`, `occurred_at`, `recorded_at`, `performed_by`, `result_text`, `measurement_value NULL`, `measurement_unit NULL`, `notes`, `evidence_document_id NULL`; paridade valor/unidade; sem limiares universais.
+- Nas tabelas tipadas de origem NC, permitir várias origens por `nonconformity_id` e aplicar UNIQUE ao FK da origem. Uma origem permanece ligada à mesma NC, mesmo após fecho/reabertura.
+- O estado `missed` deve ser derivado/actualizado transaccionalmente com base em `due_until`; não marcar tarefas como perdidas antes de terminar a janela de tolerância configurada.
+- Definir explicitamente qual o plano de higienização e versão aplicável a cada tarefa; a execução preserva snapshot da instrução/produto/método que foi apresentado ao colaborador.
+- A publicação de versão HACCP e a geração de tarefas têm de ocorrer por RPC transaccional, com lock e testes de concorrência.
+
+## 13. Questões que permanecem dependentes de validação externa
+
+Não bloqueiam o desenho relacional, mas bloqueiam a publicação de configurações HACCP concretas:
+- perigos significativos, limites críticos, frequências, métodos e responsáveis de cada estabelecimento;
+- prazos de conservação após abertura/preparação;
+- critérios e frequência de controlo de óleos;
+- campos obrigatórios por categoria de produto/recepção;
+- retenção documental e prazos aplicáveis a cada tipo de registo.
+
+Estes elementos são parametrizados por estabelecimento e versão do plano, e validados por profissional competente. Não são valores predefinidos pelo FKT.
+
+## 14. Critérios para aprovar este dicionário
 
 - [ ] Cada tabela tem tenant/local e FKs compostas aplicáveis.
 - [ ] Campos e estados são validados com fluxos reais.
