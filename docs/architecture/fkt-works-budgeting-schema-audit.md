@@ -11,7 +11,7 @@ Projecto Supabase confirmado: `gllrqrqonwuacjxbtgnp` (região eu-west-1; Postgre
 2. **Verbas globais:** permitir linhas de valor global sem quantidade nem preço unitário. O tipo de linha deve distinguir verba global de quantidade × preço unitário.
 3. **Custos internos:** decomposição de custos internos (materiais, mão-de-obra, equipamentos e outros) é opcional. Deve poder coexistir com um preço proposto ao cliente, sem obrigar a expor custos internos ao destinatário/fiscal.
 4. **Edição após aprovação:** orçamento aprovado continua editável por utilizadores autorizados, mas cada edição deve gerar um registo de auditoria detalhado e recuperável, com actor, data, campos alterados e valores anterior/novo. Não pode haver alteração silenciosa. O histórico de aprovação mantém-se identificável; alterações posteriores devem assinalar que o conteúdo aprovado foi modificado e exigir nova confirmação/aprovação quando aplicável. A regra exacta de reaprovação fica por definir no fluxo.
-5. **Perfis profissionais:** suportar os perfis Empreiteiro e Fiscal, separados dos papéis de segurança. Mantêm-se os papéis técnicos existentes (owner/admin/editor/viewer); o perfil profissional determina perspectiva e interface, não concede permissões por si só.
+5. **Perfis profissionais:** suportar os perfis Empreiteiro e Fiscal, separados dos papéis de segurança. O perfil é definido por obra, permitindo que a mesma empresa/utilizador tenha perspectivas diferentes em obras distintas. Mantêm-se os papéis técnicos existentes (owner/admin/editor/viewer); o perfil profissional determina perspectiva e interface, não concede permissões por si só.
 
 Estas decisões substituem os pontos correspondentes da secção 5 abaixo.
 
@@ -77,14 +77,14 @@ Não duplicar totais sem definir claramente quais são valores calculados e quai
 2. **Cálculos:** regras de precisão, arredondamento, descontos por linha e encargos explícitos definidas na secção 7.
 3. **Aprovação:** registar aprovação externa declarada no FKT; não é assinatura electrónica nem certificação.
 4. **Reaprovação:** definir quando uma edição posterior à aprovação exige nova aprovação e como se notifica a contraparte.
-5. **Perfis profissionais:** definir se Empreiteiro/Fiscal é escolhido por workspace ou por obra, sem confundir perfil profissional com papel de segurança.
-6. **Âmbito dos perfis:** decidir se Empreiteiro/Fiscal é escolhido por workspace ou por obra. Retenções/cauções/penalizações e descontos globais ficam fora do MVP.
+5. **Reaprovação:** definir quando uma edição posterior à aprovação exige nova confirmação/aprovação e como se notifica a contraparte.
+6. **Âmbito dos perfis:** decidido — Empreiteiro/Fiscal é definido por obra, separado dos papéis de segurança. Retenções/cauções/penalizações e descontos globais ficam fora do MVP.
 
 ## 6. Resultado
 
 A base técnica existente oferece bons blocos reutilizáveis: workspaces/RLS, arquivo documental versionado e histórico de obra. A nova funcionalidade deve acrescentar um domínio orçamental próprio, sem duplicar esses mecanismos.
 
-A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. Antes da migração, ainda falta fechar o âmbito dos perfis profissionais e o fluxo de reaprovação após edição de orçamento aprovado.
+A auditoria identificou os blocos reutilizáveis e as cinco decisões funcionais acima estão agora fechadas. As regras-base de cálculo estão especificadas na secção 7. Antes da migração, ainda falta fechar o fluxo de reaprovação após edição de orçamento aprovado.
 
 ## 7. Regras de cálculo — decisão funcional de 28-11-2026
 
