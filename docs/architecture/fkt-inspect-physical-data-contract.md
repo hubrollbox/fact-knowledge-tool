@@ -255,3 +255,17 @@ A fundação ainda não inclui o domínio HACCP operacional. As tabelas candidat
 - não conformidade central com origem tipada;
 - funções Inspect separadas dos papéis Core;
 - instante da recolha separado do instante de registo no servidor, quando forem admitidos registos retroactivos.
+
+
+## 12. Decisões fechadas do modelo físico MVP
+
+- `inspect_parties` é scoped por `inspect_organisation_id`; não existe party global nem partilha entre consultoras no MVP. Cliente e operador podem apontar à mesma party dentro da organização.
+- Tarefas de monitorização/higienização são persistidas e geradas on-demand por RPC idempotente, com cursor/watermark e lock transaccional. Cron não é requisito do MVP.
+- Quantidade e unidade são opcionais em recepção/lotes, mas ambas ou nenhuma; transformações exigem-nas quando o procedimento assim o definir.
+- Uma não conformidade pode agregar várias origens tipadas. Cada origem liga-se a uma só NC durante o seu ciclo de vida.
+- Funções internas: gerente, responsável HACCP e colaborador. Consultor e auditor dependem de atribuições/grants específicos.
+- Registos retroactivos são permitidos com motivo obrigatório, timestamps de ocorrência e registo separados, identificação explícita e evento auditável; janela configurável por estabelecimento.
+- Controlo manual de óleos integra o MVP. Sensores, automação, análise laboratorial e limiares universais ficam fora.
+
+### Dependências de validação profissional
+Limites, frequências, perigos, prazos após abertura/preparação, critérios de aceitação e retenção aplicável são parametrizados por estabelecimento/versão e exigem validação competente. Não são defaults legais codificados.
