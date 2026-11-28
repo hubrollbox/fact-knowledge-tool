@@ -287,7 +287,7 @@ Esta decisão é proposta para revisão. Não representa implementação nem val
 - Distinguir cliente contratual da entidade que opera legalmente o estabelecimento alimentar. A relação comercial não prova, por si, quem é o operador responsável.
 - A autorização externa do MVP é por auditoria concreta. Uma eventual relação de contacto ao nível do cliente não concede acesso.
 - Não colocar notas internas e conteúdo partilhável na mesma linha/tabela se o utilizador externo puder ler essa linha. Usar separação física ou projecções controladas; RLS não é controlo de ocultação de colunas.
-- Aceitação de convite exige email verificado da sessão igual ao destinatário normalizado; token de uso único armazenado como hash e consumo atómico.
+- Aceitação de convite exige email da conta confirmado no servidor igual ao destinatário normalizado; token de uso único armazenado como hash e consumo atómico.
 - URL assinada previamente emitida pode sobreviver à revogação até expirar. Para revogação imediata, avaliar proxy autenticado com autorização por pedido.
 - Separar ciclo de vida da auditoria do ciclo de vida da concessão e definir visibilidade por estado.
 - O cliente externo não altera resultados, critérios, medições originais, classificações nem verificações de eficácia. A resposta a acções atribuídas é a única escrita candidata ao MVP, sujeita a aprovação.
@@ -304,7 +304,7 @@ Requisitos vinculativos para o desenho físico:
 - acesso de leitura externo apenas depois de submissão e publicação explícita;
 - separação física/lógica de notas internas e conteúdo partilhável;
 - respostas externas e anexos associados a acções atribuídas, sem alterar o registo original;
-- convite com email verificado, token hash, uso único e consumo atómico;
+- convite com email confirmado no servidor, token hash, uso único e consumo atómico;
 - bucket privado; autorização antes de cada emissão de URL/download/upload;
 - TTL inicial de URL assinada de 60 segundos, reconhecendo que não permite revogação instantânea;
 - RLS e constraints compostas para todos os recursos e operações;
