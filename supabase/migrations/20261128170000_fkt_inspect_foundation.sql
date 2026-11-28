@@ -38,16 +38,36 @@ LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = pg_catalog, auth
 AS $function$
+DECLARE
+  _row jsonb := to_jsonb(NEW);
+  _old jsonb;
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    NEW.created_at := now();
-    NEW.created_by := (SELECT auth.uid());
+  IF TG_OP = 'UPDATE' THEN
+    _old := to_jsonb(OLD);
+    IF _row ? 'created_at' THEN
+      _row := jsonb_set(_row, '{created_at}', _old->'created_at', true);
+    END IF;
+    IF _row ? 'created_by' THEN
+      _row := jsonb_set(_row, '{created_by}', _old->'created_by', true);
+    END IF;
   ELSE
-    NEW.created_at := OLD.created_at;
-    NEW.created_by := OLD.created_by;
+    IF _row ? 'created_at' THEN
+      _row := jsonb_set(_row, '{created_at}', to_jsonb(now()), true);
+    END IF;
+    IF _row ? 'created_by' THEN
+      _row := jsonb_set(_row, '{created_by}', to_jsonb((SELECT auth.uid())), true);
+    END IF;
   END IF;
-  NEW.updated_at := now();
-  NEW.updated_by := (SELECT auth.uid());
+
+  -- Association history intentionally has no updated_at/updated_by columns.
+  IF _row ? 'updated_at' THEN
+    _row := jsonb_set(_row, '{updated_at}', to_jsonb(now()), true);
+  END IF;
+  IF _row ? 'updated_by' THEN
+    _row := jsonb_set(_row, '{updated_by}', to_jsonb((SELECT auth.uid())), true);
+  END IF;
+
+  NEW := jsonb_populate_record(NEW, _row);
   RETURN NEW;
 END;
 $function$;
