@@ -83,15 +83,32 @@ O FIRAC deve ser uma forma de leitura e trabalho sobre entidades estruturadas, n
 - Documentos e dados de processos são privados. Não usar URLs públicas de Storage.
 - Evitar recolher NIF, contactos e outros dados pessoais sem necessidade funcional.
 
-## 6. Estado actual observado
+## 6. Estado e limites da documentação
 
-Na auditoria de 20-11-2026:
-- Existem as tabelas `juridico_processos`, `juridico_partes`, `juridico_documentos` e `juridico_prazos`.
-- `juridico_processos` concentra actualmente contexto, questão, referências, análise e conclusão em campos de texto.
-- Não foram encontradas tabelas específicas para factos, questões individuais, fontes/regras, aplicação do raciocínio, actos processuais ou histórico jurídico.
+A descrição de arquitectura acima é o modelo funcional pretendido; não deve ser interpretada como prova de que todas as entidades ou operações estejam implementadas.
+
+A auditoria de 20-11-2026 registou que:
+- Existiam as tabelas `juridico_processos`, `juridico_partes`, `juridico_documentos` e `juridico_prazos`.
+- `juridico_processos` concentrava contexto, questão, referências, análise e conclusão em campos de texto.
+- Não foram então encontradas tabelas específicas para factos, questões individuais, fontes/regras, aplicação do raciocínio, actos processuais ou histórico jurídico.
 - As quatro tabelas jurídicas consultadas estavam sem registos.
-- O bucket `documentos` existe e está marcado como privado. O código de upload, contudo, usava `getPublicUrl`, incompatível com a configuração privada.
-- O detalhe do processo ainda contém controlos de interface sem operações funcionais para adicionar partes, carregar documentos e criar prazos.
+- O bucket `documentos` estava marcado como privado, embora o código de upload então auditado usasse `getPublicUrl`, incompatível com essa configuração.
+- O detalhe do processo continha controlos de interface sem operações funcionais para adicionar partes, carregar documentos e criar prazos.
+
+Estes pontos são um registo histórico da auditoria de 20-11-2026, não uma afirmação sobre o estado actual. Devem ser reconciliados com as migrações, o código e a BD antes de qualquer decisão técnica. A documentação funcional e as FAQ também não substituem testes na aplicação.
+
+### Estado de validação conhecido em 28-11-2026
+
+- O repositório documenta os separadores Resumo, Factos, Questões, Fontes, Aplicação, Conclusões, Partes, Documentos e Prazos.
+- As FAQ de produto incluem percursos para criar processos, navegar no detalhe, estruturar a análise FIRAC e gerar o relatório PDF. A presença dessas instruções não comprova que todos os fluxos tenham passado testes end-to-end.
+- A versão de conclusões e o histórico jurídico devem ser considerados não validados até existir confirmação explícita do esquema, das políticas RLS, dos testes e do comportamento da interface.
+- Não declarar o FKT Lex pronto para processos reais enquanto não forem testados isolamento entre workspaces, permissões por função, upload e leitura segura de documentos, PDF e fluxos completos de análise/conclusão.
+
+### Navegação e identidade visual
+
+- O ícone `Scale` (balança) identifica a navegação do FKT Lex e só deve ser apresentado quando o módulo activo é `juridico`.
+- Não deve aparecer no login, no dashboard geral, no selector de módulos ou em componentes comuns fora do contexto Lex.
+- O ícone genérico do Core e os ícones dos restantes módulos mantêm-se independentes.
 
 ## 7. Sequência de implementação
 
