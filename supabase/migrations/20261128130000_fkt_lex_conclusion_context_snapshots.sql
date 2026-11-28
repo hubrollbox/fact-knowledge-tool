@@ -210,22 +210,5 @@ CREATE TRIGGER juridico_conclusoes_capture_context
   AFTER INSERT ON public.juridico_conclusoes
   FOR EACH ROW EXECUTE FUNCTION public.capture_juridico_conclusao_context();
 
--- Backfill legacy versions once, using the current linked context as the best
--- available reconstruction. Such rows are explicitly marked in captured_by
--- as NULL when no authenticated author context exists.
-DO $$
-DECLARE _conclusao record;
-BEGIN
-  FOR _conclusao IN
-    SELECT c.*
-      FROM public.juridico_conclusoes c
-      LEFT JOIN public.juridico_conclusoes_snapshots s ON s.conclusao_id = c.id
-     WHERE s.id IS NULL
-  LOOP
-    PERFORM public.capture_juridico_conclusao_context_for_backfill(
-      _conclusao.id, _conclusao.processo_id, _conclusao.workspace_id,
-      _conclusao.questao_id, _conclusao.aplicacao_id, _conclusao.autor_id
-    );
-  END LOOP;
-END;
-$$;
+-- Existing versions are not reconstructed: their historical context cannot be
+-- proven from current mutable links. New versions receive snapshots automatically.
