@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, CloudUpload, WifiOff, GitCompareArrows } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CloudUpload, Loader2, Wifi, WifiOff, GitCompareArrows } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -40,7 +40,15 @@ export function OfflineSyncStatus() {
   }, []);
 
   const conflicts = useMemo(() => operations.filter((operation) => operation.conflictRemote), [operations]);
-  if (!pendingCount && online) return null;
+  const statusLabel = !workspaceId
+    ? 'A verificar espaço de trabalho'
+    : syncing
+      ? 'A sincronizar alterações'
+      : !online
+        ? 'Sem ligação à Internet'
+        : pendingCount > 0
+          ? pendingCount + (pendingCount === 1 ? ' registo pendente' : ' registos pendentes')
+          : 'Tudo sincronizado';
   const failed = operations.find((operation) => operation.lastError);
   const pendingLabel = pendingCount + (pendingCount === 1 ? ' registo pendente' : ' registos pendentes') + ' de sincronização';
 
@@ -66,8 +74,19 @@ export function OfflineSyncStatus() {
     : [];
 
   return (
-    <>
-      <Alert className={conflicts.length ? 'border-destructive/40' : failed ? 'border-destructive/40' : 'border-amber-500/40'}>
+    <div className="space-y-2">
+      <div role="status" aria-live="polite" className="flex min-h-9 items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+        {syncing
+          ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          : !online
+            ? <WifiOff className="h-4 w-4 text-destructive" />
+            : pendingCount > 0
+              ? <CloudUpload className="h-4 w-4 text-amber-600" />
+              : <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+        <span className="font-medium">{statusLabel}</span>
+        {online && !syncing && <Wifi className="ml-auto h-4 w-4 text-muted-foreground" aria-label="Ligação disponível" />}
+      </div>
+      {(!online || pendingCount > 0) && <Alert className={conflicts.length ? 'border-destructive/40' : failed ? 'border-destructive/40' : 'border-amber-500/40'}>
         {conflicts.length || failed ? <AlertCircle className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
         <AlertTitle>{!online ? 'Sem ligação à Internet' : conflicts.length ? 'Existem conflitos por resolver' : pendingLabel}</AlertTitle>
         <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
@@ -115,7 +134,7 @@ export function OfflineSyncStatus() {
             <Button type="button" disabled={resolving || !online} onClick={() => void resolve('keep_local')}>{resolving ? 'A aplicar…' : 'Manter versão local'}</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-    </>
+      </Dialog>}
+    </div>
   );
 }
