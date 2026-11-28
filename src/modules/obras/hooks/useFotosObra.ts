@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useObrasWorkspace } from './useObrasWorkspace';
 import { useAuth } from '@/contexts/AuthContext';
-import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, guardarFotoCacheOffline, listarFotosCacheOffline, MAX_OFFLINE_PHOTO_CACHE_COUNT } from '../offline/offlineStore';
+import { criarOperacaoOffline, guardarOperacaoOffline, isFalhaDeLigacao, guardarFotoCacheOffline, listarFotosCacheOffline, listarOperacoesOffline, MAX_OFFLINE_PHOTO_CACHE_COUNT } from '../offline/offlineStore';
 
 const MAX = 20 * 1024 * 1024;
 
@@ -24,10 +24,29 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
           : filtro.ocorrenciaId ? photo.ocorrencia_id === filtro.ocorrenciaId
             : !!filtro.ocorrenciaIds?.includes(photo.ocorrencia_id ?? ''),
       );
+      const pendingOperations = await listarOperacoesOffline(user.id, ws).catch(() => []);
+      const pendingPhotos = pendingOperations
+        .filter((operation) => operation.entity === 'foto')
+        .filter((operation) => filtro.visitaId
+          ? operation.payload.visitaId === filtro.visitaId
+          : filtro.ocorrenciaId
+            ? operation.payload.ocorrenciaId === filtro.ocorrenciaId
+            : !!filtro.ocorrenciaIds?.includes(String(operation.payload.ocorrenciaId ?? '')))
+        .map((operation) => ({
+          id: operation.id,
+          url: null,
+          cachedBlob: operation.payload.file instanceof Blob ? operation.payload.file : null,
+          legenda: (operation.payload.legenda as string | null) ?? null,
+          capturada_em: (operation.payload.capturadaEm as string | null) ?? operation.createdAt,
+          latitude: (operation.payload.latitude as number | null) ?? null,
+          longitude: (operation.payload.longitude as number | null) ?? null,
+          pending: true,
+        }));
       if (!navigator.onLine) {
-        return cachedForFilter
-          .sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''))
-          .map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob }));
+        return [
+          ...cachedForFilter.map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob, pending: false })),
+          ...pendingPhotos,
+        ].sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''));
       }
       try {
         let q = supabase.from('obras_fotos').select('*').order('capturada_em', { ascending: false });
@@ -37,7 +56,7 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
         else return [];
         const { data, error } = await q;
         if (error) throw error;
-        if (!data.length) return [];
+        if (!data.length) return pendingPhotos;
         const paths = data.map((photo) => photo.storage_path);
         const { data: signed } = await supabase.storage.from('obras-fotos').createSignedUrls(paths, 300);
         const downloads = new Map<string, Blob>();
@@ -58,16 +77,21 @@ export function useFotos(filtro: { visitaId?: string; ocorrenciaId?: string; oco
           }));
           for (const result of results) if (result) downloads.set(result.id, result.blob);
         }
-        return data.map((photo, i) => ({
+        const remotePhotos = data.map((photo, i) => ({
           ...photo,
           url: signed?.[i]?.signedUrl ?? null,
           cachedBlob: downloads.get(photo.id) ?? cachedForFilter.find((cachedPhoto) => cachedPhoto.id === photo.id)?.blob ?? null,
+          pending: false,
         }));
+        const remoteIds = new Set(remotePhotos.map((photo) => photo.id));
+        return [...remotePhotos, ...pendingPhotos.filter((photo) => !remoteIds.has(photo.id))]
+          .sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''));
       } catch (error) {
         if (!isFalhaDeLigacao(error)) throw error;
-        return cachedForFilter
-          .sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''))
-          .map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob }));
+        return [
+          ...cachedForFilter.map((photo) => ({ ...photo, url: null, cachedBlob: photo.blob, pending: false })),
+          ...pendingPhotos,
+        ].sort((a, b) => (b.capturada_em ?? '').localeCompare(a.capturada_em ?? ''));
       }
     },
   });
