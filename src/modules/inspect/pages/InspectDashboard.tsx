@@ -25,6 +25,10 @@ function InspectPortfolio() {
   const [establishmentLocality, setEstablishmentLocality] = useState('');
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedEstablishment, setSelectedEstablishment] = useState('');
+  const [editingClient, setEditingClient] = useState<string | null>(null);
+  const [editingClientName, setEditingClientName] = useState('');
+  const [editingEstablishment, setEditingEstablishment] = useState<string | null>(null);
+  const [editingEstablishmentName, setEditingEstablishmentName] = useState('');
   const [busy, setBusy] = useState(false);
 
   const organisationQuery = useQuery({
@@ -127,6 +131,16 @@ function InspectPortfolio() {
       if (error) throw error;
     });
   };
+  const saveClient = (id: string) => void run(async () => {
+    const { error } = await inspectDb.from('inspect_clients').update({ display_name: editingClientName.trim() }).eq('id', id);
+    if (error) throw error;
+    setEditingClient(null); setEditingClientName('');
+  });
+  const saveEstablishment = (id: string) => void run(async () => {
+    const { error } = await inspectDb.from('inspect_establishments').update({ display_name: editingEstablishmentName.trim() }).eq('id', id);
+    if (error) throw error;
+    setEditingEstablishment(null); setEditingEstablishmentName('');
+  });
   const endRelation = (id: string) => void run(async () => {
     const { error } = await inspectDb.from('inspect_client_establishments').update({ valid_until: new Date().toISOString() }).eq('id', id);
     if (error) throw error;
@@ -167,7 +181,7 @@ function InspectPortfolio() {
                 <Input aria-label="Referência externa" placeholder="Referência (opcional)" value={clientReference} onChange={e => setClientReference(e.target.value)} maxLength={120} />
                 <Button type="submit" disabled={busy || clientName.trim().length < 2}><Plus className="mr-1 h-4 w-4" />Adicionar</Button>
               </form>
-              <div className="divide-y">{clients.map(client => <div key={client.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0"><p className="truncate font-medium">{client.display_name}</p><p className="text-xs text-muted-foreground">{client.external_reference || 'Sem referência externa'}</p></div><span className="text-xs text-muted-foreground">{client.status}</span></div>)}{clients.length === 0 && <p className="py-4 text-sm text-muted-foreground">Ainda não existem clientes.</p>}</div>
+              <div className="divide-y">{clients.map(client => <div key={client.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0 flex-1">{editingClient === client.id ? <div className="flex gap-2"><Input value={editingClientName} onChange={e => setEditingClientName(e.target.value)} aria-label="Novo nome do cliente" maxLength={180} /><Button size="sm" onClick={() => saveClient(client.id)} disabled={busy || editingClientName.trim().length < 2}>Guardar</Button><Button size="sm" variant="ghost" onClick={() => setEditingClient(null)}>Cancelar</Button></div> : <><p className="truncate font-medium">{client.display_name}</p><p className="text-xs text-muted-foreground">{client.external_reference || 'Sem referência externa'}</p></>}</div>{editingClient !== client.id && <Button size="sm" variant="outline" onClick={() => { setEditingClient(client.id); setEditingClientName(client.display_name); }}>Editar</Button>}</div>)}{clients.length === 0 && <p className="py-4 text-sm text-muted-foreground">Ainda não existem clientes.</p>}</div>
             </CardContent></Card>
             <Card><CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Building2 className="h-5 w-5" /> Estabelecimentos</CardTitle></CardHeader><CardContent className="space-y-4">
               <form onSubmit={createEstablishment} className="space-y-2">
@@ -176,7 +190,7 @@ function InspectPortfolio() {
                 <Input aria-label="Morada" placeholder="Morada (opcional)" value={establishmentAddress} onChange={e => setEstablishmentAddress(e.target.value)} />
                 <Button type="submit" disabled={busy || establishmentName.trim().length < 2}><Plus className="mr-1 h-4 w-4" />Adicionar estabelecimento</Button>
               </form>
-              <div className="divide-y">{establishments.map(item => <div key={item.id} className="py-3"><p className="font-medium">{item.display_name}</p><p className="text-xs text-muted-foreground">{[item.activity_description,item.locality].filter(Boolean).join(' · ') || 'Sem detalhes adicionais'}</p></div>)}{establishments.length === 0 && <p className="py-4 text-sm text-muted-foreground">Ainda não existem estabelecimentos.</p>}</div>
+              <div className="divide-y">{establishments.map(item => <div key={item.id} className="flex items-center justify-between gap-3 py-3"><div className="min-w-0 flex-1">{editingEstablishment === item.id ? <div className="flex gap-2"><Input value={editingEstablishmentName} onChange={e => setEditingEstablishmentName(e.target.value)} aria-label="Novo nome do estabelecimento" maxLength={180} /><Button size="sm" onClick={() => saveEstablishment(item.id)} disabled={busy || editingEstablishmentName.trim().length < 2}>Guardar</Button><Button size="sm" variant="ghost" onClick={() => setEditingEstablishment(null)}>Cancelar</Button></div> : <><p className="font-medium">{item.display_name}</p><p className="text-xs text-muted-foreground">{[item.activity_description,item.locality].filter(Boolean).join(' · ') || 'Sem detalhes adicionais'}</p></>}</div>{editingEstablishment !== item.id && <Button size="sm" variant="outline" onClick={() => { setEditingEstablishment(item.id); setEditingEstablishmentName(item.display_name); }}>Editar</Button>}</div>)}{establishments.length === 0 && <p className="py-4 text-sm text-muted-foreground">Ainda não existem estabelecimentos.</p>}</div>
             </CardContent></Card>
           </div>
           <Card><CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Link2 className="h-5 w-5" /> Relações cliente / estabelecimento</CardTitle></CardHeader><CardContent className="space-y-4">
