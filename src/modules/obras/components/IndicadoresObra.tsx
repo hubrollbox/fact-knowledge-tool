@@ -37,6 +37,19 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
   const criticas = ocorrenciasFiltradas.filter((o) => ['alta', 'critica'].includes(o.gravidade)).length;
   const pendentes = acoesFiltradas.filter((a) => !['concluida', 'cancelada'].includes(a.estado)).length;
   const atrasadas = acoesFiltradas.filter((a) => a.prazo && !['concluida', 'cancelada'].includes(a.estado) && new Date(a.prazo).getTime() < new Date(new Date().toDateString()).getTime()).length;
+  const evolucao = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const month = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const key = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+      return {
+        label: month.toLocaleDateString('pt-PT', { month: 'short', year: '2-digit' }),
+        ocorrencias: ocorrenciasFiltradas.filter((o) => String(o.created_at ?? '').slice(0, 7) === key).length,
+        acoes: acoesFiltradas.filter((a) => String(a.created_at ?? '').slice(0, 7) === key).length,
+      };
+    });
+  }, [ocorrenciasFiltradas, acoesFiltradas]);
+  const maxEvolucao = Math.max(1, ...evolucao.flatMap((m) => [m.ocorrencias, m.acoes]));
 
   return (
     <div className="space-y-4">
@@ -58,7 +71,19 @@ export function IndicadoresObra({ ocorrencias, acoes, onNavigate }: Props) {
         <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><ListTodo className="h-4 w-4" />Acções pendentes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{pendentes}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('acoes')}>Ver acções</Button></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Clock3 className="h-4 w-4" />Acções em atraso</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{atrasadas}</div><Button variant="link" className="h-auto p-0 text-xs" onClick={() => onNavigate('acoes')}>Ver acções</Button></CardContent></Card>
       </div>
-      <p className="text-xs text-muted-foreground"><CheckCircle2 className="mr-1 inline h-3 w-3" />Os indicadores são contagens dos registos filtrados. O período usa a data de criação; o prazo é usado apenas para identificar acções em atraso.</p>
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Evolução de registos — últimos seis meses</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          {evolucao.map((mes) => <div key={mes.label} className="grid grid-cols-[4rem_1fr] items-center gap-3 text-xs">
+            <span className="text-muted-foreground">{mes.label}</span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2"><span className="w-20 shrink-0">Ocorrências {mes.ocorrencias}</span><div className="h-2 flex-1 rounded bg-muted"><div className="h-2 rounded bg-primary" style={{ width: `${mes.ocorrencias / maxEvolucao * 100}%` }} /></div></div>
+              <div className="flex items-center gap-2"><span className="w-20 shrink-0">Acções {mes.acoes}</span><div className="h-2 flex-1 rounded bg-muted"><div className="h-2 rounded bg-secondary-foreground/60" style={{ width: `${mes.acoes / maxEvolucao * 100}%` }} /></div></div>
+            </div>
+          </div>)}
+        </CardContent>
+      </Card>
+      <p className="text-xs text-muted-foreground"><CheckCircle2 className="mr-1 inline h-3 w-3" />Os indicadores são contagens dos registos filtrados. O período usa a data de criação; a evolução mensal conta registos criados em cada mês. O prazo é usado apenas para identificar acções em atraso.</p>
     </div>
   );
 }
