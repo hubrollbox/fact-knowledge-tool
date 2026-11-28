@@ -11,6 +11,7 @@ import { CountdownFab } from '@/components/dashboard/CountdownFab';
 import { AlertasBadge } from '@/components/AlertasBadge';
 import { Footer } from '@/components/layout/Footer';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { OfflineSyncStatus } from '@/modules/obras/components/OfflineSyncStatus';
 
 interface NavItem {
   label: string;
@@ -152,6 +153,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       : []),
   ];
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dark, setDark] = useState(() => {
@@ -317,6 +319,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         <main className="flex-1 overflow-y-auto">
+          {moduloSlug === 'obras' && <div className="px-4 pt-3"><OfflineSyncStatus /></div>}
           {children}
         </main>
         <Footer />
