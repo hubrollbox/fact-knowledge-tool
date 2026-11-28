@@ -31,6 +31,33 @@ CREATE TABLE public.inspect_organisations (
   CONSTRAINT inspect_organisations_id_workspace_unique UNIQUE (id, workspace_id)
 );
 
+-- Author fields are server-derived; clients cannot forge authorship/timestamps.
+CREATE OR REPLACE FUNCTION private.inspect_set_actor_fields()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, auth
+AS $function$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    NEW.created_at := now();
+    NEW.created_by := (SELECT auth.uid());
+  ELSE
+    NEW.created_at := OLD.created_at;
+    NEW.created_by := OLD.created_by;
+  END IF;
+  NEW.updated_at := now();
+  NEW.updated_by := (SELECT auth.uid());
+  RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION private.inspect_set_actor_fields() FROM PUBLIC, anon, authenticated;
+
+CREATE TRIGGER inspect_organisations_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_organisations
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
+
 CREATE TABLE public.inspect_clients (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   inspect_organisation_id uuid NOT NULL
@@ -75,6 +102,14 @@ CREATE TABLE public.inspect_establishments (
   CONSTRAINT inspect_establishments_id_org_unique UNIQUE (id, inspect_organisation_id)
 );
 
+CREATE TRIGGER inspect_clients_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_clients
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
+
+CREATE TRIGGER inspect_establishments_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_establishments
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
+
 CREATE INDEX inspect_clients_org_status_idx
   ON public.inspect_clients (inspect_organisation_id, status, display_name);
 CREATE INDEX inspect_establishments_org_status_idx
@@ -101,6 +136,10 @@ CREATE TABLE public.inspect_client_establishments (
   CONSTRAINT inspect_client_establishments_id_org_unique
     UNIQUE (id, inspect_organisation_id)
 );
+
+CREATE TRIGGER inspect_client_establishments_actor_fields
+  BEFORE INSERT OR UPDATE ON public.inspect_client_establishments
+  FOR EACH ROW EXECUTE FUNCTION private.inspect_set_actor_fields();
 
 CREATE INDEX inspect_client_establishments_client_period_idx
   ON public.inspect_client_establishments
