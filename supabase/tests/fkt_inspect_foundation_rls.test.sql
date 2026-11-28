@@ -1,19 +1,19 @@
 -- FKT Inspect Phase 1: deny-by-default access contract.
--- RLS policies and authenticated grants belong to Phase 3.
+-- Access grants and RLS policies are deliberately deferred to Phase 3.
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET search_path TO extensions, public;
 BEGIN;
 SELECT plan(3);
 
 SELECT ok(
-  (SELECT bool_and(relrowsecurity)
+  (SELECT count(*) = 4
    FROM pg_class
    WHERE oid IN (
      'public.inspect_organisations'::regclass,
      'public.inspect_parties'::regclass,
      'public.inspect_clients'::regclass,
      'public.inspect_establishments'::regclass
-   )),
+   ) AND relrowsecurity),
   'RLS está activa nas quatro tabelas Inspect'
 );
 
