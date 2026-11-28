@@ -1,7 +1,9 @@
 import {
   Scale, Dog, Code, FolderKanban, Clock, FileText, GitBranch, Users, Printer,
   CalendarDays, Heart, BedDouble, Syringe, FolderGit2, GitPullRequest,
-  BookOpen, ListChecks, BarChart3, HardHat, Building2, ClipboardList, Camera, LucideIcon,
+  BookOpen, ListChecks, BarChart3, HardHat, Building2, ClipboardList, Camera,
+  ClipboardCheck, ShieldCheck,
+  ClipboardCheck, ShieldCheck, LucideIcon,
 } from 'lucide-react';
 
 const map: Record<string, LucideIcon> = {
