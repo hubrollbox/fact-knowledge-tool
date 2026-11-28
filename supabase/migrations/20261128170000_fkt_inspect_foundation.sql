@@ -152,14 +152,14 @@ BEGIN
   IF TG_OP = 'UPDATE' THEN
     _old := to_jsonb(OLD);
 
+    -- Use JSONB for table-specific fields: static NEW.field references are
+    -- resolved against every trigger relation, even behind a boolean guard.
     IF TG_TABLE_NAME = 'inspect_organisations'
-      AND NEW.workspace_id IS DISTINCT FROM OLD.workspace_id THEN
+      AND _row->'workspace_id' IS DISTINCT FROM _old->'workspace_id' THEN
       RAISE EXCEPTION 'workspace_id da organização Inspect é imutável'
         USING ERRCODE = 'check_violation';
-    END IF;
-
-    IF TG_TABLE_NAME <> 'inspect_organisations'
-      AND NEW.inspect_organisation_id IS DISTINCT FROM OLD.inspect_organisation_id THEN
+    ELSIF TG_TABLE_NAME <> 'inspect_organisations'
+      AND _row->'inspect_organisation_id' IS DISTINCT FROM _old->'inspect_organisation_id' THEN
       RAISE EXCEPTION 'inspect_organisation_id é imutável'
         USING ERRCODE = 'check_violation';
     END IF;
