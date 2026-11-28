@@ -78,7 +78,7 @@ Relação proposta: uma Organização Inspect por workspace. Não se propõe alt
 - `party_id` — entidade contratante registada em `inspect_parties`
 - referência/estado da relação comercial e timestamps
 
-Representa a relação de cliente contratual gerida pela organização Inspect. Não é um utilizador nem um workspace e não concede acesso externo por si só.
+Representa a relação de cliente contratual gerida pela organização Inspect. Não é um utilizador nem um workspace e não concede acesso externo por si só. A entidade legal subjacente é registada uma única vez em `inspect_parties`, que pode assumir o papel de cliente contratual e/ou operador alimentar.
 
 ### 4.3. Estabelecimento
 
@@ -164,7 +164,7 @@ Uma política de acesso externo deve verificar cumulativamente:
 5. o recurso filho pertence à mesma auditoria/organização;
 6. o estado da auditoria permite a operação solicitada.
 
-Não aceitar um `workspace_id`, `client_id` ou `audit_id` enviado pelo cliente como prova de autorização.
+Não aceitar um `workspace_id`, `contract_client_id`, `establishment_id` ou `audit_id` enviado pelo cliente como prova de autorização.
 
 ### 6.3. Isolamento e negação por defeito
 
@@ -181,7 +181,7 @@ Não aceitar um `workspace_id`, `client_id` ou `audit_id` enviado pelo cliente c
 Seguir o padrão já usado no FKT Vet e em Works: chaves candidatas e foreign keys compostas para impedir relações entre workspaces/organizações/clientes/auditorias incompatíveis.
 
 Exemplo conceptual:
-- auditoria tem `(id, inspect_organisation_id, client_id, establishment_id)`;
+- auditoria tem `(id, inspect_organisation_id, contract_client_id, establishment_id)`;
 - resultado referencia `(audit_id, inspect_organisation_id)`;
 - evidência referencia a auditoria e o mesmo âmbito;
 - acção referencia a não conformidade e a mesma auditoria.
@@ -264,7 +264,7 @@ Estas questões não impedem a decisão arquitectural principal, mas têm de ser
 
 A proposta resulta de análise estática do repositório e das migrações versionadas. Não houve consulta à base de dados remota, execução de SQL, testes de RLS do Inspect ou validação de routing em execução. Não afirmar que a arquitectura está implementada ou que o isolamento foi comprovado em runtime.
 
-A prioridade do FKT Works mantém-se. Não criar projectos Supabase, branches de BD ou alterações remotas para esta fase.
+A prioridade de produto passou para o MVP do FKT Inspect em 28/11/2026. Não criar projectos Supabase, branches de BD ou alterações remotas sem revisão e autorização específica.
 
 
 ## 14. Revisão crítica da proposta — correcções obrigatórias antes do modelo físico
