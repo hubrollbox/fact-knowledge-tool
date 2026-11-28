@@ -113,13 +113,22 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [operations, setOperations] = useState<WorksOfflineOperation[]>([]);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const [queueLoaded, setQueueLoaded] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const running = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!user?.id || !workspaceId) { setOperations([]); return; }
-    try { setOperations(await listarOperacoesOffline(user.id, workspaceId)); }
-    catch { setOperations([]); }
+    if (!user?.id || !workspaceId) { setOperations([]); setQueueLoaded(false); setStorageError(null); return; }
+    try {
+      setOperations(await listarOperacoesOffline(user.id, workspaceId));
+      setStorageError(null);
+    } catch (error) {
+      setOperations([]);
+      setStorageError(error instanceof Error ? error.message : 'Não foi possível consultar a fila offline.');
+    } finally {
+      setQueueLoaded(true);
+    }
   }, [user?.id, workspaceId]);
 
   const sync = useCallback(async () => {
@@ -197,5 +206,5 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
     };
   }, [sync, refresh]);
 
-  return { operations, pendingCount: operations.length, syncing, refresh, sync };
+  return { operations, pendingCount: operations.length, syncing, queueLoaded, storageError, refresh, sync };
 }
