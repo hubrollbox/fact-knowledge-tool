@@ -106,6 +106,8 @@ Está orientado para profissionais que necessitam de registar e acompanhar a ati
 
 O objetivo é assegurar que a informação recolhida no terreno não fica isolada: deve manter ligação à obra, à visita, à ocorrência, à decisão e à ação correspondente.
 
+A evolução funcional planeada inclui orçamentação para empreiteiros e fiscais de obra, criação e importação de orçamentos, versionamento, aprovação registada, medições e controlo de desvios. Este âmbito está documentado em [FKT Works — Orçamentação e controlo financeiro](architecture/fkt-works-budgeting.md) e não deve ser apresentado como funcionalidade já disponível.
+
 O FKT Works não deve ser apresentado como substituto de todas as ferramentas de gestão de obra. O seu foco é a organização da informação, a evidência, a rastreabilidade e o acompanhamento.
 
 ## 5. Princípios fundamentais
