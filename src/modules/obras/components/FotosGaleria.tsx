@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Camera, Loader2, MapPin } from 'lucide-react';
 import { useFotos, useUploadFoto } from '../hooks/useFotosObra';
 
@@ -74,14 +75,21 @@ export function FotosGaleria({ visitaId, ocorrenciaId, canWrite }: Props) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {fotos.map((f) => (
-            <a key={f.id} href={f.url ?? localUrls[f.id] ?? '#'} target="_blank" rel="noreferrer" className="block rounded-md overflow-hidden border border-border bg-muted">
-              {(f.url ?? localUrls[f.id]) && <img src={f.url ?? localUrls[f.id]} alt={f.legenda ?? 'Foto de obra'} className="aspect-square w-full object-cover" loading="lazy" />}
-              <div className="p-1.5 text-[11px] text-muted-foreground space-y-0.5">
-                {f.legenda && <div className="font-medium text-foreground">{f.legenda}</div>}
+            <div key={f.id} className="overflow-hidden rounded-md border border-border bg-muted">
+              {(f.url ?? localUrls[f.id]) && (f.pending
+                ? <img src={f.url ?? localUrls[f.id]} alt={f.legenda ?? 'Foto de obra'} className="aspect-square w-full object-cover" loading="lazy" />
+                : <a href={f.url ?? localUrls[f.id]} target="_blank" rel="noreferrer" aria-label="Abrir fotografia em tamanho completo">
+                    <img src={f.url ?? localUrls[f.id]} alt={f.legenda ?? 'Foto de obra'} className="aspect-square w-full object-cover" loading="lazy" />
+                  </a>)}
+              <div className="space-y-1.5 p-1.5 text-[11px] text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-1">
+                  {f.pending && <Badge variant="outline">Por enviar</Badge>}
+                  {f.legenda && <span className="font-medium text-foreground">{f.legenda}</span>}
+                </div>
                 {f.capturada_em && <div>{new Date(f.capturada_em).toLocaleString('pt-PT')}</div>}
                 {f.latitude != null && <div className="flex items-center gap-1"><MapPin className="h-3 w-3" />{f.latitude.toFixed(5)}, {f.longitude?.toFixed(5)}</div>}
               </div>
-            </a>
+            </div>
           ))}
         </div>
       )}
