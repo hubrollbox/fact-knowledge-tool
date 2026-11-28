@@ -241,3 +241,31 @@ A publicação externa é independente da submissão: exige permissão específi
 A auto-revisão é opção explícita da organização para equipas pequenas; deve ficar registada como excepção com actor e motivo. Nunca assumir auto-revisão silenciosa.
 
 Os endpoints/RPC devem impedir transições inválidas, concorrência de submissão e actualização directa de estado pelo cliente. As operações de transição escrevem evento append-only na mesma transacção.
+
+## 14. Extensão provisória da matriz — operação HACCP
+
+Esta matriz acrescenta o domínio operacional. É uma proposta de autorização para #175, não SQL nem confirmação de que estes papéis já existem no Core.
+
+| Domínio | Gerente do estabelecimento | Responsável HACCP | Colaborador | Consultor autorizado | Auditor atribuído |
+|---|---|---|---|---|---|
+| Dados do estabelecimento/áreas/equipamentos | Gerir | Consultar/editar conforme delegação | Consultar o necessário | Consultar/editar apenas com grant operacional explícito | Consultar se necessário à auditoria |
+| Plano HACCP e versões | Consultar/aprovar internamente; não substituir validação técnica | Preparar/editar e submeter para aprovação | Consultar instruções aplicáveis | Consultar/rever apenas com grant; propor alterações | Consultar versão aplicável |
+| Parâmetros e frequências | Aprovar configuração operacional | Configurar/propor segundo plano validado | Não alterar | Rever/configurar apenas com autorização expressa | Não alterar parâmetros operacionais |
+| Tarefas e controlos previstos | Consultar/atribuir | Configurar e acompanhar | Consultar tarefas atribuídas | Consultar quando grant inclui operação | Consultar evidência amostrada |
+| Registos de execução | Consultar e rever | Consultar/rever e validar | Criar registo para tarefa atribuída; corrigir apenas por evento justificado | Ler apenas com grant específico; sem reescrita | Ler amostras autorizadas |
+| Higienização | Gerir plano e rever | Configurar/rever | Executar tarefas atribuídas | Ler/rever se autorizado | Ler amostras |
+| Fornecedores/recepção/lotes | Gerir e consultar | Consultar/rever | Registar recepção e eventos atribuídos | Acesso mínimo concedido | Consultar amostras |
+| Validades/preparações | Consultar/gerir | Configurar procedimento e rever | Registar abertura/preparação/eliminação atribuída | Consultar se autorizado | Consultar amostras |
+| Não conformidades/acções | Atribuir e acompanhar | Gerir e verificar conforme competência | Reportar desvio e executar acção atribuída | Acompanhar apenas se grant e acção atribuída | Criar constatação de auditoria; não altera registo operacional |
+| Auditorias | Consultar relatórios autorizados | Apoiar e responder | Sem acesso por defeito | Executar conforme papel/contrato | Executar/rever se atribuído |
+| Administração de utilizadores | Gerir utilizadores do estabelecimento | Sem gestão global por defeito | Sem gestão | Sem gestão do workspace cliente | Sem gestão do workspace cliente |
+
+### Regras obrigatórias
+- Os papéis acima são funções Inspect atribuídas por organização/estabelecimento; não presumir que correspondem a owner/admin/editor/viewer do workspace.
+- Uma pessoa pode acumular funções, mas cada operação deve verificar atribuição activa e âmbito do estabelecimento.
+- Consultor e auditor não recebem acesso operacional por pertencerem à carteira nem por terem acesso a uma auditoria partilhada.
+- Registos submetidos não são alterados directamente; correcções geram evento com valor anterior/novo, actor, instante e motivo.
+- O colaborador não altera plano, parâmetros, limites ou frequências.
+- O gerente não pode transformar um parâmetro interno em obrigação legal nem dispensar validação profissional quando esta for necessária.
+- O acesso externo é revogável e verificado no servidor em cada operação.
+- A matriz final deve ser convertida em policies por tabela/operação e testes pgTAP negativos antes de DDL operacional.
