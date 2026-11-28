@@ -143,7 +143,7 @@ export const modulos: Modulo[] = [
     descricaoLonga: [
       'O FKT Inspect está a ser planeado para apoiar consultores, auditores e organizações na preparação e execução de auditorias, começando pela segurança alimentar e higiene em estabelecimentos de restauração.',
       'A proposta liga critérios de auditoria, observações, medições, evidências, não conformidades e ações correctivas, mantendo o histórico e a versão do modelo utilizado.',
-      'O módulo ainda não está implementado nem disponível para utilização. O seu âmbito, modelo de dados e arquitectura de segurança encontram-se em documentação e revisão. O FKT Works mantém prioridade de conclusão do MVP.',
+      'O módulo ainda não está implementado nem disponível para utilização. O seu âmbito, modelo de dados e arquitectura de segurança encontram-se em documentação e revisão. O FKT Inspect é o próximo MVP a concluir.',
     ],
     funcionalidades: [
       { icone: 'ClipboardCheck', titulo: 'Auditorias estruturadas', descricao: 'Preparação e execução de auditorias com modelos versionados e critérios definidos.' },
