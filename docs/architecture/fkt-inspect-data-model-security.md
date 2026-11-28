@@ -22,7 +22,7 @@ Representa a entidade que utiliza o módulo e é ancorada no workspace FKT:
 - id;
 - workspace_id;
 - nome e dados de identificação estritamente necessários;
-- tipo de utilização (`consultancy`, `operator` ou `both`);
+- tipo de utilização (`consultant`, `operator` ou `hybrid`), conforme a constraint da migração de fundação;
 - estado e datas.
 
 Deve existir uma relação inequívoca entre organização Inspect e workspace. Não criar um workspace para cada cliente externo.
@@ -172,8 +172,8 @@ O PDF deve representar uma fotografia imutável do estado aprovado, não uma con
 
 - Workspace 1:1 (ou 1:N apenas se a regra Core mudar explicitamente) Organização Inspect.
 - Organização Inspect 1:N Clientes.
-- Cliente 1:N Estabelecimentos.
-- Cliente N:M Utilizadores externos, através de concessões explícitas.
+- Cliente N:M Estabelecimentos através de `inspect_client_establishments`.
+- Utilizadores externos acedem apenas através de concessões explícitas por auditoria; não há relação de membership cliente/utilizador que conceda acesso.
 - Organização Inspect 1:N Modelos e Auditorias.
 - Modelo 1:N Versões; versão 1:N Secções e Critérios.
 - Estabelecimento 1:N Auditorias.
