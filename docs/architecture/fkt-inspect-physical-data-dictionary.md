@@ -124,7 +124,7 @@ Liga uma medida de controlo do plano a um objecto observado.
 `id`, tenant/local, `monitoring_control_id`, `user_id`, `valid_from`, `valid_until`, `assigned_by`, `status`. FK composta para controlo e utilizador auth. Atribuição temporal; índice para tarefas activas.
 
 ### 4.5 `inspect_monitoring_tasks`
-Instância devida, não é a medição.
+Instância devida, não é a medição. A tarefa preserva `plan_version_id` e snapshot da instrução/controlo apresentado, mesmo depois de uma nova versão do plano ser publicada.
 - `id`, tenant/local, `monitoring_control_id`, `scheduled_for timestamptz`, `due_until timestamptz NULL`
 - `status CHECK ('pending','completed','missed','waived','cancelled')`
 - `waiver_reason text NULL`, `generated_at timestamptz`, `completed_at timestamptz NULL`
@@ -152,10 +152,10 @@ Append-only: `id`, tenant/local, `monitoring_record_id`, `event_type CHECK ('cor
 Tenant/local, versão do plano, `code`, `name`, `area_id`, `method`, `products_description`, `frequency_value`, `frequency_unit`, `status`, vigência. A frequência é definida no plano aprovado, não pelo sistema.
 
 ### 5.2 `inspect_cleaning_tasks`
-Instância programada: `cleaning_plan_id`, `scheduled_for`, `due_until`, `status CHECK ('pending','completed','missed','waived','cancelled')`, `waiver_reason`, `generated_at`. UNIQUE `(cleaning_plan_id,scheduled_for)`.
+Instância programada: tenant/local, `cleaning_plan_id`, `plan_version_id`, `scheduled_for`, `due_until`, `status CHECK ('pending','completed','missed','waived','cancelled')`, `waiver_reason`, `instruction_snapshot jsonb`, `generated_at`. UNIQUE `(cleaning_plan_id,scheduled_for)`. A tarefa mantém a versão e instrução mostradas no momento da geração.
 
 ### 5.3 `inspect_cleaning_records`
-Execução: `cleaning_task_id`, `performed_at`, `performed_by`, `result_status CHECK ('completed','incomplete','failed')`, `products_used text NULL`, `dilution_or_method text NULL`, `comment`, `submitted_at`, datas/autoria. Evidências em tabela de anexos com Storage privado. Uma tarefa concluída exige registo válido.
+Execução: tenant/local, `cleaning_task_id`, `performed_at`, `recorded_at`, `performed_by`, `result_status CHECK ('completed','incomplete','failed')`, `products_used text NULL`, `dilution_or_method text NULL`, `comment`, `is_retroactive boolean`, `retroactive_reason text NULL`, `submitted_at`, datas/autoria. Evidências em tabela de anexos com Storage privado. Uma tarefa concluída exige registo válido; execução retroactiva exige motivo e evento auditável.
 
 ## 6. Fornecedores, recepção e rastreabilidade
 
@@ -169,10 +169,10 @@ Tenant/local, `product_code`, `name`, `description`, `category`, `storage_condit
 Cabeçalho de recepção: tenant/local, `supplier_id`, `received_at`, `recorded_at`, `received_by`, `delivery_reference`, `overall_status CHECK ('accepted','partially_accepted','rejected','pending_review')`, `notes`. Uma recepção contém uma ou mais linhas.
 
 ### 6.4 `inspect_receipt_items`
-Tenant/local, `receipt_id`, `food_product_id`, `supplier_lot_code`, `quantity numeric(12,3) NULL`, `unit_code`, `expiry_date date NULL`, `temperature_value numeric(12,4) NULL`, `temperature_unit text NULL`, `condition_status CHECK ('accepted','rejected','pending')`, `rejection_reason`, `evidence_reference`. Uma linha pode originar vários lotes se o fornecedor entregar mais de um lote: modelar em `inspect_lot_receipt_items`, não repetir a linha de recepção.
+Tenant/local, `receipt_id`, `food_product_id`, `quantity numeric(12,3) NULL`, `unit_code NULL`, `temperature_value numeric(12,4) NULL`, `temperature_unit text NULL`, `condition_status CHECK ('accepted','rejected','pending')`, `rejection_reason`, `evidence_reference`. CHECK: quantidade e unidade ambas preenchidas ou ambas nulas. O código de lote do fornecedor pertence ao lote, não à linha da recepção. Uma linha pode originar vários lotes através de `inspect_lot_receipt_items`.
 
 ### 6.5 `inspect_lots`
-Tenant/local, `food_product_id`, `internal_lot_code`, `supplier_lot_code NULL`, `origin_type CHECK ('supplier','internal_preparation','transformation')`, `received_on date NULL`, `prepared_at timestamptz NULL`, `expiry_date date NULL`, `status CHECK ('active','blocked','consumed','discarded','recalled')`, datas/autoria. UNIQUE `(establishment_id,internal_lot_code)`; não impor unicidade global ao lote do fornecedor.
+Tenant/local, `food_product_id`, `internal_lot_code`, `supplier_lot_code NULL`, `origin_type CHECK ('supplier','internal_preparation','transformation')`, `received_on date NULL`, `prepared_at timestamptz NULL`, `expiry_date date NULL`, `status CHECK ('active','blocked','consumed','discarded','recalled')`, `quantity numeric(12,3) NULL`, `unit_code NULL`, datas/autoria. CHECK: quantidade e unidade ambas preenchidas ou ambas nulas. UNIQUE `(establishment_id,internal_lot_code)`; não impor unicidade global ao lote do fornecedor.
 
 ### 6.6 `inspect_lot_receipt_items`
 Ligação N:M entre lotes e linhas de recepção: `receipt_item_id`, `lot_id`, `quantity numeric(12,3) NULL`, `unit_code NULL`. UNIQUE `(receipt_item_id,lot_id)`; FKs compostas no mesmo tenant/local.
@@ -180,7 +180,7 @@ Ligação N:M entre lotes e linhas de recepção: `receipt_item_id`, `lot_id`, `
 ### 6.7 `inspect_lot_transformations` e `inspect_lot_transformation_inputs`
 Transformação/preparação que gera lote interno:
 - transformação: `id`, tenant/local, `output_lot_id`, `process_step_id NULL`, `performed_at`, `performed_by`, `description`, `procedure_version_id`.
-- inputs: `transformation_id`, `input_lot_id`, `quantity numeric(12,3) NULL`, `unit_code NULL`.
+- inputs: `transformation_id`, `input_lot_id`, `quantity numeric(12,3) NULL`, `unit_code NULL`; CHECK: quantidade e unidade ambas preenchidas ou ambas nulas.
 - Um lote resultante pode ter várias entradas; um lote de entrada pode alimentar várias transformações. CHECK impede que output_lot_id também seja input na mesma transformação.
 - FKs compostas impedem cruzamento de estabelecimento. Não é um livro de stock.
 
@@ -266,11 +266,11 @@ As decisões seguintes fecham o desenho técnico. Não substituem validação pr
 
 ## 12. Ajustamentos obrigatórios ao esquema físico
 
-- Adicionar `generation_watermark timestamptz` a `inspect_monitoring_controls` (e ao plano de higienização, ou usar uma tabela comum de schedule cursors) para geração on-demand segura. Recomenda-se tabela comum `inspect_schedule_cursors` com `schedule_type`, `schedule_id`, `generated_through`, `updated_at` e UNIQUE por tipo/id; a função valida a FK real no domínio antes de gerar.
+- Usar cursores separados com FKs reais: `inspect_monitoring_schedule_cursors(monitoring_control_id PK/FK, tenant/local, generated_through, updated_at)` e `inspect_cleaning_schedule_cursors(cleaning_plan_id PK/FK, tenant/local, generated_through, updated_at)`. Não usar `schedule_type + schedule_id` polimórfico.
 - Adicionar CHECK de paridade quantidade/unidade em `inspect_receipt_items`, `inspect_lot_receipt_items` e inputs de transformação.
 - Criar `inspect_oil_control_records`: tenant/local, `equipment_id` ou `area_id`, `event_type CHECK ('check','filter','replace','dispose')`, `occurred_at`, `recorded_at`, `performed_by`, `result_text`, `measurement_value NULL`, `measurement_unit NULL`, `notes`, `evidence_document_id NULL`; paridade valor/unidade; sem limiares universais.
 - Nas tabelas tipadas de origem NC, permitir várias origens por `nonconformity_id` e aplicar UNIQUE ao FK da origem. Uma origem permanece ligada à mesma NC, mesmo após fecho/reabertura.
-- O estado `missed` deve ser derivado/actualizado transaccionalmente com base em `due_until`; não marcar tarefas como perdidas antes de terminar a janela de tolerância configurada.
+- O estado `missed` é actualizado pela RPC transaccional de geração/consulta apenas depois de `due_until`; não marcar tarefas como perdidas antes de terminar a janela.
 - Definir explicitamente qual o plano de higienização e versão aplicável a cada tarefa; a execução preserva snapshot da instrução/produto/método que foi apresentado ao colaborador.
 - A publicação de versão HACCP e a geração de tarefas têm de ocorrer por RPC transaccional, com lock e testes de concorrência.
 
