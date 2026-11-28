@@ -32,6 +32,21 @@ Nomes conceptuais, não SQL final:
 
 Todos os helpers externos derivam identidade de `auth.uid()`. Não devem aceitar `user_id` arbitrário. As funções têm de ser estáveis/imutáveis apenas quando a semântica o permita; não marcar como IMMUTABLE verificações dependentes de tabelas.
 
+## 2.1. Mapeamento provisório dos papéis Core para Inspect
+
+Não criar papéis globais novos no Core para o MVP. Usar os papéis actuais do workspace como limite máximo e exigir atribuição explícita nas auditorias:
+
+| Papel Core | Capacidades Inspect no MVP | Limites |
+|---|---|---|
+| Owner do workspace / `owner` | Administração da organização, clientes, estabelecimentos, equipa, modelos, convites, grants e auditorias; pode executar auditorias | Operações críticas continuam sujeitas a histórico e transições controladas |
+| `admin` | Gestão operacional equivalente ao owner, excepto transferência/eliminação do workspace e operações reservadas ao owner Core | Não contorna imutabilidade nem histórico |
+| `editor` | Executa e edita rascunhos apenas nas auditorias em que esteja explicitamente atribuído; regista resultados, evidências, findings e propostas de acção | Não gere membros, modelos publicados ou grants; submissão/publicação apenas se a atribuição concreta o permitir |
+| `viewer` | Leitura interna dos dados da organização permitidos pela política | Sem criação, edição, submissão, publicação ou gestão de acessos |
+
+A atribuição de auditor deve ser uma relação própria com a auditoria, actor, função e datas de vigência. Ser `editor` no workspace não torna automaticamente o utilizador auditor de todas as auditorias. Um utilizador externo nunca recebe um destes papéis nem é inserido em `workspace_members`.
+
+A distinção owner/admin para operações de administração global deve respeitar as regras Core já existentes; esta matriz não autoriza alargar os poderes do papel `admin`.
+
 ## 3. Matriz RLS por grupo de tabelas
 
 | Tabelas/grupo | SELECT interno | SELECT externo | INSERT | UPDATE | DELETE |
