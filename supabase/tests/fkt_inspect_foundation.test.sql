@@ -83,14 +83,15 @@ SELECT ok(
 INSERT INTO auth.users (id,aud,role,email,raw_user_meta_data,created_at,updated_at)
 VALUES
   ('a6100000-0000-4000-8000-000000000001','authenticated','authenticated','inspect-phase1-actor@example.test','{}'::jsonb,now(),now()),
+  ('a6100000-0000-4000-8000-000000000002','authenticated','authenticated','inspect-phase1-second@example.test','{}'::jsonb,now(),now()),
   ('a6100000-0000-4000-8000-000000000099','authenticated','authenticated','inspect-phase1-forged@example.test','{}'::jsonb,now(),now());
 
 SELECT set_config('request.jwt.claim.sub','a6100000-0000-4000-8000-000000000001',true);
 
-INSERT INTO public.workspaces (id,user_id,modulo)
+INSERT INTO public.workspaces (id,user_id,modulo,name)
 VALUES
-  ('b6100000-0000-4000-8000-000000000001','a6100000-0000-4000-8000-000000000001','inspect'),
-  ('b6100000-0000-4000-8000-000000000002','a6100000-0000-4000-8000-000000000001','inspect');
+  ('b6100000-0000-4000-8000-000000000001','a6100000-0000-4000-8000-000000000001','inspect','Inspect teste A'),
+  ('b6100000-0000-4000-8000-000000000002','a6100000-0000-4000-8000-000000000002','inspect','Inspect teste B');
 
 INSERT INTO public.inspect_organisations
   (id,workspace_id,organisation_type,display_name,created_by,updated_by)
