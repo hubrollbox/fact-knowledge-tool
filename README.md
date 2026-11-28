@@ -26,7 +26,7 @@ A aplicação partilha capacidades transversais, cuja utilização depende do m�
 | **FKT Vet** | Em preparação | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. |
 | **FKT Dev** | Em preparação | Projetos, issues e decisões técnicas (ADRs). |
 
-A existência de código ou de rotas para um módulo não significa que esteja concluído, validado ou disponível para utilização geral. O FKT Works é o módulo escolhido para o primeiro piloto comercial.
+A existência de código, rotas ou FAQ para um módulo não significa que esteja concluído, validado ou disponível para utilização geral. O FKT Works é o módulo escolhido para o primeiro piloto comercial.
 
 ### Modelo de utilização
 
