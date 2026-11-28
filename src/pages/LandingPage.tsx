@@ -59,7 +59,7 @@ const modules = [
   {
     name: 'FKT Inspect',
     description: 'Auditorias, evidências e acompanhamento de não conformidades.',
-    status: 'Planeado',
+    status: 'Próximo MVP',
     icon: ClipboardCheck,
     href: '/modulos/inspect',
   },
