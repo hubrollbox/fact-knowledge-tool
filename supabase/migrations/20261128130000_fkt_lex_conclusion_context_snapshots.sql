@@ -2,6 +2,11 @@
 -- Snapshots are created by the database when a conclusion version is inserted.
 -- No production database is changed by committing this migration.
 
+-- Composite scope key used by the snapshot FK; id remains the primary key.
+ALTER TABLE public.juridico_conclusoes
+  ADD CONSTRAINT juridico_conclusoes_id_process_workspace_unique
+  UNIQUE (id, processo_id, workspace_id);
+
 CREATE TABLE public.juridico_conclusoes_snapshots (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   conclusao_id uuid NOT NULL UNIQUE
