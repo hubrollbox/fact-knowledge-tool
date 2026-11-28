@@ -406,4 +406,39 @@ A autorização interna de auditoria não pode depender apenas do papel geral do
 
 O modelo suporta revisão por pessoa diferente do auditor, mas não impõe essa separação como requisito universal do MVP. A organização pode configurar a revisão conforme a sua dimensão e procedimento. Owner/admin conserva poderes de gestão, sem contornar as transições nem o histórico.
 
-A tabela de atribuições deve ter eventos append-only para atribuição, alteração, suspensão e revogação. A revogação bloqueia imediatamente novas operações, sem apagar a autoria histórica.
+Separar o estado operacional da trilha histórica:
+- `inspect_audit_assignments` representa a atribuição actual, com `valid_from`, `valid_until`, `status`, actor de concessão e actor/motivo de revogação;
+- `inspect_audit_assignment_events` é append-only e regista criação, alteração de função, suspensão, reactivação e revogação, com actor, instante, motivo e snapshot dos valores relevantes;
+- a alteração/revogação da atribuição e a inserção do evento ocorrem na mesma transacção;
+- uma atribuição revogada ou fora da vigência bloqueia imediatamente novas operações, sem apagar autoria histórica.
+
+Não declarar a própria linha de atribuição simultaneamente append-only e mutável. O evento é imutável; o registo operacional mantém o estado actual.
+
+
+## 18. Máquina de estados da auditoria e submissão
+
+Estados operacionais propostos:
+- `draft`: criada, ainda não iniciada;
+- `in_progress`: execução em curso;
+- `in_review`: enviada para revisão, sem edição pelo auditor até devolução;
+- `changes_requested`: devolvida pelo reviewer, com motivo;
+- `approved`: revisão aprovada, pronta para submissão;
+- `submitted`: snapshot imutável criado;
+- `closed`: acompanhamento encerrado;
+- `cancelled`: cancelada com motivo e actor.
+
+Transições permitidas:
+- `draft -> in_progress`: auditor atribuído;
+- `in_progress -> in_review`: auditor atribuído, sem gravações pendentes;
+- `in_review -> changes_requested`: reviewer atribuído, com motivo obrigatório;
+- `changes_requested -> in_review`: auditor atribuído, após alterações;
+- `in_review -> approved`: reviewer atribuído;
+- `approved -> submitted`: operação de submissão transaccional, com snapshot/hash e número sequencial;
+- `submitted -> closed`: actor interno autorizado, após conclusão do acompanhamento;
+- estados não finais -> `cancelled`: owner/admin ou reviewer autorizado, com motivo e evento.
+
+A submissão cria o snapshot na mesma transacção que altera o estado. Não permitir edição do conteúdo-base depois de `submitted`; alterações posteriores são adenda/submissão nova. A publicação externa é um acto separado de `submitted`, exige permissão específica e referencia a submissão concreta. A publicação pode ser revogada sem reabrir nem alterar a submissão.
+
+Para organizações sem pessoa revisora distinta, permitir configuração explícita de auto-revisão pelo owner/auditor principal, com evento que identifica a excepção. Não presumir que toda a consultora tem equipa suficiente para segregação de funções.
+
+Testar todas as transições válidas e inválidas, concorrência de submissão, duplicação de números, tentativas de alteração após submissão e publicação de snapshot diferente do relatório.
