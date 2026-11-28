@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Scale, BookOpen, ArrowRightLeft, CheckCircle2, Clock, User, AlignLeft } from 'lucide-react';
+import { FileText, FileText, BookOpen, ArrowRightLeft, CheckCircle2, Clock, User, AlignLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,7 +88,7 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
 
   const firacItems = [
     { key: 'factos', label: 'Factos', icon: AlignLeft, count: counts.factos, tab: 'factos' },
-    { key: 'issues', label: 'Issues', icon: Scale, count: counts.issues, tab: 'issues' },
+    { key: 'issues', label: 'Issues', icon: FileText, count: counts.issues, tab: 'issues' },
     { key: 'rules', label: 'Rules', icon: BookOpen, count: counts.rules, tab: 'rules' },
     { key: 'applications', label: 'Applications', icon: ArrowRightLeft, count: counts.applications, tab: 'applications' },
     { key: 'conclusoes', label: 'Conclusões', icon: CheckCircle2, count: counts.conclusoes, tab: 'conclusoes' },
@@ -125,7 +125,7 @@ export function ResumoTab({ processoId, processo, onNavigateTab }: ResumoTabProp
       <Card className="md:col-span-2">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <Scale className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-muted-foreground" />
             Análise FIRAC
           </CardTitle>
         </CardHeader>
