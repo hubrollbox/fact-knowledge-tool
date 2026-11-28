@@ -40,7 +40,7 @@ A revisão mensal é uma rede de segurança. Não substitui a revisão feita jun
 
 A tabela `public.fkt_support_faq` já possui `reviewed_at`. Ao guardar uma FAQ publicada pela área de Administração, a aplicação actualiza esta data. A data só deve ser renovada depois de uma verificação real.
 
-Actualmente, a FAQ não guarda o commit nem a versão exacta da aplicação contra a qual foi testada. Não se deve inferir essa informação a partir da data de revisão. Uma futura evolução poderá acrescentar essa rastreabilidade se a equipa precisar de auditoria por versão.
+A FAQ não guarda o commit nem a versão exacta da aplicação contra a qual foi testada. Não se deve inferir essa informação a partir da data de revisão. As FAQ incluídas em migrações só ficam disponíveis na BD depois de a migração correspondente ser aplicada; a existência do ficheiro no GitHub não comprova a publicação.
 
 ## Checklist para cada alteração
 
@@ -50,3 +50,12 @@ Actualmente, a FAQ não guarda o commit nem a versão exacta da aplicação cont
 - [ ] As respostas desactualizadas foram corrigidas ou retiradas?
 - [ ] A issue regista as FAQ revistas/alteradas ou «Sem impacto nas FAQ»?
 - [ ] A publicação foi feita pelo Administrador Global?
+
+## Regra específica do FKT Lex
+
+- Descrever o fluxo de conclusões como versões imutáveis: criar uma nova versão para alterar o texto; não prometer edição da versão anterior.
+- Distinguir o histórico de transições (rascunho, submissão para revisão, devolução, aprovação e reabertura) dos snapshots do contexto analítico.
+- A migração `20261120145052_fkt_lex_immutable_conclusion_audit.sql` está registada na BD de produção e implementa o histórico de eventos e as transições.
+- A migração `20261128130000_fkt_lex_conclusion_context_snapshots.sql` existe no repositório, mas não consta do histórico remoto consultado em 28-11-2026. Não documentar snapshots de contexto como disponíveis até ser aplicada e testada.
+- Não afirmar que o histórico antigo foi reconstruído: a migração de snapshots declara expressamente que as versões anteriores não são reconstruídas.
+- Não declarar o fluxo integralmente validado apenas porque a migração está aplicada; testar os percursos na interface e as permissões com contas distintas.
