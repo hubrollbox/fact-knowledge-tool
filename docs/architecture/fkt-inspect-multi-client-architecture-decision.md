@@ -87,7 +87,7 @@ Representa a relação de cliente contratual gerida pela organização Inspect. 
 - `operator_party_id nullable` — entidade que opera o estabelecimento, quando identificada
 - designação, morada, actividade e estado
 
-O estabelecimento pertence à carteira da organização Inspect, não a um único cliente contratual. A ligação ao cliente contratual é registada na auditoria concreta; assim, cliente contratual e operador podem coincidir ou ser entidades diferentes. Se for necessário gerir contratos/portefólios antes de existir auditoria, uma tabela de ligação explícita pode ser avaliada posteriormente. Para o operador que audita internamente, não se cria um cliente fictício.
+O estabelecimento pertence à carteira da organização Inspect, não a um único cliente contratual. A relação de carteira é mantida por `inspect_client_establishments` (N:M), permitindo gerir os estabelecimentos de cada cliente antes de existir uma auditoria e associar um local a mais do que um cliente contratual quando necessário. A auditoria referencia a combinação cliente/estabelecimento concreta. Para o operador que audita internamente, não se cria um cliente fictício.
 
 ### 4.4. Auditoria
 
@@ -275,12 +275,13 @@ A revisão confirmou a separação entre workspace e acesso externo, mas identif
 
 «Cliente» não deve ser automaticamente tratado como sinónimo de operador responsável pelo estabelecimento. Uma consultora pode ser contratada por uma entidade gestora, enquanto a responsabilidade pela exploração alimentar pertence a outra entidade; também pode haver vários estabelecimentos e operadores diferentes.
 
-O modelo físico deve distinguir:
+O modelo físico distingue:
 - a relação comercial/cliente da organização Inspect;
 - a entidade operadora do estabelecimento, quando identificável;
-- o estabelecimento físico.
+- o estabelecimento físico;
+- a associação N:M entre cliente e estabelecimento (`inspect_client_establishments`).
 
-No cenário de utilização interna por uma empresa, não se deve exigir uma relação comercial fictícia consigo própria. A organização Inspect pode ter uma entidade operadora própria associada aos seus estabelecimentos. A forma física final (entidade comum com papéis ou entidades separadas) deve preservar esta distinção e permitir que cliente contratual e operador sejam a mesma entidade quando efectivamente o são.
+No cenário de utilização interna por uma empresa, não se exige uma relação comercial fictícia consigo própria. A organização Inspect pode associar a sua própria entidade operadora aos estabelecimentos. A auditoria guarda um snapshot do operador identificado à data, sem o inferir a partir do cliente contratual; se desconhecido, regista a pendência e essa limitação.
 
 ### 14.2. A concessão externa é por auditoria, não por cliente
 
