@@ -25,7 +25,7 @@ A aplicação partilha capacidades transversais, cuja utilização depende do m�
 | **FKT Lex** | Em preparação | Processos, documentos, prazos e análise jurídica estruturada, incluindo FIRAC. |
 | **FKT Vet** | Em preparação | Animais, registos sanitários, ninhadas, agenda e reservas de alojamento. |
 | **FKT Dev** | Em preparação | Projetos, issues e decisões técnicas (ADRs). |
-| **FKT Inspect** | Próximo MVP; documentação e desenho em revisão, ainda não implementado | Auditorias, evidências, não conformidades e acções correctivas; domínio inicial de segurança alimentar e higiene na restauração. |
+| **FKT Inspect** | Fundação de dados e primeira interface de carteira implementadas no repositório; validação CI em curso, ainda não activável | Gestão de clientes, estabelecimentos e relações históricas como primeira etapa do MVP de auditorias de segurança alimentar. |
 
 A existência de código, rotas ou FAQ para um módulo não significa que esteja concluído, validado ou disponível para utilização geral. O FKT Works é o módulo escolhido para o primeiro piloto comercial.
 
@@ -132,6 +132,7 @@ Estes comandos actuam sobre a instância local. Não substituem a verificação 
 - [FKT Inspect — matriz de permissões externas](docs/architecture/fkt-inspect-external-access-permissions-matrix.md) — permissões por auditoria, estados, convites e partilha de ficheiros.
 - [FKT Inspect — modelo relacional lógico](docs/architecture/fkt-inspect-relational-model.md) — entidades, relações, constraints, RLS, Storage e testes pgTAP propostos.
 - [FKT Inspect — contrato físico de dados](docs/architecture/fkt-inspect-physical-data-contract.md) — inventário de tabelas/colunas, tipos, constraints, índices, GRANT, RLS e sequência de migrações.
+- [FKT Inspect — interface de carteira](src/modules/inspect/pages/InspectDashboard.tsx) — primeira interface para organização, clientes, estabelecimentos e histórico de associações; acesso ainda não activado no selector geral.
 - [FKT Inspect — migração de fundação](supabase/migrations/20261128170000_fkt_inspect_foundation.sql) — organização Inspect por workspace, carteira de clientes, estabelecimentos e associação temporal; aguarda validação CI local.
 - [FKT Inspect — teste de fundação](supabase/tests/fkt_inspect_foundation.test.sql) — verifica RLS, GRANT, integridade multi-tenant e trigger temporal.
 - [FKT Inspect — matriz RLS e Storage](docs/architecture/fkt-inspect-rls-policy-matrix.md) — regras propostas por grupo de tabelas, operações, convites e ficheiros.
