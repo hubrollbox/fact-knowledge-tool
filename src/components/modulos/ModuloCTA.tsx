@@ -19,12 +19,16 @@ export function ModuloCTA({ modulo, size = 'lg' }: Props) {
   const { moduloSlug, setModulo, isChanging, isLoading } = useModuloActivo();
   const { role } = useWorkspaceRole();
 
-  if (modulo.emPreparacao) {
+  if (modulo.slug === 'inspect') {
     return (
       <Button size={size} variant="outline" disabled>
         Em preparação — ainda não disponível
       </Button>
     );
+  }
+
+  if (modulo.emPreparacao) {
+    return <Button size={size} variant="outline" disabled>Em preparação — ainda não disponível</Button>;
   }
 
   if (loading || isLoading) {
