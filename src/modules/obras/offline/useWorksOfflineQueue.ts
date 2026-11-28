@@ -142,9 +142,18 @@ export function useWorksOfflineQueue(workspaceId: string | null) {
           await removerOperacaoOffline(operation.id);
         } catch (error) {
           let conflictRemote: Record<string, unknown> | null = null;
-          if (operation.operationType === 'update' && (error instanceof Error && error.message.includes('Conflito de edição'))) {
+          const isRecordConflict = error instanceof Error && (
+            error.message.includes('Conflito de edição') ||
+            error.message.includes('Conflito de sincronização')
+          );
+          if (isRecordConflict && (operation.entity === 'visita' || operation.entity === 'ocorrencia')) {
             const table = operation.entity === 'visita' ? 'obras_visitas' : 'obras_ocorrencias';
-            const { data } = await (supabase as any).from(table).select('*').eq('id', operation.id).maybeSingle();
+            const { data } = await (supabase as any)
+              .from(table)
+              .select('*')
+              .eq('workspace_id', operation.workspaceId)
+              .eq('id', operation.id)
+              .maybeSingle();
             conflictRemote = data ?? null;
           }
           await actualizarOperacaoOffline(operation.id, {
