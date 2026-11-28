@@ -16,6 +16,7 @@ import { AcaoDialog } from '../components/AcaoDialog';
 import { DocumentosObra } from '../components/DocumentosObra';
 import { AcaoComentarios } from '../components/AcaoComentarios';
 import { PlaneamentoObra } from '../components/PlaneamentoObra';
+import { IndicadoresObra } from '../components/IndicadoresObra';
 
 export function ObraDetail() {
   const { id } = useParams();
@@ -29,6 +30,7 @@ export function ObraDetail() {
   const [dataAte, setDataAte] = useState('');
   const [tipoRegisto, setTipoRegisto] = useState('todos');
   const [pesquisaDiario, setPesquisaDiario] = useState('');
+  const [activeTab, setActiveTab] = useState('visitas');
   const visitasFiltradas = useMemo(() => (visitas ?? []).filter((item) => {
     const row = item as any;
     const texto = [row.tecnico, row.condicoes_meteo, row.trabalhos_executados, row.equipa_intervenientes, row.equipamentos, row.materiais, row.condicionantes, row.atrasos, row.notas].filter(Boolean).join(' ').toLocaleLowerCase('pt-PT');
@@ -68,14 +70,19 @@ export function ObraDetail() {
         </section>
       )}
 
-      <Tabs defaultValue="visitas">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="sticky top-0 z-20 flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border bg-background/95 p-1 shadow-sm backdrop-blur md:static md:border-0 md:bg-transparent md:shadow-none md:backdrop-blur-0" aria-label="Secções da obra">
+          <TabsTrigger className="min-h-10 shrink-0 px-3" value="indicadores">Indicadores</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="visitas">Diário ({visitas?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="ocorrencias">Ocorrências ({ocorrencias?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="acoes">Ações ({acoes?.length ?? 0})</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="planeamento">Planeamento</TabsTrigger>
           <TabsTrigger className="min-h-10 shrink-0 px-3" value="documentos">Documentos</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="indicadores" className="space-y-3">
+          <IndicadoresObra ocorrencias={ocorrencias ?? []} acoes={acoes ?? []} onNavigate={setActiveTab} />
+        </TabsContent>
 
         <TabsContent value="visitas" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2"><Button asChild variant="outline" size="sm"><Link to={`/obras/${obra.id}/diario/relatorio${dataDesde || dataAte ? `?${new URLSearchParams({ ...(dataDesde ? { desde: dataDesde } : {}), ...(dataAte ? { ate: dataAte } : {}) }).toString()}` : ''}`}>Relatório do período</Link></Button></div>
