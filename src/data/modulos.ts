@@ -141,9 +141,9 @@ export const modulos: Modulo[] = [
     emPreparacao: true,
     tagline: 'Auditorias estruturadas, evidências rastreáveis e acompanhamento de ações correctivas.',
     descricaoLonga: [
-      'O FKT Inspect está a ser planeado para apoiar consultores, auditores e organizações na preparação e execução de auditorias, começando pela segurança alimentar e higiene em estabelecimentos de restauração.',
+      'O FKT Inspect está a ser desenvolvido para apoiar consultores, auditores e organizações na preparação e execução de auditorias, começando pela segurança alimentar e higiene em estabelecimentos de restauração.',
       'A proposta liga critérios de auditoria, observações, medições, evidências, não conformidades e ações correctivas, mantendo o histórico e a versão do modelo utilizado.',
-      'O módulo ainda não está implementado nem disponível para utilização. O seu âmbito, modelo de dados e arquitectura de segurança encontram-se em documentação e revisão. O FKT Inspect é o próximo MVP a concluir e está em preparação.',
+      'A fundação de dados e a primeira interface de gestão de clientes e estabelecimentos já existem no repositório e passaram os testes automatizados de CI. A migração ainda não foi aplicada à base de dados de produção e o fluxo de activação não está concluído; por isso, o módulo continua indisponível para utilização.',
     ],
     funcionalidades: [
       { icone: 'ClipboardCheck', titulo: 'Auditorias estruturadas', descricao: 'Preparação e execução de auditorias com modelos versionados e critérios definidos.' },
@@ -160,10 +160,13 @@ export const modulos: Modulo[] = [
       { titulo: 'Verifica e emite relatório', descricao: 'O auditor verifica a eficácia e emite uma versão identificada do relatório.' },
     ],
     faq: [
-      { q: 'O FKT Inspect já está disponível?', a: 'Não. É o próximo MVP do FKT e está em preparação técnica. Ainda não está implementado nem disponível para utilização.' },
-      { q: 'Qual é a primeira área prevista?', a: 'Segurança alimentar e higiene em estabelecimentos de restauração e preparação de refeições. A aplicação a outros sectores exige análise própria.' },
-      { q: 'O FKT Inspect substitui um sistema HACCP ou uma auditoria oficial?', a: 'Não. A ferramenta destina-se a organizar auditorias, evidências e acções. Não substitui a responsabilidade do operador alimentar, a análise de perigos específica, a consultoria especializada, a fiscalização oficial ou a certificação.' },
-      { q: 'Quem poderá utilizar o módulo?', a: 'A concepção prevê consultores e auditores que trabalham com vários clientes, bem como empresas que realizam controlos internos nos seus estabelecimentos.' },
+      { q: 'O FKT Inspect já está disponível?', a: 'Ainda não. A fundação técnica e a primeira interface de gestão de clientes e estabelecimentos estão no repositório e passaram os testes automatizados de CI. A migração ainda não foi aplicada à base de dados de produção e o fluxo de activação não está concluído.' },
+      { q: 'Qual é a primeira área de aplicação?', a: 'O primeiro âmbito é segurança alimentar e higiene em estabelecimentos de restauração e preparação de refeições. A expansão para outros sectores, como segurança e saúde no trabalho, exige análise e validação próprias.' },
+      { q: 'A quem se destina?', a: 'A concepção contempla consultores e auditores que acompanham vários clientes, bem como empresas e operadores que pretendem realizar controlos internos nos seus próprios estabelecimentos.' },
+      { q: 'Que trabalho pretende apoiar?', a: 'O âmbito previsto inclui auditorias com critérios definidos, registo de observações e medições, recolha de evidências, identificação de não conformidades, acompanhamento de acções correctivas e relatórios com histórico.' },
+      { q: 'O FKT Inspect substitui um plano HACCP ou uma auditoria oficial?', a: 'Não. O FKT Inspect pretende apoiar a organização e rastreabilidade do trabalho. Não substitui a responsabilidade do operador alimentar, a análise de perigos específica, o aconselhamento técnico, a fiscalização oficial ou a certificação.' },
+      { q: 'O módulo determina automaticamente se um estabelecimento cumpre a lei?', a: 'Não. Os critérios e limites aplicáveis terão de estar associados às fontes e versões relevantes e ser validados por profissionais competentes. A ferramenta não garante conformidade legal automática.' },
+      { q: 'É possível gerir vários clientes e estabelecimentos?', a: 'Esse é um requisito central da concepção para consultores e auditores. A primeira interface de carteira está implementada no código, mas ainda não está disponível na aplicação de produção.' },
     ],
   }
 
